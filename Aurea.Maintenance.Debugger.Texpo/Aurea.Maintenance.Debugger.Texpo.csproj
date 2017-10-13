@@ -32,29 +32,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CIS.BusinessComponent">
-      <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.BusinessComponent.dll</HintPath>
-    </Reference>
     <Reference Include="CIS.BusinessEntity">
       <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.BusinessEntity.dll</HintPath>
-    </Reference>
-    <Reference Include="CIS.BusinessEntity.Security">
-      <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.BusinessEntity.Security.dll</HintPath>
-    </Reference>
-    <Reference Include="CIS.Framework">
-      <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Framework.dll</HintPath>
-    </Reference>
-    <Reference Include="CIS.Framework.Security">
-      <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Framework.Security.dll</HintPath>
-    </Reference>
-    <Reference Include="CIS.Import">
-      <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Import.dll</HintPath>
-    </Reference>
-    <Reference Include="CIS.Import.Billing.Tdsp">
-      <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Import.Billing.Tdsp.dll</HintPath>
-    </Reference>
-    <Reference Include="CIS.Import.Billing.Transaction">
-      <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Import.Billing.Transaction.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
