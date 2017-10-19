@@ -7,7 +7,9 @@ namespace Aurea.Maintenance.Debugger.Common
 {
     public class Utility
     {
+        // ReSharper disable once InconsistentNaming
         public const string BillingAdminUA = "Server=SGISUSEUAV01.aesua.local,24955;Initial Catalog=saes_BillingAdmin;Trusted_Connection=Yes";
+        // ReSharper disable once InconsistentNaming
         public const string BillingAdminDEV = "Server=SGISUSEUAV01.aesua.local,24955;Initial Catalog=daes_BillingAdmin;Trusted_Connection=Yes";
 
         public static readonly Dictionary<string, int> Clients = new Dictionary<string, int>
