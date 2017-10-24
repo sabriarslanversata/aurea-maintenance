@@ -35,6 +35,17 @@
     <Reference Include="CIS.BusinessEntity">
       <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.BusinessEntity.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.Element.Billing">
+      <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Element.Billing.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Framework, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="Csla, Version=3.6.2.0, Culture=neutral, PublicKeyToken=93be5fdc093e4c30, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Resources\GACAssembliesDependencies\Csla\3.6.2\Csla.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
