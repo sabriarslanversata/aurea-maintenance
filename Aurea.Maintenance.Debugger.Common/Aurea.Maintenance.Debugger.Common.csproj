@@ -31,19 +31,19 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CIS.BusinessComponent">
-      <HintPath>c:\AureaCis\Legacy\Deployment\Debug\Product\CIS.BusinessComponent.dll</HintPath>
+      <HintPath>..\..\Legacy\Deployment\Debug\Product\CIS.BusinessComponent.dll</HintPath>
     </Reference>
     <Reference Include="CIS.BusinessEntity">
-      <HintPath>c:\AureaCis\Legacy\Deployment\Debug\Product\CIS.BusinessEntity.dll</HintPath>
+      <HintPath>..\..\Legacy\Deployment\Debug\Product\CIS.BusinessEntity.dll</HintPath>
     </Reference>
     <Reference Include="CIS.BusinessEntity.Security">
-      <HintPath>c:\AureaCis\Legacy\Deployment\Debug\Product\CIS.BusinessEntity.Security.dll</HintPath>
+      <HintPath>..\..\Legacy\Deployment\Debug\Product\CIS.BusinessEntity.Security.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Framework">
-      <HintPath>c:\AureaCis\Legacy\Deployment\Debug\Product\CIS.Framework.dll</HintPath>
+      <HintPath>..\..\Legacy\Deployment\Debug\Product\CIS.Framework.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Framework.Security">
-      <HintPath>c:\AureaCis\Legacy\Deployment\Debug\Product\CIS.Framework.Security.dll</HintPath>
+      <HintPath>..\..\Legacy\Deployment\Debug\Product\CIS.Framework.Security.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

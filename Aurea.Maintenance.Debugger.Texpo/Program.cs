@@ -6,12 +6,10 @@ using Aurea.TaskToaster;
 using CIS.BusinessEntity;
 using Aurea.TaskToaster.ProductTasks;
 
-
 namespace Aurea.Maintenance.Debugger.Texpo
 {
     public class Program
     {
-
         private static TaskContext CreateContext(
             GlobalApplicationConfigurationDS.GlobalApplicationConfiguration configuration)
         {
@@ -35,15 +33,16 @@ namespace Aurea.Maintenance.Debugger.Texpo
         public static void Main(string[] args)
         {
             var clientConfiguration = Utility.SetSecurity(Utility.BillingAdminDEV, Utility.Clients["TXP"]);
-            CalculateConsumptionDueDatesTask myTask = new CalculateConsumptionDueDatesTask();
+            /*
+			CalculateConsumptionDueDatesTask myTask = new CalculateConsumptionDueDatesTask();
 
             myTask.Initialize(CreateContext(clientConfiguration));
             
             //execute Maintenance.CalculateConsumptionDueDates 
             myTask.Execute();
+			*/
             var waitForLine = Console.ReadLine();
             Console.WriteLine($"readed {waitForLine}");
-
         }
     }
 }

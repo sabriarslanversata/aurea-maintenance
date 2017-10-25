@@ -14,8 +14,9 @@ namespace Aurea.Maintenance.Debugger.Common
 
         public static readonly Dictionary<string, int> Clients = new Dictionary<string, int>
         {
-            { "TXP", 22 },
-            { "SPK", 48 }
+            {"TXP", 22},
+            {"SPK", 48},
+            {"SGE", 45}
         };
 
         public static GlobalApplicationConfigurationDS.GlobalApplicationConfiguration SetSecurity(string billingConection, int clientId)
