@@ -36,37 +36,37 @@
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\Aurea.dll</HintPath>
     </Reference>
     <Reference Include="Aurea.Billing.Domain">
-      <HintPath>..\..\Clients\Texpo\Deployment\Debug\TaskToaster\Aurea.Billing.Domain.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\TaskToaster\Aurea.Billing.Domain.dll</HintPath>
     </Reference>
     <Reference Include="Aurea.BillingAdmin.Domain">
-      <HintPath>..\..\Clients\Texpo\Deployment\Debug\TaskToaster\Aurea.BillingAdmin.Domain.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\TaskToaster\Aurea.BillingAdmin.Domain.dll</HintPath>
     </Reference>
     <Reference Include="Aurea.TaskToaster">
-      <HintPath>..\..\Clients\Texpo\Deployment\Debug\TaskToaster\Aurea.TaskToaster.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\TaskToaster\Aurea.TaskToaster.dll</HintPath>
     </Reference>
     <Reference Include="Aurea.TaskToaster.Aes">
-      <HintPath>..\..\Clients\Texpo\Deployment\Debug\TaskToaster\Aurea.TaskToaster.Aes.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\TaskToaster\Aurea.TaskToaster.Aes.dll</HintPath>
     </Reference>
     <Reference Include="Aurea.TaskToaster.ProductTasks">
-      <HintPath>..\..\Clients\Texpo\Deployment\Debug\TaskToaster\Aurea.TaskToaster.ProductTasks.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\TaskToaster\Aurea.TaskToaster.ProductTasks.dll</HintPath>
     </Reference>
     <Reference Include="CIS.BusinessEntity">
-      <HintPath>..\..\Legacy\Deployment\Debug\Product\CIS.BusinessEntity.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.BusinessEntity.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Clients">
-      <HintPath>..\..\Clients\Texpo\Deployment\Debug\bin\CIS.Clients.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Clients.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Clients.Texpo">
-      <HintPath>..\..\Clients\Texpo\Deployment\Debug\bin\CIS.Clients.Texpo.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Clients.Texpo.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Import">
-      <HintPath>..\..\Clients\Texpo\Deployment\Debug\bin\CIS.Import.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Import.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Import.Billing.Consumption">
-      <HintPath>..\..\Clients\Texpo\Deployment\Debug\bin\CIS.Import.Billing.Consumption.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Import.Billing.Consumption.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Import.Billing.Tdsp">
-      <HintPath>..\..\Clients\Texpo\Deployment\Debug\bin\CIS.Import.Billing.Tdsp.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Import.Billing.Tdsp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
