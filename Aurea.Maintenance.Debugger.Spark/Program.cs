@@ -1,7 +1,10 @@
-﻿using Aurea.Maintenance.Debugger.Common;
+﻿using System;
+using Aurea.Maintenance.Debugger.Common;
+using CIS.BusinessEntity;
 using CIS.Element.Billing;
+using CIS.Engine.Event;
 using Csla.Validation;
-using System;
+using System.Threading;
 
 namespace Aurea.Maintenance.Debugger.Spark
 {
@@ -10,7 +13,19 @@ namespace Aurea.Maintenance.Debugger.Spark
         public static void Main(string[] args)
         {
             var clientConfiguration = Utility.SetSecurity(Utility.BillingAdminDEV, Utility.Clients["SPK"]);
-            SimulateCreateProduct();
+
+            SimulateInbound814E(clientConfiguration);
+        }
+
+        private static void SimulateInbound814E(GlobalApplicationConfigurationDS.GlobalApplicationConfiguration clientConfiguration)
+        {
+            // Set culture to en-EN to prevent string manipulation issues in base code
+            string culture = "en-EN";
+            Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo(culture);
+            Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo(culture);
+
+            var engine = new Queue(Utility.BillingAdminDEV);
+            engine.ProcessEventQueue(clientConfiguration.ClientID, clientConfiguration.ConnectionCsr, clientConfiguration.ConnectionMarket, clientConfiguration.ClientAbbreviation);
         }
 
         private static void SimulateCreateProduct()

@@ -38,9 +38,19 @@
     <Reference Include="CIS.Element.Billing">
       <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Element.Billing.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.Engine.Event">
+      <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Engine.Event.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.Framework, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Framework.Event.EventHandler">
+      <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Framework.Event.EventHandler.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Framework.Event.EventHandlerBase, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Framework.Event.EventHandlerBase.dll</HintPath>
     </Reference>
     <Reference Include="Csla, Version=3.6.2.0, Culture=neutral, PublicKeyToken=93be5fdc093e4c30, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
