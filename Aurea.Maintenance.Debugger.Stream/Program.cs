@@ -21,8 +21,10 @@ namespace Aurea.Maintenance.Debugger.Stream
 
             //SimulatePostEnrollmentEvent(clientConfiguration);
 
-            //SimulateInbound814E(clientConfiguration);
+            SimulateInbound814E(clientConfiguration);
         }
+
+        #region private methods
 
         private static void SimulateInbound814E(GlobalApplicationConfigurationDS.GlobalApplicationConfiguration clientConfiguration)
         {
@@ -45,10 +47,17 @@ namespace Aurea.Maintenance.Debugger.Stream
             pe.Process(30396997);
         }
 
-        private static SetThreadCulture(string culture)
+        #endregion
+
+        #region helper methods
+
+
+        private static void SetThreadCulture(string culture)
         {
             Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo(culture);
             Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo(culture);
         }
+
+        #endregion
     }
 }
