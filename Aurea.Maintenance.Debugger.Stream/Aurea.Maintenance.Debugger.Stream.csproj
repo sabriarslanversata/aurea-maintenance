@@ -35,9 +35,6 @@
     <Reference Include="Aurea">
       <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\Aurea.dll</HintPath>
     </Reference>
-    <Reference Include="Aurea.TaskToaster.ProductTasks">
-      <HintPath>..\..\AureaCis\Clients\Texpo\Deployment\Debug\TaskToaster\Aurea.TaskToaster.ProductTasks.dll</HintPath>
-    </Reference>
     <Reference Include="CIS.Billing.BusinessObject">
       <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Billing.BusinessObject.dll</HintPath>
     </Reference>
@@ -76,6 +73,7 @@
     <ProjectReference Include="..\Aurea.Maintenance.Debugger.Common\Aurea.Maintenance.Debugger.Common.csproj">
       <Project>{5243be0e-a73b-4a56-b992-143871c94bd2}</Project>
       <Name>Aurea.Maintenance.Debugger.Common</Name>
+      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
