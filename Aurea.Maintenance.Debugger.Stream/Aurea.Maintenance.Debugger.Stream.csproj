@@ -47,6 +47,10 @@
     <Reference Include="CIS.Clients.Stream">
       <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Clients.Stream.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.Engine.Event, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Engine.Event.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.Framework.Event.EventHandler">
       <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Framework.Event.EventHandler.dll</HintPath>
     </Reference>
