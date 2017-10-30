@@ -2,6 +2,7 @@
 using CIS.BusinessEntity;
 using CIS.Framework.Security;
 using System.Collections.Generic;
+using System.Configuration;
 
 namespace Aurea.Maintenance.Debugger.Common
 {
@@ -22,8 +23,11 @@ namespace Aurea.Maintenance.Debugger.Common
         public static GlobalApplicationConfigurationDS.GlobalApplicationConfiguration SetSecurity(string billingConection, int clientId)
         {
             var clientConfiguration = GlobalApplicationConfigurationBC.Load(billingConection, clientId);
+
+            ConfigurationManager.AppSettings["Connection.BillingAdministration"] = billingConection;
+            ConfigurationManager.AppSettings["Connection.Tdsp"] = clientConfiguration.ConnectionTdsp;
+
             SecurityManager.SetSecurityContext(clientConfiguration, clientId);
-            
             return clientConfiguration;
         }
     }
