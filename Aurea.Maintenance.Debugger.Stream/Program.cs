@@ -217,9 +217,9 @@ namespace Aurea.Maintenance.Debugger.Stream
                 VALUES  (@ClientID, @EventId, 0, GETDATE())
                 SET @EventingQueueId = SCOPE_IDENTITY()
 
-                SET @PremiseUpdateActionID = (SELECT ActionID FROM daes_BillingAdmin..Action WHERE ActionName = 'PremiseUpdate' AND ActionID IN (SELECT ActionID FROM saes_BillingAdmin..EventAction WHERE EventID = 73616))
-                SET @CustomerUpdateActionID = (SELECT ActionID FROM daes_BillingAdmin..Action WHERE ActionName = 'CustomerUpdate' AND ActionID IN (SELECT ActionID FROM saes_BillingAdmin..EventAction WHERE EventID = 73616))
-                SET @PostEnrollmentActionID = (SELECT ActionID FROM daes_BillingAdmin..Action WHERE ActionName = 'PostEnrollment' AND ActionID IN (SELECT ActionID FROM saes_BillingAdmin..EventAction WHERE EventID = 73616))
+                SET @PremiseUpdateActionID = (SELECT EventActionID FROM saes_BillingAdmin..EventAction WHERE EventID = 73616 AND ActionID IN (SELECT ActionID FROM daes_BillingAdmin..Action WHERE ActionName = 'PremiseUpdate'))
+                SET @CustomerUpdateActionID = (SELECT EventActionID FROM saes_BillingAdmin..EventAction WHERE EventID = 73616 AND ActionID IN (SELECT ActionID FROM daes_BillingAdmin..Action WHERE ActionName = 'CustomerUpdate'))
+                SET @PostEnrollmentActionID = (SELECT EventActionID FROM saes_BillingAdmin..EventAction WHERE EventID = 73616 AND ActionID IN (SELECT ActionID FROM daes_BillingAdmin..Action WHERE ActionName = 'PostEnrollment'))
 
                 PRINT 'Create EventActionQueue'
                 INSERT INTO EventActionQueue
