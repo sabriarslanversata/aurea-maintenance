@@ -76,7 +76,8 @@ namespace Aurea.Maintenance.Debugger.Stream
                 DECLARE @CustID int
                 DECLARE @MasterCustID int
                 DECLARE @AddrID int
-                DECLARE @RateID int
+                DECLARE @CustRateID int
+                DECLARE @TransRateID int
                 DECLARE @RateTransitionID int
                 DECLARE @CSPID int
                 DECLARE @CustomerTypeID int
@@ -103,6 +104,7 @@ namespace Aurea.Maintenance.Debugger.Stream
                 DECLARE @PremiseUpdateEventActionQueueId int
                 DECLARE @CustomerEventActionQueueId int
                 DECLARE @PostEnrollmentEventActionQueueId int 
+                DECLARE @AccountsReceivableID int
 
                 SET @ClientID = 45 --Stream
                 SET @EventId = 73616--Simple Customer Evaluation
@@ -136,26 +138,53 @@ namespace Aurea.Maintenance.Debugger.Stream
                     0, 'Mock Cust Name', 'Mock 1797 Lexington Ave ', NULL, 'New York', 'NY', '10029', NULL, NULL, NULL, NULL, NULL, 'M2124260402', NULL, NULL, NULL, 'mock@email.com', NULL, 'US36061A0003', 'A', NULL, GETDATE(), NULL, NULL, NULL, NULL, NULL, 1, 2
                 SET @AddrID = SCOPE_IDENTITY()
 
-                PRINT 'Create Rate'
+                PRINT 'Create Rate For Customer'
                 IF NOT EXISTS (SELECT 1 FROM [Rate] WHERE RateCode = 'PREM_654643')
                 BEGIN
 	                INSERT INTO [Rate]
 	                    ([CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [LDCCode], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [ConsUnitId], [ActiveFlag], [LDCRateCode], [migr_plan_id], [migr_custid])
 	                SELECT
 	                    NULL, 'PREM_654643', '', '2017-08-24 00:00:00.000', '2019-08-24 00:00:00.000', '', 0, 0, 1, NULL, '2017-08-24 16:00:24.307', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
-	                SET @RateID = SCOPE_IDENTITY()
+	                SET @CustRateID = SCOPE_IDENTITY()
                 END
                 ELSE
                 BEGIN
-	                SET @RateID = (SELECT RateID FROM [Rate] WHERE RateCode = 'PREM_654643')
+	                SET @CustRateID = (SELECT RateID FROM [Rate] WHERE RateCode = 'PREM_654643')
                 END
+
+                PRINT 'Create Rate For Transition'
+                IF NOT EXISTS (SELECT 1 FROM [Rate] WHERE RateCode = 'NY_CONED_E_COMMERCIAL_FIXED_Rate')
+                BEGIN
+	                INSERT INTO [Rate]
+	                    ([CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [LDCCode], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [ConsUnitId], [ActiveFlag], [LDCRateCode], [migr_plan_id], [migr_custid])
+	                SELECT
+	                    1, 'NY_CONED_E_COMMERCIAL_FIXED_Rate', 'NY CONED Electric Commercial Fixed', '2013-05-01 00:00:00.000', NULL, NULL, NULL, 0, 1, 13, '2013-06-06 22:32:24.287', NULL, 'NY_CONED_E_COMMERCIAL_FIXED_RatePackage', NULL, 'E', NULL, NULL, 1, NULL, NULL, NULL
+	                SET @TransRateID = SCOPE_IDENTITY()
+                END
+                ELSE
+                BEGIN
+	                SET @TransRateID = (SELECT RateID FROM [Rate] WHERE RateCode = 'NY_CONED_E_COMMERCIAL_FIXED_Rate')
+                END
+
+                PRINT 'Create AccountsReceivable'
+                INSERT INTO [AccountsReceivable]
+                    ( PastDue, StatusID, Terms)
+                SELECT
+                    'N', 1, '26'
+                SET @AccountsReceivableID = SCOPE_IDENTITY()
 
                 PRINT 'Create Customer'
                 INSERT INTO [Customer]
                     ([CSPID], [CustomerTypeID], [CustNo], [CustName], [LastName], [FirstName], [MidName], [CompanyName], [DBA], [FederalTaxID], [AcctsRecID], [DistributedAR], [ProductionCycle], [BillCycle], [RateID], [SiteAddrID], [MailAddrId], [CorrAddrID], [BillCustID], [MasterCustID], [Master], [CustStatus], [BilledThru], [CSRStatus], [CustType], [Services], [FEIN], [DOB], [Taxable], [LateFees], [NoOfAccts], [ConsolidatedInv], [SummaryInv], [MsgID], [TDSPTemplateID], [TDSPGroupID], [LifeSupportIndictor], [LifeSupportStatus], [LifeSupportDate], [SpecialBenefitsPlan], [BillFormat], [PrintLayoutID], [CreditScore], [HitIndicator], [RequiredDeposit], [AccountManager], [EnrollmentAlias], [ContractID], [UserDefined1], [CreateDate], [RateChangeDate], [PermitContactName], [CustomerPrivacy], [UsagePrivacy], [LidaDiscount])
                 SELECT 
-                    @CSPID, @CustomerTypeID, @CustNo, 'Mock Cust Name', 'Mock Cust LName', 'Mock Cust FName', NULL, NULL, 'Mock DBA', NULL, NULL /*[AcctsRecID]*/, NULL, 55, 55, @RateID, @AddrID, @AddrId, @AddrID, NULL, @MasterCustID, 'N', 'A', NULL, NULL, @CustType, NULL, 8661, NULL, 'Y', 'N', NULL, NULL, 'N', NULL, 3, 1, 'N', NULL, NULL, NULL, 1, 1, NULL, NULL, 'N', NULL, NULL, NULL, 'None', DATEADD(dd, -2, GETDATE()), NULL, NULL, 0, 0, 0
+                    @CSPID, @CustomerTypeID, @CustNo, 'Mock Cust Name', 'Mock Cust LName', 'Mock Cust FName', NULL, NULL, 'Mock DBA', NULL, @AccountsReceivableID, NULL, 55, 55, @CustRateID, @AddrID, @AddrId, @AddrID, NULL, @MasterCustID, 'N', 'A', NULL, NULL, @CustType, NULL, 8661, NULL, 'Y', 'N', NULL, NULL, 'N', NULL, 3, 1, 'N', NULL, NULL, NULL, 1, 1, NULL, NULL, 'N', NULL, NULL, NULL, 'None', DATEADD(dd, -2, GETDATE()), NULL, NULL, 0, 0, 0
                 SET @CustID = SCOPE_IDENTITY()
+
+                PRINT 'Create CustomerAdditionalInfo'
+                INSERT INTO [CustomerAdditionalInfo]
+                    (CustID,CSPDUNSID,BillingTypeID,BillingDayOfMonth,MasterCustID_2,MasterCustID_3,MasterCustID_4,TaxAssessment,ContractPeriod,ContractDate,AccessVerificationType,AccessVerificationData,ClientAccountNo,InstitutionID,TransitNum,AccountNum,MigrationAccountNo,MigrationFirstServed,MigrationKwh,CollectionsStageID,CollectionsStatus,CollectionsDate,KeyAccount,DisconnectLtr,AuthorizedReleaseName,AuthorizedReleaseDOB,AuthorizedReleaseFederalTaxID,EFTFlag,PromiseToPayFlag,DisconnectFlag,CreditHoldFlag,RawConsumptionImportFlag,CustomerProtectionStatus,MCPEFlag,HasLocationMasterFlag,DivisionID,DivisionCode,DriverLicenseNo,PromotionCodeID,CustomerDUNS,CustomerGroupID,EarlyTermFee,EarlyTermFeeUpdateDate,DeceasedFlag,BankruptFlag,CollectionsAgencyID,DoNotCall,CustomerSecretWord,PrintGroupID,CurrentCustNo,IsDPP,UnitNumber,CustomerCategoryID,SubsequentDepositExempt,AutoPayFlag,SpecialNeedsFlag,SpecialNeedsEndDate,SpecialNeedsQualifierTypeID,CsrImportDate,OnSwitchHold,SwitchHoldStartDate,DPPStatusID,UpdateContactInfoFlag,IsFriendlyLatePaymentReminderSent,IsLowIncome,ExtendedCustTypeId,AutoPayLastUpdated,GreenEnergyOptIn,SocialCauseID,SocialCauseCode,SecondaryContactFirstName,SecondaryContactLastName,SecondaryContactPhone,SecondaryContactRelationId,SSN,ServiceAccount,EncryptionPasswordTypeId,EncryptionPasswordCustomValue,CustInfo1,CustInfo2,CustInfo3,CustInfo4,CustInfo5,SalesAgent,Broker,PromoCode,CommissionType,CommissionAmount,ReferralID,CampaignName,AccessDBID,SalesChannel,TCPAAuthorization,IsPUCComplaint,CancellationFee,MunicipalAggregation)
+                SELECT
+                    @CustID, 7, 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,'B2418147', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, 'N', 'Mock Ahsan Nadeem', NULL, NULL, 0, 0, 0, 0, 1, 0, 0, 0, 1, 'SGENormal',  NULL, NULL, NULL, 3, 0.00, '2017-08-24 16:00:24.580', 0, 0, NULL, 0, NULL, NULL, NULL, 0, NULL, NULL, 0, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, 0, 0, 0, NULL, '2017-08-24 16:00:25.010', 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'C', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, 'NA', 0, NULL, NULL
 
                 PRINT 'Create Premise'
                 INSERT INTO [Premise]
@@ -183,24 +212,46 @@ namespace Aurea.Maintenance.Debugger.Stream
                 END
 
                 PRINT 'Create RateTransition'
-                IF NOT EXISTS(SELECT 1 FROM [RateTransition] WHERE RateID = @RateID)
+                IF NOT EXISTS(SELECT 1 FROM [RateTransition] WHERE RateID = @TransRateID)
                 BEGIN
 	                INSERT INTO [RateTransition]
 	                    ([CustID], [RateID], [UserID], [CreatedDate], [SwitchDate], [EndDate], [StatusID], [SoldDate], [RolloverFlag])
 	                SELECT
-	                    @CustID, @RateID, 0, '2017-08-24 16:00:50.327', '2017-09-08 00:00:00.000', '2018-09-08 00:00:00.000', 2, '2017-08-24 00:00:00.000', 0
+	                    @CustID, @TransRateID, 0, '2017-08-24 16:00:50.327', '2017-09-08 00:00:00.000', '2018-09-08 00:00:00.000', 2, '2017-08-24 00:00:00.000', 0
 	                SET @RateTransitionID = SCOPE_IDENTITY()
                 END
                 ELSE
                 BEGIN
-	                SET @RateTransitionID = (SELECT RateTransitionID FROM [RateTransition] WHERE RateID = @RateID)
+	                SET @RateTransitionID = (SELECT RateTransitionID FROM [RateTransition] WHERE RateID = @TransRateID)
+	                UPDATE RateTransition SET CustID = @CustID WHERE RateTransitionID = @RateTransitionID
                 END
 
-                PRINT 'Create RateDetail'
+                PRINT 'Create RateDetail for Customer'
+                IF (SELECT COUNT(*) FROM RadeDetail WHERE RateID = @RateID) = 0 
+                BEGIN
                 INSERT INTO [RateDetail]
                     ([RateID], [CategoryID], [RateTypeID], [ConsUnitID], [RateDescID], [EffectiveDate], [ExpirationDate], [RateAmt], [RateAmt2], [RateAmt3], [FixedAdder], [MinDetAmt], [MaxDetAmt], [GLAcct], [RangeLower], [RangeUpper], [CustType], [Graduated], [Progressive], [AmountCap], [MaxRateAmt], [MinRateAmt], [CategoryRollup], [Taxable], [ChargeType], [MiscData1], [FixedCapRate], [ScaleFactor1], [ScaleFactor2], [TemplateRateDetID], [Margin], [HALRateDetailId], [UsageClassId], [LegacyRateDetailId], [Building], [ServiceTypeID], [TaxCategoryID], [UtilityID], [UtilityInvoiceTemplateDetailID], [Active], [StatusID], [RateVariableTypeId], [MinDays], [MaxDays], [BlockPriceIndicator], [RateTransitionId], [CreateDate], [MeterMultiplierFlag], [BlendRatio], [ContractVolumeID], [CreatedByUserId], [ModifiedByUserId], [ModifiedDate], [TOUTemplateID], [TOUTemplateRegisterID], [TOUTemplateRegisterName])
                 SELECT
-                    @RateID, 1, 3002, 5, 1, '2017-08-24 00:00:00.0000000', '2018-09-08 00:00:00.0000000', 0.08550000, NULL, NULL, NULL, 0.00, 0.00, '', NULL, NULL, '', '', '', 'N', '', '', '', 'Y', 'C', 51, 286.00000000, NULL, NULL, 565647, NULL, NULL, NULL, NULL, '', NULL, 0, NULL, NULL, 1, 1, NULL, NULL, NULL, 0, @RateTransitionID, '2017-08-24 16:00:50.433', 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, ''
+                    @CustRateID, 1, 3002, 5, 1, '2017-08-24 00:00:00.0000000', '2018-09-08 00:00:00.0000000', 0.08550000, NULL, NULL, NULL, 0.00, 0.00, '', NULL, NULL, '', '', '', 'N', '', '', '', 'Y', 'C', 51, 286.00000000, NULL, NULL, 565647, NULL, NULL, NULL, NULL, '', NULL, 0, NULL, NULL, 1, 1, NULL, NULL, NULL, 0, @RateTransitionID, '2017-08-24 16:00:50.433', 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, ''
+                END
+
+                PRINT 'Create RateDetail for Transition'
+                IF (SELECT COUNT(*) FROM RadeDetail WHERE RateID = @TransRateID) = 0 
+                BEGIN
+                INSERT INTO [RateDetail]
+                    ([RateID], [CategoryID], [RateTypeID], [ConsUnitID], [RateDescID], [EffectiveDate], [ExpirationDate], [RateAmt], [RateAmt2], [RateAmt3], [FixedAdder], [MinDetAmt], [MaxDetAmt], [GLAcct], [RangeLower], [RangeUpper], [CustType], [Graduated], [Progressive], [AmountCap], [MaxRateAmt], [MinRateAmt], [CategoryRollup], [Taxable], [ChargeType], [MiscData1], [FixedCapRate], [ScaleFactor1], [ScaleFactor2], [TemplateRateDetID], [Margin], [HALRateDetailId], [UsageClassId], [LegacyRateDetailId], [Building], [ServiceTypeID], [TaxCategoryID], [UtilityID], [UtilityInvoiceTemplateDetailID], [Active], [StatusID], [RateVariableTypeId], [MinDays], [MaxDays], [BlockPriceIndicator], [RateTransitionId], [CreateDate], [MeterMultiplierFlag], [BlendRatio], [ContractVolumeID], [CreatedByUserId], [ModifiedByUserId], [ModifiedDate], [TOUTemplateID], [TOUTemplateRegisterID], [TOUTemplateRegisterName])
+                SELECT
+                    @TransRateID, 1, 3002, 5, 1, '2013-05-01 00:00:00.0000000', NULL, NULL, NULL, NULL, NULL, 0.00, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, 'N', NULL, NULL, NULL, 'Y', 'C', 51, 286.0000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, 0, NULL, '2013-06-06 22:32:24.410', 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL
+                END
+
+                PRINT 'Create Product For RateTransition'
+                IF NOT EXISTS (SELECT 1 FROM Product WHERE RateID = @TransRateID)
+                BEGIN
+                    INSERT INTO Product
+                    (RateID,LDCCode,PlanType,TDSPTemplateID,Description,BeginDate,EndDate,CustType,Graduated,RangeTier1,RangeTier2,SortOrder,ActiveFlag,Uplift,CSATDSPTemplateID,CAATDSPTemplateID,PriceDescription,MarketingCode,RateTypeID,ConsUnitID,[Default],DivisionCode,RateDescription,ServiceType,CSPId,TermsId,RolloverProductId,CommissionId,CommissionAmt,CancelFeeId,MonthlyChargeId,ProductCode,RatePackageId,ProductName,TermDate,DiscountTypeId,DiscountAmount,ProductZoneID,IsGreen,IsBestChoice,ActiveEnrollmentFlag,CreditScoreThreshold,DepositAmount,ProductNote,Incentives)
+                    SELECT
+                    @TransRateID, 13, 1, 3,'NY CONED Electric Commercial Fixed', '2013-05-01 00:00:00.000', NULL, 'C', 'N', NULL, NULL, NULL, 1, NULL, NULL, NULL, 'NY CONED Electric Commerical Fixed Rate Plan', NULL, NULL,5, 0, NULL, NULL, 'E', 1, 47, 365, NULL, NULL, NULL, NULL, 'NY_CONED_E_COMMERCIAL_FIXED', 258040, 'NY CONED Electric Commercial Fixed', NULL, NULL, NULL, 9, 0, 0, 1, NULL, NULL, NULL, NULL
+                END
 
                 PRINT 'Create CustomerTransactionRequest'
                 INSERT INTO CustomerTransactionRequest
@@ -217,8 +268,8 @@ namespace Aurea.Maintenance.Debugger.Stream
                 VALUES  (@ClientID, @EventId, 0, GETDATE())
                 SET @EventingQueueId = SCOPE_IDENTITY()
 
-                SET @PremiseUpdateActionID = (SELECT EventActionID FROM saes_BillingAdmin..EventAction WHERE EventID = 73616 AND ActionID IN (SELECT ActionID FROM daes_BillingAdmin..Action WHERE ActionName = 'PremiseUpdate'))
-                SET @CustomerUpdateActionID = (SELECT EventActionID FROM saes_BillingAdmin..EventAction WHERE EventID = 73616 AND ActionID IN (SELECT ActionID FROM daes_BillingAdmin..Action WHERE ActionName = 'CustomerUpdate'))
+                SET @PremiseUpdateActionID = (SELECT EventActionID FROM saes_BillingAdmin..EventAction WHERE EventID = 73616 AND ActionID  IN (SELECT ActionID FROM daes_BillingAdmin..Action WHERE ActionName = 'PremiseUpdate'))
+                SET @CustomerUpdateActionID = (SELECT EventActionID FROM saes_BillingAdmin..EventAction WHERE EventID = 73616 AND ActionID  IN (SELECT ActionID FROM daes_BillingAdmin..Action WHERE ActionName = 'CustomerUpdate'))
                 SET @PostEnrollmentActionID = (SELECT EventActionID FROM saes_BillingAdmin..EventAction WHERE EventID = 73616 AND ActionID IN (SELECT ActionID FROM daes_BillingAdmin..Action WHERE ActionName = 'PostEnrollment'))
 
                 PRINT 'Create EventActionQueue'
