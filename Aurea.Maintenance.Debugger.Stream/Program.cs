@@ -187,11 +187,12 @@ namespace Aurea.Maintenance.Debugger.Stream
 
                 PRINT 'Create LDC'
                 SET @LDCID = 13
+                /*
                 INSERT INTO LDC
                  ([LDCID], [LDCCode], [LDCName], [LDCShortName], [DUNS], [PriceToBeat], [PriceToBeatDate], [MarketID], [MarketCode], [LDCFederalTaxID], [RateDeliveryTypeID], [PremNoLabel], [VariableHUFlag], [VariableHULimit], [IsAllowCustomLDCRateCode])
                 SELECT
                  @LDCID, 13, 'Consolidated Edison of New York', 'CONED', '006982359', NULL, NULL, 3, 'NY', NULL, 1, 'LDC Account No', 0, NULL, 0 
-
+                */
 
                 PRINT 'Create Premise'
                 INSERT INTO [Premise]
