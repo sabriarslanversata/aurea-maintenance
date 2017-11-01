@@ -2,17 +2,15 @@
 using System.Collections;
 using System.Runtime.Remoting.Contexts;
 using System.Threading;
-using Aurea.Logging;
 using Aurea.Maintenance.Debugger.Common;
-using Aurea.TaskToaster;
-using CIS.BusinessEntity;
 
 namespace Aurea.Maintenance.Debugger.Texpo
 {
     public class Program
     {
-        private static GlobalApplicationConfigurationDS.GlobalApplicationConfiguration _clientConfiguration;
-
+        private static CIS.BusinessEntity.GlobalApplicationConfigurationDS.GlobalApplicationConfiguration _clientConfiguration;
+        
+        /*
         private static TaskContext CreateContext()
         {
             return new TaskContext
@@ -31,7 +29,7 @@ namespace Aurea.Maintenance.Debugger.Texpo
                 Logger = new ConsoleLogger()
             };
         }
-
+        */
         public static void Main(string[] args)
         {
             _clientConfiguration = Utility.SetSecurity(Utility.BillingAdminDEV, Utility.Clients["TXP"]);
