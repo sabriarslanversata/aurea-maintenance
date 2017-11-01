@@ -59,6 +59,17 @@
     <Reference Include="CIS.Clients.Texpo">
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Clients.Texpo.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.Engine.Event, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Engine.Event.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Framework.Event.EventGenerator">
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Framework.Event.EventGenerator.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Framework.Event.EventGeneratorBase, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Framework.Event.EventGeneratorBase.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.Import">
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Import.dll</HintPath>
     </Reference>
