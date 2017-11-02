@@ -45,6 +45,7 @@
     <Reference Include="CIS.Framework.Security">
       <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Framework.Security.dll</HintPath>
     </Reference>
+    <Reference Include="Csla, Version=3.6.2.0, Culture=neutral, PublicKeyToken=93be5fdc093e4c30" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
