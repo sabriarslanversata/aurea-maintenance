@@ -1,13 +1,15 @@
-﻿using Aurea.Maintenance.Debugger.Common;
-
-namespace Aurea.Maintenance.Debugger.Texpo
+﻿namespace Aurea.Maintenance.Debugger.Texpo
 {
+    using Aurea.Maintenance.Debugger.Common;
+    using Aurea.Maintenance.Debugger.Common.Models;
+
     public class Program
     {
 
         public static void Main(string[] args)
         {
-            var clientConfiguration = Utility.SetSecurity(Utility.BillingAdminDEV, Utility.Clients["TXP"]);
+            var config = ClientConfiguration.GetClientConfiguration(Clients.Texpo, Stages.UserAcceptance);
+            ClientConfiguration.SetConfigurationContext(config);
         }
     }
 }

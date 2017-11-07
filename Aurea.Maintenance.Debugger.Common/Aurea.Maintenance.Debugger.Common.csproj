@@ -30,6 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Aurea, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\Aurea.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.BusinessComponent">
       <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.BusinessComponent.dll</HintPath>
     </Reference>
@@ -46,6 +50,7 @@
       <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Framework.Security.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -55,8 +60,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClientConfiguration.cs" />
+    <Compile Include="Extensions\ClientExtensions.cs" />
+    <Compile Include="Extensions\StageExtensions.cs" />
+    <Compile Include="Logger.cs" />
+    <Compile Include="Models\ClientEnvironmentConfiguration.cs" />
+    <Compile Include="Models\Clients.cs" />
+    <Compile Include="Models\Stages.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utility.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
