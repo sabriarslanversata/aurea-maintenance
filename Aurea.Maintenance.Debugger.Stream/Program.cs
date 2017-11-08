@@ -32,7 +32,7 @@ namespace Aurea.Maintenance.Debugger.Stream
         private static void SimulateInbound814E(GlobalApplicationConfigurationDS.GlobalApplicationConfiguration clientConfiguration)
         {
             // Set culture to en-EN to prevent string manipulation issues in base code
-            SetThreadCulture("en-US");
+            Utility.SetThreadCulture("en-US");
 
             var engine = new CIS.Engine.Event.Queue(Utility.BillingAdminDEV);
             engine.ProcessEventQueue(clientConfiguration.ClientID, clientConfiguration.ConnectionCsr, clientConfiguration.ConnectionMarket, clientConfiguration.ClientAbbreviation);
@@ -53,13 +53,7 @@ namespace Aurea.Maintenance.Debugger.Stream
         #endregion
 
         #region helper methods
-
-
-        private static void SetThreadCulture(string culture)
-        {
-            Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo(culture);
-            Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo(culture);
-        }
+        
 
         private static void CreateMockData(GlobalApplicationConfigurationDS.GlobalApplicationConfiguration clientConfiguration)
         {

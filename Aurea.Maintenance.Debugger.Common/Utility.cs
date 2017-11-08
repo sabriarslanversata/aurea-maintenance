@@ -3,6 +3,7 @@ using CIS.BusinessEntity;
 using CIS.Framework.Security;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Threading;
 
 namespace Aurea.Maintenance.Debugger.Common
 {
@@ -29,6 +30,13 @@ namespace Aurea.Maintenance.Debugger.Common
 
             SecurityManager.SetSecurityContext(clientConfiguration, clientId);
             return clientConfiguration;
+        }
+
+
+        public static void SetThreadCulture(string culture)
+        {
+            Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo(culture);
+            Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo(culture);
         }
     }
 }

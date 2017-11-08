@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.IO;
+using System.Reflection;
 using System.Runtime.Remoting.Contexts;
 using System.Text;
 using System.Threading;
@@ -16,8 +17,8 @@ namespace Aurea.Maintenance.Debugger.Texpo
 
         public class MyExport : CIS.Clients.Texpo.Export.MainProcess//CIS.Export.BaseExport
         {
-            private static string uaaDir = @"c:\AESCIS\uua\";
-            private static string uqcDir = @"c:\AESCIS\uqc\";
+            private static readonly string _uaaDir = Assembly.GetExecutingAssembly().Location + "\\uua\\";
+            private static readonly string _uqcDir = Assembly.GetExecutingAssembly().Location + "\\uqc\\";
 
             public MyExport(string connectionMarket, string connectionCsr, string connectionAdmin)
             {
@@ -60,14 +61,14 @@ namespace Aurea.Maintenance.Debugger.Texpo
 
             public override void InitializeVariables(string exportFunction)
             {
-                _directoryFtpOut = Path.Combine(uaaDir, @"Data\ClientData\TXP\Services\Transport\Ftp\Out\");
-                _directoryEncrypted = Path.Combine(uaaDir, @"Data\Clientdata\TXP\Services\Transport\Ftp\Out\Market\Encrypted\");
-                _directoryDecrypted = Path.Combine(uaaDir, @"Data\Clientdata\TXP\Services\Transport\Ftp\Out\Market\Decrypted\");
-                _directoryArchive = Path.Combine(uaaDir, @"Data\Clientdata\TXP\Services\TransportArchive\Ftp\Out\");
-                _directoryException = Path.Combine(uaaDir, @"Data\Clientdata\TXP\Services\Transport\Ftp\Out\Market\Exception\");
+                _directoryFtpOut = Path.Combine(_uaaDir, @"Data\ClientData\TXP\Services\Transport\Ftp\Out\");
+                _directoryEncrypted = Path.Combine(_uaaDir, @"Data\Clientdata\TXP\Services\Transport\Ftp\Out\Market\Encrypted\");
+                _directoryDecrypted = Path.Combine(_uaaDir, @"Data\Clientdata\TXP\Services\Transport\Ftp\Out\Market\Decrypted\");
+                _directoryArchive = Path.Combine(_uaaDir, @"Data\Clientdata\TXP\Services\TransportArchive\Ftp\Out\");
+                _directoryException = Path.Combine(_uaaDir, @"Data\Clientdata\TXP\Services\Transport\Ftp\Out\Market\Exception\");
                 _pgpPassPhrase = "hokonxoyg";
-                _pgpEncryptionKey = Path.Combine(uqcDir, @"Data\PGPKeys\ista-na.asc");
-                _pgpSignatureKey = Path.Combine(uaaDir, @"Data\PGPKeys\ista-na.asc");
+                _pgpEncryptionKey = Path.Combine(_uqcDir, @"Data\PGPKeys\ista-na.asc");
+                _pgpSignatureKey = Path.Combine(_uaaDir, @"Data\PGPKeys\ista-na.asc");
                 _ftpRemoteServer = "localhost";
                 _ftpRemoteDirectory = string.Empty;
                 _ftpUserName = string.Empty;
@@ -179,7 +180,7 @@ b1x3zeE1G4Q4
             _clientConfiguration = Utility.SetSecurity(Utility.BillingAdminDEV, Utility.Clients["TXP"]);
             
             // Set culture to en-EN to prevent string manipulation issues in base code
-            SetThreadCulture("en-US");
+            Utility.SetThreadCulture("en-US");
             ExecuteExport();
             //ExecuteProcessTransactionRequests();
             //GenerateSimpleMarketTransactionEvaluationEvents();
@@ -249,12 +250,6 @@ b1x3zeE1G4Q4
         {
             var engine = new CIS.Engine.Event.Queue(Utility.BillingAdminDEV);
             engine.ProcessEventQueue(_clientConfiguration.ClientID, _clientConfiguration.ConnectionCsr, _clientConfiguration.ConnectionMarket, _clientConfiguration.ClientAbbreviation);
-        }
-
-        private static void SetThreadCulture(string culture)
-        {
-            Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo(culture);
-            Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo(culture);
         }
     }
 }
