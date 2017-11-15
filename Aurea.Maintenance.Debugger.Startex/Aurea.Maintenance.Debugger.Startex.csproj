@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A0DDF497-A69F-49C3-99B8-73833266DB9C}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Aurea.Maintenance.Debugger.Startex</RootNamespace>
+    <AssemblyName>Aurea.Maintenance.Debugger.Startex</AssemblyName>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Aspose.Cells, Version=4.4.0.0, Culture=neutral, PublicKeyToken=9a40d5a4b59e5256, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Resources\GACAssembliesDependencies\Aspose17.9\Aspose.Cells.dll</HintPath>
+    </Reference>
+    <Reference Include="Aspose.Email">
+      <HintPath>..\..\AureaCIS\Resources\GACAssembliesDependencies\Aspose17.9\Aspose.Email.dll</HintPath>
+    </Reference>
+    <Reference Include="Aspose.Pdf, Version=4.1.2.0, Culture=neutral, PublicKeyToken=716fcc553a201e56, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Resources\GACAssembliesDependencies\Aspose17.9\Aspose.Pdf.dll</HintPath>
+    </Reference>
+    <Reference Include="Aspose.Words, Version=13.7.0.0, Culture=neutral, PublicKeyToken=716fcc553a201e56, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Resources\GACAssembliesDependencies\Aspose17.9\Aspose.Words.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.BusinessEntity">
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.BusinessEntity.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Clients.StarTex">
+      <HintPath>..\..\AureaCIS\Clients\Startex\Deployment\Debug\bin\CIS.Clients.StarTex.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Components">
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Components.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Components.Invoice">
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Components.Invoice.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Correspondence.Core, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Correspondence.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Correspondence.Services.Client, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Correspondence.Services.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Domain\Invoice\InvoiceDebugger.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="Aspose.Words.Product.Family.lic">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Aurea.Maintenance.Debugger.Common\Aurea.Maintenance.Debugger.Common.csproj">
+      <Project>{5243be0e-a73b-4a56-b992-143871c94bd2}</Project>
+      <Name>Aurea.Maintenance.Debugger.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
