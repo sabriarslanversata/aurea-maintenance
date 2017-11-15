@@ -33,40 +33,29 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CIS.BusinessEntity">
-      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.BusinessEntity.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.BusinessEntity.dll</HintPath>
     </Reference>
-    <Reference Include="CIS.Clients">
-      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Clients.dll</HintPath>
-    </Reference>
-    <Reference Include="CIS.Clients.Spark">
-      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Clients.Spark.dll</HintPath>
-    </Reference>
-    <Reference Include="CIS.Components">
-      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Components.dll</HintPath>
-    </Reference>
-    <Reference Include="CIS.Components.Maintenance">
-      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Components.Maintenance.dll</HintPath>
+    <Reference Include="CIS.Element.Billing">
+      <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Element.Billing.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Engine.Event">
-      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Engine.Event.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Engine.Event.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Framework, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Framework.dll</HintPath>
-    </Reference>
-    <Reference Include="CIS.Framework.Event.EventGenerator">
-      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Framework.Event.EventGenerator.dll</HintPath>
-    </Reference>
-    <Reference Include="CIS.Framework.Event.EventGeneratorBase">
-      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Framework.Event.EventGeneratorBase.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Framework.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Framework.Event.EventHandler">
-      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Framework.Event.EventHandler.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Framework.Event.EventHandler.dll</HintPath>
     </Reference>
-    <Reference Include="CIS.Framework.Event.EventHandlerBase">
-      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Framework.Event.EventHandlerBase.dll</HintPath>
+    <Reference Include="CIS.Framework.Event.EventHandlerBase, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Framework.Event.EventHandlerBase.dll</HintPath>
     </Reference>
-    <Reference Include="CIS.Import, Version=16.1.0.0, Culture=neutral, PublicKeyToken=null" />
+    <Reference Include="Csla, Version=3.6.2.0, Culture=neutral, PublicKeyToken=93be5fdc093e4c30, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\aurea-aes-cis\Resources\GACAssembliesDependencies\Csla\3.6.2\Csla.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -77,6 +66,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="InvoiceDebugger.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

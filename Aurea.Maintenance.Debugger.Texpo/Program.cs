@@ -1,16 +1,17 @@
-﻿using System;
-using System.Collections;
-using System.IO;
-using System.Reflection;
-using System.Runtime.Remoting.Contexts;
-using System.Text;
-using System.Threading;
-using Aurea.Maintenance.Debugger.Common;
-
-
+﻿
 namespace Aurea.Maintenance.Debugger.Texpo
 {
+    using Aurea.Maintenance.Debugger.Common;
+    using Aurea.Maintenance.Debugger.Common.Models;
 
+    using System;
+    using System.Collections;
+    using System.IO;
+    using System.Reflection;
+    using System.Runtime.Remoting.Contexts;
+    using System.Text;
+    using System.Threading;
+    using Aurea.Maintenance.Debugger.Common;
     public class Program
     {
         private static CIS.BusinessEntity.GlobalApplicationConfigurationDS.GlobalApplicationConfiguration _clientConfiguration;

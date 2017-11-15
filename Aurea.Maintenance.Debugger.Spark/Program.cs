@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections;
-using Aurea.Maintenance.Debugger.Common;
-using System.Data.SqlClient;
-using System.Data;
-using CIS.Clients.Spark.Common;
-using CIS.Import;
-
-namespace Aurea.Maintenance.Debugger.Spark
+﻿namespace Aurea.Maintenance.Debugger.Spark
 {
+    using System;
+    using Aurea.Maintenance.Debugger.Common;
+    using Aurea.Maintenance.Debugger.Common.Models;
+
     public class Program
     {
         public class MyMaintenance : CIS.Clients.Spark.Maintenance
