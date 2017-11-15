@@ -66,6 +66,7 @@
     <Reference Include="CIS.Framework.Event.EventHandlerBase">
       <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Framework.Event.EventHandlerBase.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.Import, Version=16.1.0.0, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
