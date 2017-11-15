@@ -12,7 +12,7 @@
             // Set client configuration and then the application configuration context.            
             var clientConfig = ClientConfiguration.GetClientConfiguration(Clients.StarTex, Stages.Production);
             var applicationConfig = ClientConfiguration.SetConfigurationContext(clientConfig);
-
+            
             // Call debugger method
             InvoiceDebugger.InvoiceXmlGeneration(applicationConfig, clientConfig, 11945696);
             //InvoiceDebugger.InvoicePdfGeneration(11990281);

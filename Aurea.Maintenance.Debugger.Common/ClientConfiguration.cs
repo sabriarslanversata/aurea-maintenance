@@ -9,7 +9,7 @@
     using CIS.BusinessComponent;
     using CIS.BusinessEntity;
     using CIS.Framework.Security;
-    using Aurea.Maintenance.Debugger.Common.Models;
+    using Common.Models;
 
     public static class ClientConfiguration
     {

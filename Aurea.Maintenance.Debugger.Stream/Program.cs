@@ -1,51 +1,48 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
-using Aurea.Maintenance.Debugger.Common;
-
-using CIS.BusinessEntity;
-//using CIS.Element.Billing;
-//using Csla.Validation;
-
-using System.Data.SqlClient;
-
-namespace Aurea.Maintenance.Debugger.Stream
+﻿namespace Aurea.Maintenance.Debugger.Stream
 {
+    using System;
+    using System.Linq;
+    using System.Text;
+    using Common;
+    using Common.Models;
+    using CIS.BusinessEntity;
+    using System.Collections;
+    using System.Data;
+    using System.Data.SqlClient;
+    
+    using System.Collections.Generic;
+    
+
+
     class Program
     {
+        private static ClientEnvironmentConfiguration _clientConfig;
+        private static GlobalApplicationConfigurationDS.GlobalApplicationConfiguration _appConfig;
+
         static void Main(string[] args)
         {
-            var clientConfiguration = Utility.SetSecurity(Utility.BillingAdminDEV, Utility.Clients["SGE"]);
+            // Set client configuration and then the application configuration context.            
+            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.Stream, Stages.Development);
+            _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
 
             //SimulatePostEnrollmentEvent(clientConfiguration);
-            CreateMockData(clientConfiguration);
-            SimulateInbound814E(clientConfiguration);
+            CreateMockData();
+            SimulateInbound814E();
         }
 
         #region private methods
 
-        private static void SimulateInbound814E(GlobalApplicationConfigurationDS.GlobalApplicationConfiguration clientConfiguration)
+        private static void SimulateInbound814E()
         {
-            // Set culture to en-EN to prevent string manipulation issues in base code
-            Utility.SetThreadCulture("en-US");
-
-            var engine = new CIS.Engine.Event.Queue(Utility.BillingAdminDEV);
-            engine.ProcessEventQueue(clientConfiguration.ClientID, clientConfiguration.ConnectionCsr, clientConfiguration.ConnectionMarket, clientConfiguration.ClientAbbreviation);
+            var engine = new CIS.Engine.Event.Queue(_clientConfig.ConnectionBillingAdmin);
+            engine.ProcessEventQueue(_clientConfig.ClientId, _appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _appConfig.ClientAbbreviation);
         }
 
-        private static void SimulatePostEnrollmentEvent(GlobalApplicationConfigurationDS.GlobalApplicationConfiguration clientConfiguration)
+        private static void SimulatePostEnrollmentEvent()
         {
-            // Set culture to en-EN to prevent string manipulation issues in base code
-            SetThreadCulture("en-US");
-
             var pe = new CIS.Clients.Stream.PostEnrollment
             {
-                ConnectionString = clientConfiguration.ConnectionCsr
+                ConnectionString = _appConfig.ConnectionCsr
             };
             pe.Process(30396997);
         }
@@ -55,7 +52,7 @@ namespace Aurea.Maintenance.Debugger.Stream
         #region helper methods
         
 
-        private static void CreateMockData(GlobalApplicationConfigurationDS.GlobalApplicationConfiguration clientConfiguration)
+        private static void CreateMockData()
         {
             var sqlString = @"
                 -- begin create mock data
@@ -303,7 +300,7 @@ namespace Aurea.Maintenance.Debugger.Stream
                 SELECT @CustomerEventActionQueueId, 28, 'A', 0
                 ";
 
-            using (IDbConnection connection = new SqlConnection(clientConfiguration.ConnectionCsr))
+            using (IDbConnection connection = new SqlConnection(_appConfig.ConnectionCsr))
             {
                 connection.Open();
                 var cmd = connection.CreateCommand();

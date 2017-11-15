@@ -1,20 +1,21 @@
 ﻿
+using CIS.BusinessEntity;
+
 namespace Aurea.Maintenance.Debugger.Texpo
 {
-    using Aurea.Maintenance.Debugger.Common;
-    using Aurea.Maintenance.Debugger.Common.Models;
+    using Common;
+    using Common.Models;
 
     using System;
     using System.Collections;
     using System.IO;
     using System.Reflection;
-    using System.Runtime.Remoting.Contexts;
     using System.Text;
-    using System.Threading;
-    using Aurea.Maintenance.Debugger.Common;
+
     public class Program
     {
-        private static CIS.BusinessEntity.GlobalApplicationConfigurationDS.GlobalApplicationConfiguration _clientConfiguration;
+        private static ClientEnvironmentConfiguration _clientConfig;
+        private static GlobalApplicationConfigurationDS.GlobalApplicationConfiguration _appConfig;
 
         public class MyExport : CIS.Clients.Texpo.Export.MainProcess//CIS.Export.BaseExport
         {
@@ -80,7 +81,7 @@ namespace Aurea.Maintenance.Debugger.Texpo
                 _marketFileVersion = "3.0";
                 _serviceInterval = 5;
                 _historicalUsageRequestType = "HU";
-                _clientID = Utility.Clients["TXP"];
+                _clientID = _clientConfig.ClientId;
                 if(!Directory.Exists(_directoryDecrypted))
                     Directory.CreateDirectory(_directoryDecrypted);
 
@@ -155,7 +156,7 @@ b1x3zeE1G4Q4
 
             }
         }
-        
+
         /*
         private static TaskContext CreateContext()
         {
@@ -176,12 +177,13 @@ b1x3zeE1G4Q4
             };
         }
         */
+
         public static void Main(string[] args)
         {
-            _clientConfiguration = Utility.SetSecurity(Utility.BillingAdminDEV, Utility.Clients["TXP"]);
+            // Set client configuration and then the application configuration context.            
+            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.Texpo, Stages.Development);
+            _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
             
-            // Set culture to en-EN to prevent string manipulation issues in base code
-            Utility.SetThreadCulture("en-US");
             ExecuteExport();
             //ExecuteProcessTransactionRequests();
             //GenerateSimpleMarketTransactionEvaluationEvents();
@@ -200,7 +202,7 @@ b1x3zeE1G4Q4
         private static void ExecuteExport()
         {
             //exec csp_GetServiceMethods 2 (Export = ExportTransactions, EncryptFiles, TransmitFiles, ExportLoadForecasting, ProcessEFTPayments, RunAutoDNPProcess, LogService)
-            var myExport = new MyExport(_clientConfiguration.ConnectionMarket, _clientConfiguration.ConnectionCsr, Utility.BillingAdminDEV);
+            var myExport = new MyExport(_appConfig.ConnectionMarket, _appConfig.ConnectionCsr, _clientConfig.ConnectionBillingAdmin);
             myExport.MyExportTransactions();
             //myExport.EncryptFiles();
             //myExport.MyTransmitFiles();
@@ -225,8 +227,8 @@ b1x3zeE1G4Q4
         private static void GenerateSimpleMarketTransactionEvaluationEvents()
         {
             var hashTable = new Hashtable();
-            var gen1 = new CIS.Framework.Event.EventGenerator.CustomerEvaluation(_clientConfiguration.ConnectionCsr, Utility.BillingAdminDEV);
-            if (gen1.Generate(Utility.Clients["TXP"], hashTable))
+            var gen1 = new CIS.Framework.Event.EventGenerator.CustomerEvaluation(_appConfig.ConnectionCsr, _clientConfig.ConnectionBillingAdmin);
+            if (gen1.Generate(_clientConfig.ClientId, hashTable))
             {
                 Console.WriteLine("CustomerEvaluation Events Generated");
             }
@@ -234,10 +236,10 @@ b1x3zeE1G4Q4
             {
                 Console.WriteLine("CustomerEvaluation Events could not generated");
             }
-            var gen = new CIS.Framework.Event.EventGenerator.SimpleMarketTransactionEvaluation(_clientConfiguration.ConnectionCsr, Utility.BillingAdminDEV);
+            var gen = new CIS.Framework.Event.EventGenerator.SimpleMarketTransactionEvaluation(_appConfig.ConnectionCsr, _clientConfig.ConnectionBillingAdmin);
             
 
-            if (gen.Generate(Utility.Clients["TXP"], hashTable))
+            if (gen.Generate(_clientConfig.ClientId, hashTable))
             {
                 Console.WriteLine("SimpleMarketTransactionEvaluation Events Generated");
             }
@@ -249,8 +251,8 @@ b1x3zeE1G4Q4
 
         private static void ProcessEvents()
         {
-            var engine = new CIS.Engine.Event.Queue(Utility.BillingAdminDEV);
-            engine.ProcessEventQueue(_clientConfiguration.ClientID, _clientConfiguration.ConnectionCsr, _clientConfiguration.ConnectionMarket, _clientConfiguration.ClientAbbreviation);
+            var engine = new CIS.Engine.Event.Queue(_clientConfig.ConnectionBillingAdmin);
+            engine.ProcessEventQueue(_appConfig.ClientID, _appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _appConfig.ClientAbbreviation);
         }
     }
 }

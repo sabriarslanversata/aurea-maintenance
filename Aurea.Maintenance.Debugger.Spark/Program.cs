@@ -1,8 +1,13 @@
 ﻿namespace Aurea.Maintenance.Debugger.Spark
 {
     using System;
-    using Aurea.Maintenance.Debugger.Common;
-    using Aurea.Maintenance.Debugger.Common.Models;
+    using Common;
+    using Common.Models;
+    using CIS.BusinessEntity;
+    using System.Collections;
+    using System.Data;
+    using System.Data.SqlClient;
+    using CIS.Framework.Common;
 
     public class Program
     {
@@ -46,13 +51,17 @@
 
             }
         }
-        private static CIS.BusinessEntity.GlobalApplicationConfigurationDS.GlobalApplicationConfiguration _clientConfiguration;
+
+        private static ClientEnvironmentConfiguration _clientConfig;
+        private static GlobalApplicationConfigurationDS.GlobalApplicationConfiguration _appConfig;
 
         public static void Main(string[] args)
         {
-            _clientConfiguration = Utility.SetSecurity(Utility.BillingAdminDEV, Utility.Clients["SPK"]);
-            // Set culture to en-EN to prevent string manipulation issues in base code
-            Utility.SetThreadCulture("en-US");
+            // Set client configuration and then the application configuration context.            
+            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.StarTex, Stages.Development);
+            _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
+
+            
             simulateAESCIS14129("002576466");
             //ProcessEvents();
 
@@ -84,11 +93,11 @@
         {
             var baseImport = new MyImport()
             {
-                ConnectionAdmin = Utility.BillingAdminDEV,
-                ConnectionMarket = _clientConfiguration.ConnectionMarket,
-                ConnectionCsr = _clientConfiguration.ConnectionCsr,
-                ClientID = Utility.Clients["SPK"],
-                Client = "SPK"
+                ConnectionAdmin = _clientConfig.ConnectionBillingAdmin,
+                ConnectionMarket = _appConfig.ConnectionMarket,
+                ConnectionCsr = _appConfig.ConnectionCsr,
+                ClientID = _clientConfig.ClientId,
+                Client = _clientConfig.Client
                 
             };
             baseImport.myImportTransaction();
@@ -99,16 +108,15 @@
             
             var htParams = new Hashtable() { { "EventTypeID", 10 } }; ;
 
-            var gen = new CIS.Framework.Event.EventGenerator.SimpleMarketTransactionEvaluation(
-                _clientConfiguration.ConnectionCsr, Utility.BillingAdminDEV)
+            var gen = new CIS.Framework.Event.EventGenerator.SimpleMarketTransactionEvaluation(_appConfig.ConnectionCsr, _clientConfig.ConnectionBillingAdmin)
             {
-                ConnectionStringBillingAdmin = Utility.BillingAdminDEV,
-                ConnectionStringCsr = _clientConfiguration.ConnectionCsr,
-                Client = "SPK",
-                ClientID = Utility.Clients["SPK"]
+                ConnectionStringBillingAdmin = _clientConfig.ConnectionBillingAdmin,
+                ConnectionStringCsr = _appConfig.ConnectionCsr,
+                Client = _clientConfig.Client,
+                ClientID = _clientConfig.ClientId
             };
 
-            gen.Generate(Utility.Clients["SPK"], htParams);
+            gen.Generate(_clientConfig.ClientId, htParams);
             /*
             var maintenance = new MyMaintenance(_clientConfiguration.ConnectionCsr, _clientConfiguration.ConnectionMarket, Utility.BillingAdminDEV);
             //will create events for all configured eventtype on client
@@ -121,7 +129,7 @@
 
         private static void GenerateEventsForLetterGeneration()
         {
-            var maintenance = new MyMaintenance(_clientConfiguration.ConnectionCsr, _clientConfiguration.ConnectionMarket, Utility.BillingAdminDEV);
+            var maintenance = new MyMaintenance(_appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _clientConfig.ConnectionBillingAdmin);
             //will create events for all configured eventtype on client
             //maintenance.GenerateEvents();
 
@@ -135,8 +143,8 @@
 
         private static void ProcessEvents()
         {
-            var engine = new CIS.Engine.Event.Queue(Utility.BillingAdminDEV);
-            engine.ProcessEventQueue(_clientConfiguration.ClientID, _clientConfiguration.ConnectionCsr, _clientConfiguration.ConnectionMarket, _clientConfiguration.ClientAbbreviation);
+            var engine = new CIS.Engine.Event.Queue(_clientConfig.ConnectionBillingAdmin);
+            engine.ProcessEventQueue(_appConfig.ClientID, _appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _appConfig.ClientAbbreviation);
         }
 
         private static void PrepareMockDataForLetterGeneration()
@@ -428,12 +436,12 @@ UPDATE daes_BillingAdmin..EventActionQueue SET ScheduledDate = '{scheduleDate.To
 ";
             DB.ExecuteQuery(sql);
         }
-
+        
         public sealed class DB
         {
             public static void ExecuteQuery(string sql)
             {
-                using (IDbConnection connection = new SqlConnection(_clientConfiguration.ConnectionCsr))
+                using (IDbConnection connection = new SqlConnection(_appConfig.ConnectionCsr))
                 {
                     connection.Open();
                     var cmd = connection.CreateCommand();
