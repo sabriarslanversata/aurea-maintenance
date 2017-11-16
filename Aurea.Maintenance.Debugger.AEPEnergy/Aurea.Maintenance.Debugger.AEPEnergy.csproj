@@ -62,6 +62,9 @@
     <Reference Include="CIS.Framework.Event.EventGeneratorBase">
       <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Framework.Event.EventGeneratorBase.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.Framework.Event.EventHandler">
+      <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Framework.Event.EventHandler.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.Import">
       <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Import.dll</HintPath>
     </Reference>

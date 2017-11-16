@@ -72,8 +72,8 @@
         private static void Simulate_AESCIS17193(string custNo)
         {
             CopyCustomer(custNo);
-            CopyRate(custNo);
             ClearOldRecords(custNo);
+            CopyRate(custNo);
             Create814EMarketMock(custNo, DateTime.Now);
             ImportTransaction();
             GenerateEventsFor814Market();
