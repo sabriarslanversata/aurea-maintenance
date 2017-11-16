@@ -1,6 +1,4 @@
-﻿
-
-namespace Aurea.Maintenance.Debugger.AEPEnergy
+﻿namespace Aurea.Maintenance.Debugger.AEPEnergy
 {
     using System;
     using System.Collections.Generic;
@@ -13,6 +11,49 @@ namespace Aurea.Maintenance.Debugger.AEPEnergy
     using Common;
     using Common.Models;
     using CIS.BusinessEntity;
+    using System.Collections;
+    using CIS.Framework.Common;
+
+    public class MyImport : CIS.Import.BaseImport
+    {
+        public MyImport() : base()
+        {
+            Client = ClientConfigurationFactory.ClientCode;
+            ServiceName = "Import";
+        }
+
+        public MyImport(string connectionMarket, string connectionCsr, string connectionTdsp,
+            string connectionAdmin) : base(connectionMarket, connectionCsr, connectionTdsp, connectionAdmin)
+        {
+            Client = ClientConfigurationFactory.ClientCode;
+            ServiceName = "Import";
+        }
+
+        public void MyImportTransaction()
+        {
+            this.ImportTransaction();
+
+        }
+    }
+
+    public class MyMaintenance : CIS.Clients.AEPEnergy.Maintenance
+    {
+        public MyMaintenance(string connectionCsr, string connectionMarket, string connectionAdmin)
+            : base(connectionCsr, connectionMarket, connectionAdmin)
+        {
+            //
+        }
+
+        public override void InitializeVariables(string maintenanceFunction)
+        {
+            _runHour = "*";
+            _runDay = "*";
+            _runDayOfWeek = "*";
+            _isEnabled = true;
+            SkipIsValidRuntimeVerification = true;
+            _lastRunTime = DateTime.Now.AddYears(-1);
+        }
+    }
 
     class Program
     {
@@ -22,20 +63,69 @@ namespace Aurea.Maintenance.Debugger.AEPEnergy
         static void Main(string[] args)
         {
             // Set client configuration and then the application configuration context.            
-            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.StarTex, Stages.Development);
+            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.AEP, Stages.Development);
             _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
 
+            Simulate_AESCIS17193("4184386");
         }
 
-        private static void Simulate_AESCIS17193()
+        private static void Simulate_AESCIS17193(string custNo)
         {
-            
+            CopyCustomer(custNo);
+            CopyRate(custNo);
+            ClearOldRecords(custNo);
+            Create814EMarketMock(custNo, DateTime.Now);
+            ImportTransaction();
+            GenerateEventsFor814Market();
+            ProcessEvents();
+            //ProductRolloverProcessor
         }
 
-        private static void Simulate814E()
+        private static void ImportTransaction()
         {
-            
+            var baseImport = new MyImport()
+            {
+                ConnectionAdmin = _clientConfig.ConnectionBillingAdmin,
+                ConnectionMarket = _appConfig.ConnectionMarket,
+                ConnectionCsr = _appConfig.ConnectionCsr,
+                ClientID = _clientConfig.ClientId,
+                Client = _clientConfig.Client
+
+            };
+            baseImport.MyImportTransaction();
         }
+
+        private static void GenerateEventsFor814Market()
+        {
+
+            var htParams = new Hashtable() { { "EventTypeID", 10 } }; ;
+
+            var gen = new CIS.Framework.Event.EventGenerator.SimpleMarketTransactionEvaluation(_appConfig.ConnectionCsr, _clientConfig.ConnectionBillingAdmin)
+            {
+                ConnectionStringBillingAdmin = _clientConfig.ConnectionBillingAdmin,
+                ConnectionStringCsr = _appConfig.ConnectionCsr,
+                Client = _clientConfig.Client,
+                ClientID = _clientConfig.ClientId
+            };
+
+            gen.Generate(_clientConfig.ClientId, htParams);
+
+            /*
+            var maintenance = new MyMaintenance(_clientConfiguration.ConnectionCsr, _clientConfiguration.ConnectionMarket, Utility.BillingAdminDEV);
+            //will create events for all configured eventtype on client
+            maintenance.GenerateEvents();
+
+            //will create event queue for CTR
+            //maintenance.Sim();
+            */
+        }
+
+        private static void ProcessEvents()
+        {
+            var engine = new CIS.Engine.Event.Queue(_clientConfig.ConnectionBillingAdmin);
+            engine.ProcessEventQueue(_appConfig.ClientID, _appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _appConfig.ClientAbbreviation);
+        }
+
         private static void ClearOldRecords(string custNo)
         {
             string sql = $@"
@@ -44,22 +134,66 @@ DECLARE @CustNo AS VARCHAR(20) = '{custNo}'
 DECLARE @CustID AS INT = (SELECT CustID FROM saes_AEPEnergy..Customer WHERE CustNo = @CustNo)
 DECLARE @PremID AS INT = (SELECT PremId FROM saes_AEPEnergy..Premise WHERE CustId = @CustID)
 
-DELETE FROM daes_AEPEnergyMarket..tbl_814_Service_Status WHERE Service_Key IN (22791310, 22916323)
-DELETE FROM daes_AEPEnergyMarket..tbl_814_Service_Account_Change WHERE Service_Key IN (22791310, 22916323)
-DELETE FROM daes_AEPEnergyMarket..tbl_814_Service_Date WHERE Service_Key IN (22791310, 22916323)
-DELETE FROM daes_AEPEnergyMarket..tbl_814_Service_Reject WHERE Service_Key IN (22791310, 22916323)
-DELETE FROM daes_AEPEnergyMarket..tbl_814_Service WHERE [814_Key] IN (22748557,  22873520)
-DELETE FROM daes_AEPEnergyMarket..tbl_814_header WHERE [814_Key] IN (22748557,  22873520)
-DELETE FROM daes_AEPEnergy..CustomerTransactionRequest WHERE SourceId IN (22748557,  22873520)
+DELETE FROM daes_AEPEnergyMarket..tbl_814_Service_Date WHERE Service_Key IN (2144892)
+DELETE FROM daes_AEPEnergyMarket..tbl_814_Service_Meter WHERE Service_Key IN (2144892)
+DELETE FROM daes_AEPEnergyMarket..tbl_814_Service WHERE [814_Key] IN (2154897)
+DELETE FROM daes_AEPEnergyMarket..tbl_814_header WHERE [814_Key] IN (2154897)
+DELETE FROM daes_AEPEnergy..CustomerTransactionRequest WHERE SourceId IN (2154897)
 
-DELETE FROM daes_BillingAdmin..EventingQueue WHERE ClientId = 48 AND EventingQueueId IN (SELECT EventingQueueId FROM daes_BillingAdmin..EventActionQueue WHERE CustId = @CustId)
+DELETE FROM daes_BillingAdmin..EventingQueue WHERE ClientId = 52 AND EventingQueueId IN (SELECT EventingQueueId FROM daes_BillingAdmin..EventActionQueue WHERE CustId = @CustId)
 DELETE FROM daes_BillingAdmin..EventActionQueueParameter WHERE EventActionQueueId IN (SELECT EventActionQueueId FROM daes_BillingAdmin..EventActionQueue WHERE CustId = @CustId)
 DELETE FROM daes_BillingAdmin..EventActionQueue WHERE CustId = @CustId
 
 DELETE FROM daes_AEPEnergy..ChangeLogDetail WHERE ChangeLogID IN (SELECT ChangeLogID FROM daes_AEPEnergy..ChangeLog WHERE CustID = @CustId OR PremID = @PremID)
 
 DELETE FROM daes_AEPEnergy..ChangeLog WHERE (CustID = @CustId OR PremID = @PremID)
-UPDATE daes_AEPEnergy..Premise SET StatusId = 10 WHERE CustId = @CustId";
+
+UPDATE daes_AEPEnergy..Premise SET StatusId = 0/*, BeginServiceDate = NULL*/ WHERE CustId = @CustId
+
+DELETE FROM daes_AEPEnergy..EnrollCustomer 
+WHERE
+ CsrCustId = @CustId
+
+DELETE FROM daes_AEPEnergy..RateDetail 
+WHERE
+ RateDetId in (
+ SELECT RateDetId FROM saes_AEPEnergy..RateDetail WHERE
+  RateId = (SELECT RateId FROM saes_AEPEnergy..Customer WHERE CustId = @CustId) 
+  AND RateTransitionId IN (SELECT RateTransitionId from saes_AEPEnergy..RateTransition WHERE CustId = @CustId AND RolloverFlag = 0)
+ UNION
+ SELECT RateDetId FROM saes_AEPEnergy..RateDetail WHERE RateId IN (SELECT RateId FROM saes_AEPEnergy..RateTransition WHERE CustId = @CustId)
+ )
+
+DELETE FROM daes_AEPEnergy..Product
+WHERE
+ RateId in (
+ SELECT RateId FROM saes_AEPEnergy..Customer WHERE CustId = @CustId
+ UNION
+ SELECT RateId FROM saes_AEPEnergy..RateTransition WHERE CustId = @CustId
+ )
+ 
+
+DELETE FROM daes_AEPEnergy..RateTransition 
+WHERE
+ RateTransitionID in (
+ SELECT RateTransitionID FROM saes_AEPEnergy..RateTransition WHERE CustId = @CustId
+ UNION
+ SELECT RateTransitionID FROM saes_AEPEnergy..RateTransition WHERE RateId = (SELECT RateId FROM saes_AEPEnergy..Customer WHERE CustId = @CustId)
+ )
+
+DELETE FROM daes_AEPEnergy..RateTransition 
+WHERE CustId = @CustID
+
+DELETE FROM daes_AEPEnergy..Rate
+WHERE
+ RateID in (
+ SELECT RateId FROM saes_AEPEnergy..Customer WHERE CustId = @CustId
+ UNION
+ SELECT RateId FROM saes_AEPEnergy..RateTransition WHERE CustId = @CustId
+ )
+
+
+";
             try
             {
                 DB.ExecuteQuery(sql);
@@ -77,57 +211,18 @@ UPDATE daes_AEPEnergy..Premise SET StatusId = 10 WHERE CustId = @CustId";
             }
         }
 
-        private static void Create814DMarketMock(string custNo, DateTime transactionDate, DateTime requestDate)
-        {
-            string sql = $@"PRINT 'BEGIN Copy Market Header 814_D Files'
-USE daes_AEPEnergyMarket
-DECLARE @CustNo AS VARCHAR(20) = '{custNo}'
-DECLARE @CustID AS INT = (SELECT CustID FROM saes_AEPEnergy..Customer WHERE CustNo = @CustNo)
-SET IDENTITY_INSERT daes_AEPEnergyMarket..tbl_814_header ON
-INSERT INTO daes_AEPEnergyMarket..tbl_814_header ([814_Key], [MarketFileId], [TransactionSetId], [TransactionSetControlNbr], [TransactionSetPurposeCode], [TransactionNbr], [TransactionDate], [ReferenceNbr], [ActionCode], [TdspDuns], [TdspName], [CrDuns], [CrName], [ProcessFlag], [ProcessDate], [Direction], [TransactionTypeID], [MarketID], [ProviderID], [POLRClass], [TransactionTime], [TransactionTimeCode], [TransactionQueueTypeID], [TransactionQualifier], [CreateDate])
-SELECT  [814_Key], [MarketFileId], [TransactionSetId], [TransactionSetControlNbr], [TransactionSetPurposeCode], [TransactionNbr], '{transactionDate.ToString("yyyy-MM-dd")}', [ReferenceNbr], [ActionCode], [TdspDuns], [TdspName], [CrDuns], [CrName], 0/*[ProcessFlag]*/, NULL/*[ProcessDate]*/, [Direction], [TransactionTypeID], [MarketID], [ProviderID], [POLRClass], [TransactionTime], [TransactionTimeCode], [TransactionQueueTypeID], [TransactionQualifier], [CreateDate]
-FROM   saes_AEPEnergyMarket..tbl_814_header sh 
-WHERE TransactionSetId = '814' AND ActionCode = 'D' AND TransactionTypeId = 43 AND [814_Key] IN (SELECT SourceId FROM saes_AEPEnergy..CustomerTransactionRequest WHERE CustID = @CustID AND TransactionTypeId = 43)
-AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergyMarket..tbl_814_header dh WHERE sh.[814_Key] = dh.[814_Key] )
-SET IDENTITY_INSERT daes_AEPEnergyMarket..tbl_814_header OFF
-
-SET IDENTITY_INSERT daes_AEPEnergyMarket..tbl_814_Service ON
-INSERT INTO daes_AEPEnergyMarket..tbl_814_Service ([Service_Key], [814_Key], [AssignId], [ServiceTypeCode1], [ServiceType1], [ServiceTypeCode2], [ServiceType2], [ServiceTypeCode3], [ServiceType3], [ServiceTypeCode4], [ServiceType4], [ActionCode], [MaintenanceTypeCode], [DistributionLossFactorCode], [PremiseType], [BillType], [BillCalculator], [EsiId], [StationId], [SpecialNeedsIndicator], [PowerRegion], [EnergizedFlag], [EsiIdStartDate], [EsiIdEndDate], [EsiIdEligibilityDate], [NotificationWaiver], [SpecialReadSwitchDate], [PriorityCode], [PermitIndicator], [RTODate], [RTOTime], [CSAFlag], [MembershipID], [ESPAccountNumber], [LDCBillingCycle], [LDCBudgetBillingCycle], [WaterHeaters], [LDCBudgetBillingStatus], [PaymentArrangement], [NextMeterReadDate], [ParticipatingInterest], [EligibleLoadPercentage], [TaxExemptionPercent], [CapacityObligation], [TransmissionObligation], [TotalKWHHistory], [NumberOfMonthsHistory], [PeakDemandHistory], [AirConditioners], [PreviousEsiId], [GasPoolId], [LBMPZone], [ResidentialTaxPortion], [ESPCommodityPrice], [ESPFixedCharge], [ESPChargesCommTaxRate], [ESPChargesResTaxRate], [GasSupplyServiceOption], [FundsAuthorization], [BudgetBillingStatus], [FixedMonthlyCharge], [TaxRate], [CommodityPrice], [MeterCycleCodeDesc], [BillCycleCodeDesc], [FeeApprovedApplied], [MarketerCustomerAccountNumber], [GasSupplyServiceOptionCode], [HumanNeeds], [ReinstatementDate], [MeterCycleCode], [SystemNumber], [StateLicenseNumber], [SupplementalAccountNumber], [NewCustomerIndicator], [PaymentCategory], [PreviousESPAccountNumber], [RenewableEnergyIndicator], [SICCode], [ApprovalCodeIndicator], [RenewableEnergyCertification], [NewPremiseIndicator], [SalesResponsibility], [CustomerReferenceNumber], [TransactionReferenceNumber], [ESPTransactionNumber], [OldESPAccountNumber], [DFIIdentificationNumber], [DFIAccountNumber], [DFIIndicator1], [DFIIndicator2], [DFIQualifier], [DFIRoutingNumber], [SpecialReadSwitchTime], [LDCAccountBalance], [DisputedAmount], [CurrentBalance], [ArrearsBalance], [LDCSupplierBalance], [BudgetPlan], [BudgetInstallment], [Deposit], [RemainingUtilBalanceBucket1], [RemainingUtilBalanceBucket2], [RemainingUtilBalanceBucket3], [RemainingUtilBalanceBucket4], [RemainingUtilBalanceBucket5], [RemainingUtilBalanceBucket6], [IntervalStatusType], [CustomerAuthorization], [UnmeteredAcct], [PaymentOption], [MaxDailyAmt], [MeterAccessNote], [SpecialNeedsExpirationDate], [SwitchHoldStatusIndicator], [SpecialMeterConfig], [MaximumGeneration], [ServiceDeliveryPoint], [IgnoreRescind], [GasCapacityAssignment], [CPAEnrollmentTypes], [DaysInArrears], [RU_Notes], [RD_SiteCharacterDate], [SupplierPricingStructureNr], [SupplierGroupNumber], [IndustrialClassificationCode], [UtilityTaxExemptStatus], [AccountSettlementIndicator], [NypaDiscountIndicator], [UtilityDiscount], [IcapEffectiveDate], [FutureIcapEffectiveDate], [FutureIcap], [ChangeCancellationFee], [CancellationFee], [MunicipalAggregation])
-SELECT  [Service_Key], [814_Key], [AssignId], [ServiceTypeCode1], [ServiceType1], [ServiceTypeCode2], [ServiceType2], [ServiceTypeCode3], [ServiceType3], [ServiceTypeCode4], [ServiceType4], [ActionCode], [MaintenanceTypeCode], [DistributionLossFactorCode], [PremiseType], [BillType], [BillCalculator], [EsiId], [StationId], [SpecialNeedsIndicator], [PowerRegion], [EnergizedFlag], [EsiIdStartDate], [EsiIdEndDate], [EsiIdEligibilityDate], [NotificationWaiver], '{requestDate.ToString("yyyy-MM-dd")}', [PriorityCode], [PermitIndicator], [RTODate], [RTOTime], [CSAFlag], [MembershipID], [ESPAccountNumber], [LDCBillingCycle], [LDCBudgetBillingCycle], [WaterHeaters], [LDCBudgetBillingStatus], [PaymentArrangement], [NextMeterReadDate], [ParticipatingInterest], [EligibleLoadPercentage], [TaxExemptionPercent], [CapacityObligation], [TransmissionObligation], [TotalKWHHistory], [NumberOfMonthsHistory], [PeakDemandHistory], [AirConditioners], [PreviousEsiId], [GasPoolId], [LBMPZone], [ResidentialTaxPortion], [ESPCommodityPrice], [ESPFixedCharge], [ESPChargesCommTaxRate], [ESPChargesResTaxRate], [GasSupplyServiceOption], [FundsAuthorization], [BudgetBillingStatus], [FixedMonthlyCharge], [TaxRate], [CommodityPrice], [MeterCycleCodeDesc], [BillCycleCodeDesc], [FeeApprovedApplied], [MarketerCustomerAccountNumber], [GasSupplyServiceOptionCode], [HumanNeeds], [ReinstatementDate], [MeterCycleCode], [SystemNumber], [StateLicenseNumber], [SupplementalAccountNumber], [NewCustomerIndicator], [PaymentCategory], [PreviousESPAccountNumber], [RenewableEnergyIndicator], [SICCode], [ApprovalCodeIndicator], [RenewableEnergyCertification], [NewPremiseIndicator], [SalesResponsibility], [CustomerReferenceNumber], [TransactionReferenceNumber], [ESPTransactionNumber], [OldESPAccountNumber], [DFIIdentificationNumber], [DFIAccountNumber], [DFIIndicator1], [DFIIndicator2], [DFIQualifier], [DFIRoutingNumber], [SpecialReadSwitchTime], [LDCAccountBalance], [DisputedAmount], [CurrentBalance], [ArrearsBalance], [LDCSupplierBalance], [BudgetPlan], [BudgetInstallment], [Deposit], [RemainingUtilBalanceBucket1], [RemainingUtilBalanceBucket2], [RemainingUtilBalanceBucket3], [RemainingUtilBalanceBucket4], [RemainingUtilBalanceBucket5], [RemainingUtilBalanceBucket6], [IntervalStatusType], [CustomerAuthorization], [UnmeteredAcct], [PaymentOption], [MaxDailyAmt], [MeterAccessNote], [SpecialNeedsExpirationDate], [SwitchHoldStatusIndicator], [SpecialMeterConfig], [MaximumGeneration], [ServiceDeliveryPoint], [IgnoreRescind], [GasCapacityAssignment], [CPAEnrollmentTypes], [DaysInArrears], [RU_Notes], [RD_SiteCharacterDate], [SupplierPricingStructureNr], [SupplierGroupNumber], [IndustrialClassificationCode], [UtilityTaxExemptStatus], [AccountSettlementIndicator], [NypaDiscountIndicator], [UtilityDiscount], [IcapEffectiveDate], [FutureIcapEffectiveDate], [FutureIcap], [ChangeCancellationFee], [CancellationFee], [MunicipalAggregation]
-FROM   saes_AEPEnergyMarket..tbl_814_Service ss
-WHERE [814_Key] IN  (SELECT SourceId FROM saes_AEPEnergy..CustomerTransactionRequest WHERE CustID = @CustID AND TransactionTypeId = 43)
-AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergyMarket..tbl_814_Service ds WHERE ss.[814_Key] = ds.[814_Key] )
-SET IDENTITY_INSERT daes_AEPEnergyMarket..tbl_814_Service OFF
-
-SET IDENTITY_INSERT daes_AEPEnergyMarket..tbl_814_Service_Status ON
-INSERT INTO daes_AEPEnergyMarket..tbl_814_Service_Status ([Status_Key], [Service_Key], [StatusCode], [StatusReason], [StatusType])
-SELECT  [Status_Key], [Service_Key], [StatusCode], [StatusReason], [StatusType]
-FROM   saes_AEPEnergyMarket..tbl_814_Service_Status ss
-WHERE [Service_Key] IN  (SELECT Service_Key FROM daes_AEPEnergyMarket..tbl_814_Service WHERE [814_Key] IN (SELECT [814_Key] FROM saes_AEPEnergy..CustomerTransactionRequest WHERE CustID = @CustID AND TransactionTypeId = 43))
-AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergyMarket..tbl_814_Service_Status dss WHERE ss.[Service_Key] = dss.[Service_Key] )
-SET IDENTITY_INSERT daes_AEPEnergyMarket..tbl_814_Service_Status OFF
-
-SET IDENTITY_INSERT daes_AEPEnergyMarket..tbl_814_Service_Date ON
-INSERT INTO daes_AEPEnergyMarket..tbl_814_Service_Date ([Date_Key], [Service_Key], [Qualifier], [Date], [Time], [TimeCode], [PeriodFormat], [Period], [NotesDate])
-SELECT  [Date_Key], [Service_Key], [Qualifier], [Date], [Time], [TimeCode], [PeriodFormat], [Period], [NotesDate]
-FROM   saes_AEPEnergyMarket..tbl_814_Service_Date ss
-WHERE [Service_Key] IN (SELECT Service_Key FROM daes_AEPEnergyMarket..tbl_814_Service WHERE [814_Key] IN (SELECT [814_Key] FROM saes_AEPEnergy..CustomerTransactionRequest WHERE CustID = @CustID AND TransactionTypeId = 43))
-AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergyMarket..tbl_814_Service_Date dss WHERE ss.[Service_Key] = dss.[Service_Key] )
-SET IDENTITY_INSERT daes_AEPEnergyMarket..tbl_814_Service_Date OFF";
-            DB.ExecuteQuery(sql);
-        }
-
-        private static void Create814RMarketMock(string custNo, DateTime transactionDate)
+        private static void Create814EMarketMock(string custNo, DateTime transactionDate)
         {
             string sql = $@"PRINT 'BEGIN Copy Market Header 814_R Files'
 USE daes_AEPEnergyMarket
 DECLARE @CustNo AS VARCHAR(20) = '{custNo}'
 DECLARE @CustID AS INT = (SELECT CustID FROM saes_AEPEnergy..Customer WHERE CustNo = @CustNo)
+
 SET IDENTITY_INSERT daes_AEPEnergyMarket..tbl_814_header ON
 INSERT INTO daes_AEPEnergyMarket..tbl_814_header ([814_Key], [MarketFileId], [TransactionSetId], [TransactionSetControlNbr], [TransactionSetPurposeCode], [TransactionNbr], [TransactionDate], [ReferenceNbr], [ActionCode], [TdspDuns], [TdspName], [CrDuns], [CrName], [ProcessFlag], [ProcessDate], [Direction], [TransactionTypeID], [MarketID], [ProviderID], [POLRClass], [TransactionTime], [TransactionTimeCode], [TransactionQueueTypeID], [TransactionQualifier], [CreateDate])
 SELECT  [814_Key], [MarketFileId], [TransactionSetId], [TransactionSetControlNbr], [TransactionSetPurposeCode], [TransactionNbr], '{transactionDate.ToString("yyyy-MM-dd")}', [ReferenceNbr], [ActionCode], [TdspDuns], [TdspName], [CrDuns], [CrName], 0/*[ProcessFlag]*/, NULL/*[ProcessDate]*/, [Direction], [TransactionTypeID], [MarketID], [ProviderID], [POLRClass], [TransactionTime], [TransactionTimeCode], [TransactionQueueTypeID], [TransactionQualifier], [CreateDate]
 FROM   saes_AEPEnergyMarket..tbl_814_header sh 
-WHERE TransactionSetId = '814' AND ActionCode = 'R' AND TransactionTypeId = 41 AND [814_Key] IN (SELECT SourceId FROM saes_AEPEnergy..CustomerTransactionRequest WHERE CustID = @CustID AND TransactionTypeId = 41)
+WHERE TransactionSetId = '814' AND ActionCode = 'E' AND TransactionTypeId = 39 AND Direction = 1 AND [814_Key] IN (SELECT SourceId FROM saes_AEPEnergy..CustomerTransactionRequest WHERE CustID = @CustID AND TransactionTypeId = 39)
 AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergyMarket..tbl_814_header dh WHERE sh.[814_Key] = dh.[814_Key] )
 SET IDENTITY_INSERT daes_AEPEnergyMarket..tbl_814_header OFF
 
@@ -135,7 +230,7 @@ SET IDENTITY_INSERT daes_AEPEnergyMarket..tbl_814_Service ON
 INSERT INTO daes_AEPEnergyMarket..tbl_814_Service ([Service_Key], [814_Key], [AssignId], [ServiceTypeCode1], [ServiceType1], [ServiceTypeCode2], [ServiceType2], [ServiceTypeCode3], [ServiceType3], [ServiceTypeCode4], [ServiceType4], [ActionCode], [MaintenanceTypeCode], [DistributionLossFactorCode], [PremiseType], [BillType], [BillCalculator], [EsiId], [StationId], [SpecialNeedsIndicator], [PowerRegion], [EnergizedFlag], [EsiIdStartDate], [EsiIdEndDate], [EsiIdEligibilityDate], [NotificationWaiver], [SpecialReadSwitchDate], [PriorityCode], [PermitIndicator], [RTODate], [RTOTime], [CSAFlag], [MembershipID], [ESPAccountNumber], [LDCBillingCycle], [LDCBudgetBillingCycle], [WaterHeaters], [LDCBudgetBillingStatus], [PaymentArrangement], [NextMeterReadDate], [ParticipatingInterest], [EligibleLoadPercentage], [TaxExemptionPercent], [CapacityObligation], [TransmissionObligation], [TotalKWHHistory], [NumberOfMonthsHistory], [PeakDemandHistory], [AirConditioners], [PreviousEsiId], [GasPoolId], [LBMPZone], [ResidentialTaxPortion], [ESPCommodityPrice], [ESPFixedCharge], [ESPChargesCommTaxRate], [ESPChargesResTaxRate], [GasSupplyServiceOption], [FundsAuthorization], [BudgetBillingStatus], [FixedMonthlyCharge], [TaxRate], [CommodityPrice], [MeterCycleCodeDesc], [BillCycleCodeDesc], [FeeApprovedApplied], [MarketerCustomerAccountNumber], [GasSupplyServiceOptionCode], [HumanNeeds], [ReinstatementDate], [MeterCycleCode], [SystemNumber], [StateLicenseNumber], [SupplementalAccountNumber], [NewCustomerIndicator], [PaymentCategory], [PreviousESPAccountNumber], [RenewableEnergyIndicator], [SICCode], [ApprovalCodeIndicator], [RenewableEnergyCertification], [NewPremiseIndicator], [SalesResponsibility], [CustomerReferenceNumber], [TransactionReferenceNumber], [ESPTransactionNumber], [OldESPAccountNumber], [DFIIdentificationNumber], [DFIAccountNumber], [DFIIndicator1], [DFIIndicator2], [DFIQualifier], [DFIRoutingNumber], [SpecialReadSwitchTime], [LDCAccountBalance], [DisputedAmount], [CurrentBalance], [ArrearsBalance], [LDCSupplierBalance], [BudgetPlan], [BudgetInstallment], [Deposit], [RemainingUtilBalanceBucket1], [RemainingUtilBalanceBucket2], [RemainingUtilBalanceBucket3], [RemainingUtilBalanceBucket4], [RemainingUtilBalanceBucket5], [RemainingUtilBalanceBucket6], [IntervalStatusType], [CustomerAuthorization], [UnmeteredAcct], [PaymentOption], [MaxDailyAmt], [MeterAccessNote], [SpecialNeedsExpirationDate], [SwitchHoldStatusIndicator], [SpecialMeterConfig], [MaximumGeneration], [ServiceDeliveryPoint], [IgnoreRescind], [GasCapacityAssignment], [CPAEnrollmentTypes], [DaysInArrears], [RU_Notes], [RD_SiteCharacterDate], [SupplierPricingStructureNr], [SupplierGroupNumber], [IndustrialClassificationCode], [UtilityTaxExemptStatus], [AccountSettlementIndicator], [NypaDiscountIndicator], [UtilityDiscount], [IcapEffectiveDate], [FutureIcapEffectiveDate], [FutureIcap], [ChangeCancellationFee], [CancellationFee], [MunicipalAggregation])
 SELECT  [Service_Key], [814_Key], [AssignId], [ServiceTypeCode1], [ServiceType1], [ServiceTypeCode2], [ServiceType2], [ServiceTypeCode3], [ServiceType3], [ServiceTypeCode4], [ServiceType4], [ActionCode], [MaintenanceTypeCode], [DistributionLossFactorCode], [PremiseType], [BillType], [BillCalculator], [EsiId], [StationId], [SpecialNeedsIndicator], [PowerRegion], [EnergizedFlag], [EsiIdStartDate], [EsiIdEndDate], [EsiIdEligibilityDate], [NotificationWaiver], [SpecialReadSwitchDate], [PriorityCode], [PermitIndicator], [RTODate], [RTOTime], [CSAFlag], [MembershipID], [ESPAccountNumber], [LDCBillingCycle], [LDCBudgetBillingCycle], [WaterHeaters], [LDCBudgetBillingStatus], [PaymentArrangement], [NextMeterReadDate], [ParticipatingInterest], [EligibleLoadPercentage], [TaxExemptionPercent], [CapacityObligation], [TransmissionObligation], [TotalKWHHistory], [NumberOfMonthsHistory], [PeakDemandHistory], [AirConditioners], [PreviousEsiId], [GasPoolId], [LBMPZone], [ResidentialTaxPortion], [ESPCommodityPrice], [ESPFixedCharge], [ESPChargesCommTaxRate], [ESPChargesResTaxRate], [GasSupplyServiceOption], [FundsAuthorization], [BudgetBillingStatus], [FixedMonthlyCharge], [TaxRate], [CommodityPrice], [MeterCycleCodeDesc], [BillCycleCodeDesc], [FeeApprovedApplied], [MarketerCustomerAccountNumber], [GasSupplyServiceOptionCode], [HumanNeeds], [ReinstatementDate], [MeterCycleCode], [SystemNumber], [StateLicenseNumber], [SupplementalAccountNumber], [NewCustomerIndicator], [PaymentCategory], [PreviousESPAccountNumber], [RenewableEnergyIndicator], [SICCode], [ApprovalCodeIndicator], [RenewableEnergyCertification], [NewPremiseIndicator], [SalesResponsibility], [CustomerReferenceNumber], [TransactionReferenceNumber], [ESPTransactionNumber], [OldESPAccountNumber], [DFIIdentificationNumber], [DFIAccountNumber], [DFIIndicator1], [DFIIndicator2], [DFIQualifier], [DFIRoutingNumber], [SpecialReadSwitchTime], [LDCAccountBalance], [DisputedAmount], [CurrentBalance], [ArrearsBalance], [LDCSupplierBalance], [BudgetPlan], [BudgetInstallment], [Deposit], [RemainingUtilBalanceBucket1], [RemainingUtilBalanceBucket2], [RemainingUtilBalanceBucket3], [RemainingUtilBalanceBucket4], [RemainingUtilBalanceBucket5], [RemainingUtilBalanceBucket6], [IntervalStatusType], [CustomerAuthorization], [UnmeteredAcct], [PaymentOption], [MaxDailyAmt], [MeterAccessNote], [SpecialNeedsExpirationDate], [SwitchHoldStatusIndicator], [SpecialMeterConfig], [MaximumGeneration], [ServiceDeliveryPoint], [IgnoreRescind], [GasCapacityAssignment], [CPAEnrollmentTypes], [DaysInArrears], [RU_Notes], [RD_SiteCharacterDate], [SupplierPricingStructureNr], [SupplierGroupNumber], [IndustrialClassificationCode], [UtilityTaxExemptStatus], [AccountSettlementIndicator], [NypaDiscountIndicator], [UtilityDiscount], [IcapEffectiveDate], [FutureIcapEffectiveDate], [FutureIcap], [ChangeCancellationFee], [CancellationFee], [MunicipalAggregation]
 FROM   saes_AEPEnergyMarket..tbl_814_Service ss
-WHERE [814_Key] IN  (SELECT SourceId FROM saes_AEPEnergy..CustomerTransactionRequest WHERE CustID = @CustID AND TransactionTypeId = 41)
+WHERE [814_Key] IN  (SELECT SourceId FROM saes_AEPEnergy..CustomerTransactionRequest WHERE CustID = @CustID AND TransactionTypeId = 39 AND Direction = 1 )
 AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergyMarket..tbl_814_Service ds WHERE ss.[814_Key] = ds.[814_Key] )
 SET IDENTITY_INSERT daes_AEPEnergyMarket..tbl_814_Service OFF
 
@@ -143,16 +238,27 @@ SET IDENTITY_INSERT daes_AEPEnergyMarket..tbl_814_Service_Date ON
 INSERT INTO daes_AEPEnergyMarket..tbl_814_Service_Date ([Date_Key], [Service_Key], [Qualifier], [Date], [Time], [TimeCode], [PeriodFormat], [Period], [NotesDate])
 SELECT  [Date_Key], [Service_Key], [Qualifier], [Date], [Time], [TimeCode], [PeriodFormat], [Period], [NotesDate]
 FROM   saes_AEPEnergyMarket..tbl_814_Service_Date ss
-WHERE [Service_Key] IN (SELECT Service_Key FROM daes_AEPEnergyMarket..tbl_814_Service WHERE [814_Key] IN (SELECT [814_Key] FROM saes_AEPEnergy..CustomerTransactionRequest WHERE CustID = @CustID AND TransactionTypeId = 41))
+WHERE [Service_Key] IN (SELECT Service_Key FROM daes_AEPEnergyMarket..tbl_814_Service WHERE [814_Key] IN (SELECT SourceId FROM saes_AEPEnergy..CustomerTransactionRequest WHERE CustID = @CustID AND TransactionTypeId = 39 AND Direction = 1 ))
 AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergyMarket..tbl_814_Service_Date dss WHERE ss.[Service_Key] = dss.[Service_Key] )
-SET IDENTITY_INSERT daes_AEPEnergyMarket..tbl_814_Service_Date OFF";
+SET IDENTITY_INSERT daes_AEPEnergyMarket..tbl_814_Service_Date OFF
+
+
+SET IDENTITY_INSERT daes_AEPEnergyMarket..tbl_814_Service_Meter ON
+INSERT INTO daes_AEPEnergyMarket..tbl_814_Service_Meter ([Meter_Key], [Service_Key], [EntityIdCode], [MeterNumber], [MeterCode], [MeterType], [LoadProfile], [RateClass], [RateSubClass], [MeterCycle], [MeterCycleDayOfMonth], [SpecialNeedsIndicator], [OldMeterNumber], [MeterOwnerIndicator], [EntityType], [TimeOFUse], [ESPRateCode], [OrganizationName], [FirstName], [MiddleName], [NamePrefix], [NameSuffix], [IdentificationCode], [EntityName2], [EntityName3], [Address1], [Address2], [City], [State], [Zip], [CountryCode], [County], [PlanNumber], [ServicesReferenceNumber], [AffiliationNumber], [CostElement], [CoverageCode], [LossReportNumber], [GeographicNumber], [ItemNumber], [LocationNumber], [PriceListNumber], [ProductType], [QualityInspectionArea], [ShipperCarOrderNumber], [StandardPointLocation], [ReportIdentification], [Supplier], [Area], [CollectorIdentification], [VendorAgentNumber], [VendorAbbreviation], [VendorIdNumber], [VendorOrderNumber], [PricingStructureCode], [MeterOwnerDUNS], [MeterOwner], [MeterInstallerDUNS], [MeterInstaller], [MeterReaderDUNS], [MeterReader], [MeterMaintenanceProviderDUNS], [MeterMaintenanceProvider], [MeterDataManagementAgentDUNS], [MeterDataManagementAgent], [SchedulingCoordinatorDUNS], [SchedulingCoordinator], [MeterInstallPending], [PackageOption], [UsageCode], [MeterServiceVoltage], [LossFactor], [AMSIndicator], [SummaryInterval], [NextCycleRate], [VariableRateIndicator], [RateTerm], [RateTermDateExpirationDate])
+SELECT  [Meter_Key], [Service_Key], [EntityIdCode], [MeterNumber], [MeterCode], [MeterType], [LoadProfile], [RateClass], [RateSubClass], [MeterCycle], [MeterCycleDayOfMonth], [SpecialNeedsIndicator], [OldMeterNumber], [MeterOwnerIndicator], [EntityType], [TimeOFUse], [ESPRateCode], [OrganizationName], [FirstName], [MiddleName], [NamePrefix], [NameSuffix], [IdentificationCode], [EntityName2], [EntityName3], [Address1], [Address2], [City], [State], [Zip], [CountryCode], [County], [PlanNumber], [ServicesReferenceNumber], [AffiliationNumber], [CostElement], [CoverageCode], [LossReportNumber], [GeographicNumber], [ItemNumber], [LocationNumber], [PriceListNumber], [ProductType], [QualityInspectionArea], [ShipperCarOrderNumber], [StandardPointLocation], [ReportIdentification], [Supplier], [Area], [CollectorIdentification], [VendorAgentNumber], [VendorAbbreviation], [VendorIdNumber], [VendorOrderNumber], [PricingStructureCode], [MeterOwnerDUNS], [MeterOwner], [MeterInstallerDUNS], [MeterInstaller], [MeterReaderDUNS], [MeterReader], [MeterMaintenanceProviderDUNS], [MeterMaintenanceProvider], [MeterDataManagementAgentDUNS], [MeterDataManagementAgent], [SchedulingCoordinatorDUNS], [SchedulingCoordinator], [MeterInstallPending], [PackageOption], [UsageCode], [MeterServiceVoltage], [LossFactor], [AMSIndicator], [SummaryInterval], [NextCycleRate], [VariableRateIndicator], [RateTerm], [RateTermDateExpirationDate]
+FROM   saes_AEPEnergyMarket..tbl_814_Service_Meter ss
+WHERE [Service_Key] IN (SELECT Service_Key FROM daes_AEPEnergyMarket..tbl_814_Service WHERE [814_Key] IN (SELECT SourceId FROM saes_AEPEnergy..CustomerTransactionRequest WHERE CustID = @CustID AND TransactionTypeId = 39 AND Direction = 1 ))
+AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergyMarket..tbl_814_Service_Meter dss WHERE ss.[Service_Key] = dss.[Service_Key] )
+SET IDENTITY_INSERT daes_AEPEnergyMarket..tbl_814_Service_Meter OFF
+
+";
             DB.ExecuteQuery(sql);
         }
 
         private static void CopyCustomer(string custNo)
         {
             string sql = $@"USE daes_AEPEnergy
-DECLARE @ClientID AS INT = (SELECT ClientID FROM daes_BillingAdmin..Client WHERE Client='SPK')
+DECLARE @ClientID AS INT = (SELECT ClientID FROM daes_BillingAdmin..Client WHERE Client='AEP')
 DECLARE @CustNo AS VARCHAR(20) = '{custNo}'
 DECLARE @CustID AS INT = (SELECT CustID FROM saes_AEPEnergy..Customer WHERE CustNo = @CustNo)
 
@@ -246,7 +352,7 @@ ALTER TABLE daes_AEPEnergy..Premise NOCHECK CONSTRAINT ALL
 SET IDENTITY_INSERT daes_AEPEnergy..Premise ON
 
 INSERT INTO daes_AEPEnergy..Premise ([PremID], [CustID], [CSPID], [AddrID], [TDSPTemplateID], [ServiceCycle], [TDSP], [TaxAssessment], [PremNo], [PremDesc], [PremStatus], [PremType], [LocationCode], [SpecialNeedsFlag], [SpecialNeedsStatus], [SpecialNeedsDate], [ReadingIncrement], [Metered], [Taxable], [BeginServiceDate], [EndServiceDate], [SourceLevel], [StatusID], [StatusDate], [CreateDate], [UnitID], [PropertyCommonID], [RateID], [DeleteFlag], [LBMPId], [PipelineId], [GasLossId], [LDCID], [GasPoolID], [DeliveryPoint], [ConsumptionBandIndex], [LastModifiedDate], [CreatedByID], [ModifiedByID], [BillingAccountNumber], [NameKey], [GasSupplyServiceOption], [IntervalUsageTypeId], [LDC_UnMeteredAcct], [AltPremNo], [OnSwitchHold], [SwitchHoldStartDate], [ConsumptionImportTypeId], [TDSPTemplateEffectiveDate], [ServiceDeliveryPoint], [UtilityContractID], [LidaDiscount], [GasCapacityAssignment], [CPAEnrollmentTypes], [IsTOU], [SupplierPricingStructureNr], [SupplierGroupNumber])
-SELECT [PremID], [CustID], [CSPID], [AddrID], [TDSPTemplateID], [ServiceCycle], [TDSP], [TaxAssessment], [PremNo], [PremDesc], [PremStatus], [PremType], [LocationCode], [SpecialNeedsFlag], [SpecialNeedsStatus], [SpecialNeedsDate], [ReadingIncrement], [Metered], [Taxable], [BeginServiceDate], [EndServiceDate], [SourceLevel], 10/*[StatusID]*/, [StatusDate], [CreateDate], [UnitID], [PropertyCommonID], [RateID], [DeleteFlag], [LBMPId], [PipelineId], [GasLossId], [LDCID], [GasPoolID], [DeliveryPoint], [ConsumptionBandIndex], [LastModifiedDate], [CreatedByID], [ModifiedByID], [BillingAccountNumber], [NameKey], [GasSupplyServiceOption], [IntervalUsageTypeId], [LDC_UnMeteredAcct], [AltPremNo], [OnSwitchHold], [SwitchHoldStartDate], [ConsumptionImportTypeId], [TDSPTemplateEffectiveDate], [ServiceDeliveryPoint], [UtilityContractID], [LidaDiscount], [GasCapacityAssignment], [CPAEnrollmentTypes], [IsTOU], [SupplierPricingStructureNr], [SupplierGroupNumber]
+SELECT [PremID], [CustID], [CSPID], [AddrID], [TDSPTemplateID], [ServiceCycle], [TDSP], [TaxAssessment], [PremNo], [PremDesc], [PremStatus], [PremType], [LocationCode], [SpecialNeedsFlag], [SpecialNeedsStatus], [SpecialNeedsDate], [ReadingIncrement], [Metered], [Taxable], NULL/*[BeginServiceDate]*/, [EndServiceDate], [SourceLevel], 0/*[StatusID]*/, [StatusDate], [CreateDate], [UnitID], [PropertyCommonID], [RateID], [DeleteFlag], [LBMPId], [PipelineId], [GasLossId], [LDCID], [GasPoolID], [DeliveryPoint], [ConsumptionBandIndex], [LastModifiedDate], [CreatedByID], [ModifiedByID], [BillingAccountNumber], [NameKey], [GasSupplyServiceOption], [IntervalUsageTypeId], [LDC_UnMeteredAcct], [AltPremNo], [OnSwitchHold], [SwitchHoldStartDate], [ConsumptionImportTypeId], [TDSPTemplateEffectiveDate], [ServiceDeliveryPoint], [UtilityContractID], [LidaDiscount], [GasCapacityAssignment], [CPAEnrollmentTypes], [IsTOU], [SupplierPricingStructureNr], [SupplierGroupNumber]
 FROM  saes_AEPEnergy..Premise WHERE CustID = @CustID
 AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergy..Premise WHERE CustId = @CustID)
 SET IDENTITY_INSERT daes_AEPEnergy..Premise OFF
@@ -292,6 +398,118 @@ PRINT 'END Copy Customer'";
             DB.ExecuteQuery(sql);
         }
 
+        private static void CopyRate(string custNo)
+        {
+            string sql = $@"
+USE daes_AEPEnergy
+DECLARE @CustNo AS VARCHAR(20) = '{custNo}'
+DECLARE @CustID AS INT = (SELECT CustID FROM saes_AEPEnergy..Customer WHERE CustNo = @CustNo)
+SELECT @CustId
+
+PRINT 'Copy Rate from saes to daes'
+ALTER TABLE daes_AEPEnergy..Rate NOCHECK CONSTRAINT ALL
+SET IDENTITY_INSERT daes_AEPEnergy..Rate ON
+INSERT INTO daes_AEPEnergy..Rate
+ (RateID,CSPID,RateCode,RateDesc,EffectiveDate,ExpirationDate,RateType,PlanType,IsMajority,TemplateFlag,LDCCode,CreateDate,UserID,RatePackageName,CustType,ServiceType,DivisionCode,ConsUnitId,ActiveFlag,LDCRateCode,migr_plan_id,migr_custid)
+SELECT
+ RateID,CSPID,RateCode,RateDesc,EffectiveDate,ExpirationDate,RateType,PlanType,IsMajority,TemplateFlag,LDCCode,CreateDate,UserID,RatePackageName,CustType,ServiceType,DivisionCode,ConsUnitId,ActiveFlag,LDCRateCode,migr_plan_id,migr_custid
+FROM saes_AEPEnergy..Rate r
+WHERE
+ RateID in (
+ SELECT RateId FROM saes_AEPEnergy..Customer WHERE CustId = @CustId
+ UNION
+ SELECT RateId FROM saes_AEPEnergy..RateTransition WHERE CustId = @CustId
+ )
+ AND (NOT EXISTS (SELECT 1 FROM daes_AEPEnergy..Rate WHERE RateId = r.RateId))
+
+SET IDENTITY_INSERT daes_AEPEnergy..Rate OFF
+PRINT 'Enabling constrains on Rate'
+ALTER TABLE daes_AEPEnergy..Rate WITH CHECK CHECK CONSTRAINT ALL
+
+
+PRINT 'Copy RateTransition from saes to daes'
+ALTER TABLE daes_AEPEnergy..RateTransition NOCHECK CONSTRAINT ALL
+SET IDENTITY_INSERT daes_AEPEnergy..RateTransition ON
+INSERT INTO daes_AEPEnergy..RateTransition
+ (RateTransitionID,CustID,RateID,UserID,CreatedDate,SwitchDate,EndDate,StatusID,SoldDate,RolloverFlag)
+SELECT
+ RateTransitionID,CustID,RateID,UserID,CreatedDate,SwitchDate,DATEADD(YEAR,1,SwitchDate)/*EndDate*/,StatusID,SoldDate,RolloverFlag
+FROM saes_AEPEnergy..RateTransition rt
+WHERE
+ RateTransitionID in (
+ SELECT RateTransitionID FROM saes_AEPEnergy..RateTransition WHERE CustId = @CustId
+ UNION
+ SELECT RateTransitionID FROM saes_AEPEnergy..RateTransition WHERE RateId = (SELECT RateId FROM saes_AEPEnergy..Customer WHERE CustId = @CustId)
+ )
+ AND RollOverFlag = 0
+ AND (NOT EXISTS (SELECT 1 FROM daes_AEPEnergy..RateTransition WHERE RateTransitionID = rt.RateTransitionID))
+
+SET IDENTITY_INSERT daes_AEPEnergy..RateTransition OFF
+PRINT 'Enabling constrains on RateTransition'
+ALTER TABLE daes_AEPEnergy..RateTransition WITH CHECK CHECK CONSTRAINT ALL
+
+PRINT 'Copy RateDetail from saes to daes'
+ALTER TABLE daes_AEPEnergy..RateDetail NOCHECK CONSTRAINT ALL
+SET IDENTITY_INSERT daes_AEPEnergy..RateDetail ON
+INSERT INTO daes_AEPEnergy..RateDetail
+ (RateDetID,RateID,CategoryID,RateTypeID,ConsUnitID,RateDescID,EffectiveDate,ExpirationDate,RateAmt,RateAmt2,RateAmt3,FixedAdder,MinDetAmt,MaxDetAmt,GLAcct,RangeLower,RangeUpper,CustType,Graduated,Progressive,AmountCap,MaxRateAmt,MinRateAmt,CategoryRollup,Taxable,ChargeType,MiscData1,FixedCapRate,ScaleFactor1,ScaleFactor2,TemplateRateDetID,Margin,HALRateDetailId,UsageClassId,LegacyRateDetailId,Building,ServiceTypeID,TaxCategoryID,UtilityID,UtilityInvoiceTemplateDetailID,Active,StatusID,RateVariableTypeId,MinDays,MaxDays,BlockPriceIndicator,RateTransitionId,CreateDate,MeterMultiplierFlag,BlendRatio,ContractVolumeID,CreatedByUserId,ModifiedByUserId,ModifiedDate,TOUTemplateID,TOUTemplateRegisterID,TOUTemplateRegisterName)
+SELECT
+ RateDetID,RateID,CategoryID,RateTypeID,ConsUnitID,RateDescID,EffectiveDate,IIF(ExpirationDate IS NULL, NULL, DATEADD(YEAR,1,EffectiveDate)),RateAmt,RateAmt2,RateAmt3,FixedAdder,MinDetAmt,MaxDetAmt,GLAcct,RangeLower,RangeUpper,CustType,Graduated,Progressive,AmountCap,MaxRateAmt,MinRateAmt,CategoryRollup,Taxable,ChargeType,MiscData1,FixedCapRate,ScaleFactor1,ScaleFactor2,TemplateRateDetID,Margin,HALRateDetailId,UsageClassId,LegacyRateDetailId,Building,ServiceTypeID,TaxCategoryID,UtilityID,UtilityInvoiceTemplateDetailID,Active,StatusID,RateVariableTypeId,MinDays,MaxDays,BlockPriceIndicator,RateTransitionId,CreateDate,MeterMultiplierFlag,BlendRatio,ContractVolumeID,CreatedByUserId,ModifiedByUserId,ModifiedDate,TOUTemplateID,TOUTemplateRegisterID,TOUTemplateRegisterName
+FROM saes_AEPEnergy..RateDetail rdet
+WHERE
+ RateDetId in (
+ SELECT RateDetId FROM saes_AEPEnergy..RateDetail WHERE
+  RateId = (SELECT RateId FROM saes_AEPEnergy..Customer WHERE CustId = @CustId) 
+  AND RateTransitionId IN (SELECT RateTransitionId from saes_AEPEnergy..RateTransition WHERE CustId = @CustId AND RolloverFlag = 0)
+ UNION
+ SELECT RateDetId FROM saes_AEPEnergy..RateDetail WHERE RateId IN (SELECT RateId FROM saes_AEPEnergy..RateTransition WHERE CustId = @CustId)
+ )
+ AND (NOT EXISTS (SELECT 1 FROM daes_AEPEnergy..RateDetail WHERE RateDetID = rdet.RateDetID))
+
+SET IDENTITY_INSERT daes_AEPEnergy..RateDetail OFF
+PRINT 'Enabling constraings on RateDetails'
+ALTER TABLE daes_AEPEnergy..RateDetail WITH CHECK CHECK CONSTRAINT ALL
+
+PRINT 'Copy Products from saes to daes'
+
+ALTER TABLE daes_AEPEnergy..Product NOCHECK CONSTRAINT ALL
+SET IDENTITY_INSERT daes_AEPEnergy..Product ON
+INSERT INTO daes_AEPEnergy..Product
+ ([ProductID], [RateID], [LDCCode], [PlanType], [TDSPTemplateID], [Description], [BeginDate], [EndDate], [CustType], [Graduated], [RangeTier1], [RangeTier2], [SortOrder], [ActiveFlag], [Uplift], [CSATDSPTemplateID], [CAATDSPTemplateID], [PriceDescription], [MarketingCode], [RateTypeID], [ConsUnitID], [Default], [DivisionCode], [RateDescription], [ServiceType], [CSPId], [TermsId], [RolloverProductId], [CommissionId], [CommissionAmt], [CancelFeeId], [MonthlyChargeId], [ProductCode], [RatePackageId], [ProductName], [TermDate], [DiscountTypeId], [DiscountAmount], [ProductZoneID], [IsGreen], [IsBestChoice], [ActiveEnrollmentFlag], [CreditScoreThreshold], [DepositAmount], [Incentives])
+SELECT
+  [ProductID], [RateID], [LDCCode], [PlanType], [TDSPTemplateID], [Description], [BeginDate], [EndDate], [CustType], [Graduated], [RangeTier1], [RangeTier2], [SortOrder], [ActiveFlag], [Uplift], [CSATDSPTemplateID], [CAATDSPTemplateID], [PriceDescription], [MarketingCode], [RateTypeID], [ConsUnitID], [Default], [DivisionCode], [RateDescription], [ServiceType], [CSPId], [TermsId], [RolloverProductId], [CommissionId], [CommissionAmt], [CancelFeeId], [MonthlyChargeId], [ProductCode], [RatePackageId], [ProductName], [TermDate], [DiscountTypeId], [DiscountAmount], [ProductZoneID], [IsGreen], [IsBestChoice], [ActiveEnrollmentFlag], [CreditScoreThreshold], [DepositAmount], [Incentives]
+FROM saes_AEPEnergy..Product pr
+WHERE
+ RateId in (
+ SELECT RateId FROM saes_AEPEnergy..Customer WHERE CustId = @CustId
+ UNION
+ SELECT RateId FROM saes_AEPEnergy..RateTransition WHERE CustId = @CustId
+ )
+ AND (NOT EXISTS (SELECT 1 FROM daes_AEPEnergy..Product WHERE ProductId = pr.ProductId))
+SET IDENTITY_INSERT daes_AEPEnergy..Product OFF
+
+PRINT 'Enabling constrains on Product'
+ALTER TABLE daes_AEPEnergy..Product WITH CHECK CHECK CONSTRAINT ALL
+
+PRINT 'Copy EnrollCustomer'
+ALTER TABLE daes_AEPEnergy..EnrollCustomer NOCHECK CONSTRAINT ALL
+SET IDENTITY_INSERT daes_AEPEnergy..EnrollCustomer ON
+INSERT INTO daes_AEPEnergy..EnrollCustomer
+ ( [EnrollCustID], [EnrollMasterCustID], [ProductID], [PropertyID], [RateID], [CustCategory], [CustType], [CustName], [LastName], [FirstName], [MiddleName], [Salutation], [DBA], [TaxID], [CreditScore], [BillingContact], [BillingAddress1], [BillingAddress2], [BillingCity], [BillingState], [BillingZip], [BillingPhone], [BillingHomePhone], [BillingEmail], [AccountManager], [Taxable], [LifeSupport], [SpanishBill], [AuthorizedContact], [AuthorizedPhone], [DigitalSignature], [SalesChannel], [SalesStationID], [SalesUserID], [SalesCode], [VerifyStationID], [VerifyUserID], [VerifyCode], [Status], [Comments], [RejectReason], [RejectComments], [EnrollmentSentFlag], [EnrollmentSentDate], [CreateUserID], [CreateDate], [SuspendDate], [eBillImportDate], [CsrCustID], [NotificationWaiver], [PermitContactName], [TDSPTemplateID], [LidaDiscount], [CsaFlag], [DoNotDisconnect], [ContractID], [Service], [Master], [CsrImportDate], [CustomerAccountNumber], [ContractEndDate], [ContractTerms], [ContractStartDate], [UtilityAccountNumber], [GasRateID], [BillingTypeID], [Qeze], [DivisionID], [DivisionCode], [HasLocationMasterFlag], [ConversionAccountNO], [PlanTypeID], [LateFeeGracePeriod], [SupplierPricingStructure], [BillingFax], [InvoiceDeliveryTypeID], [TaxExemptionTypeID], [TaxExemptionNumber], [TaxExemptionCertificateOnFileFlag], [Zip4], [PrimaryPhone], [SalesSourceID], [IndependentAgentID], [QCDateTimeStamp], [EnrollStatusID], [Last4SSN], [CallEmailAuthFlag], [ReferralFlag], [SwitchAuthFlag], [TermsDisclosureFlag], [ReferralDetails], [ReachOutStep], [AlternatePhone], [StreamTrackingNumber], [CRMNumber], [CompanyName], [EnrollmentId], [PORFlag], [MeterAccessNote], [ExperianConfirmationNumber], [CurrentProviderID], [ReferralName], [ModifiedDate], [ModifiedBy], [Title], [PreferredSalesExecutive], [SSN], [AutoPayBill], [ServiceAccount], [ServiceState], [DepositAmount], [IsWelcomePacketRequired], [SalesAgent], [Broker], [PromoCode], [MasterAccountNumber], [CampaignName], [AccessDBID], [CommissionType], [CommissionAmount], [ReferralID], [RPNumber], [TCPAAuthorization], [CancellationFee], [MunicipalAggregation])
+SELECT
+   [EnrollCustID], [EnrollMasterCustID], [ProductID], [PropertyID], [RateID], [CustCategory], [CustType], [CustName], [LastName], [FirstName], [MiddleName], [Salutation], [DBA], [TaxID], [CreditScore], [BillingContact], [BillingAddress1], [BillingAddress2], [BillingCity], [BillingState], [BillingZip], [BillingPhone], [BillingHomePhone], [BillingEmail], [AccountManager], [Taxable], [LifeSupport], [SpanishBill], [AuthorizedContact], [AuthorizedPhone], [DigitalSignature], [SalesChannel], [SalesStationID], [SalesUserID], [SalesCode], [VerifyStationID], [VerifyUserID], [VerifyCode], [Status], [Comments], [RejectReason], [RejectComments], [EnrollmentSentFlag], [EnrollmentSentDate], [CreateUserID], [CreateDate], [SuspendDate], [eBillImportDate], [CsrCustID], [NotificationWaiver], [PermitContactName], [TDSPTemplateID], [LidaDiscount], [CsaFlag], [DoNotDisconnect], [ContractID], [Service], [Master], [CsrImportDate], [CustomerAccountNumber], [ContractEndDate], [ContractTerms], [ContractStartDate], [UtilityAccountNumber], [GasRateID], [BillingTypeID], [Qeze], [DivisionID], [DivisionCode], [HasLocationMasterFlag], [ConversionAccountNO], [PlanTypeID], [LateFeeGracePeriod], [SupplierPricingStructure], [BillingFax], [InvoiceDeliveryTypeID], [TaxExemptionTypeID], [TaxExemptionNumber], [TaxExemptionCertificateOnFileFlag], [Zip4], [PrimaryPhone], [SalesSourceID], [IndependentAgentID], [QCDateTimeStamp], [EnrollStatusID], [Last4SSN], [CallEmailAuthFlag], [ReferralFlag], [SwitchAuthFlag], [TermsDisclosureFlag], [ReferralDetails], [ReachOutStep], [AlternatePhone], [StreamTrackingNumber], [CRMNumber], [CompanyName], [EnrollmentId], [PORFlag], [MeterAccessNote], [ExperianConfirmationNumber], [CurrentProviderID], [ReferralName], [ModifiedDate], [ModifiedBy], [Title], [PreferredSalesExecutive], [SSN], [AutoPayBill], [ServiceAccount], [ServiceState], [DepositAmount], [IsWelcomePacketRequired], [SalesAgent], [Broker], [PromoCode], [MasterAccountNumber], [CampaignName], [AccessDBID], [CommissionType], [CommissionAmount], [ReferralID], [RPNumber], [TCPAAuthorization], [CancellationFee], [MunicipalAggregation]
+FROM saes_AEPEnergy..EnrollCustomer ec
+WHERE
+ CsrCustId = @CustId
+ AND (NOT EXISTS (SELECT 1 FROM daes_AEPEnergy..EnrollCustomer WHERE EnrollCustId = ec.EnrollCustId))
+SET IDENTITY_INSERT daes_AEPEnergy..EnrollCustomer OFF
+
+PRINT 'Enabling constrains on EnrollCustomer'
+ALTER TABLE daes_AEPEnergy..EnrollCustomer WITH CHECK CHECK CONSTRAINT ALL
+
+";
+            DB.ExecuteQuery(sql);
+        }
 
         public sealed class DB
         {
