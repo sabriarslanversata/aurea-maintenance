@@ -32,6 +32,42 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CIS.BusinessEntity">
+      <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.BusinessEntity.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.BusinessEntity.Security">
+      <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.BusinessEntity.Security.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Clients">
+      <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Clients.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Clients.AEPEnergy">
+      <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Clients.AEPEnergy.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Components">
+      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Components.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Components.Maintenance">
+      <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Components.Maintenance.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Engine.Event">
+      <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Engine.Event.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Framework">
+      <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Framework.Event.EventGenerator">
+      <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Framework.Event.EventGenerator.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Framework.Event.EventGeneratorBase">
+      <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Framework.Event.EventGeneratorBase.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Import">
+      <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Import.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Import.Billing.Transaction">
+      <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Import.Billing.Transaction.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -47,6 +83,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Aurea.Maintenance.Debugger.Common\Aurea.Maintenance.Debugger.Common.csproj">
+      <Project>{5243be0e-a73b-4a56-b992-143871c94bd2}</Project>
+      <Name>Aurea.Maintenance.Debugger.Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

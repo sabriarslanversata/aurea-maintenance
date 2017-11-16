@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aurea.Maintenance.Debugger.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aurea.Maintenance.Debugger.Stream", "Aurea.Maintenance.Debugger.Stream\Aurea.Maintenance.Debugger.Stream.csproj", "{E4010317-F11E-4917-AC5A-1D02C3367D91}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aurea.Maintenance.Debugger.AEPEnergy", "Aurea.Maintenance.Debugger.AEPEnergy\Aurea.Maintenance.Debugger.AEPEnergy.csproj", "{323989FE-5B85-4F9E-82D3-2C03328C9565}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{E4010317-F11E-4917-AC5A-1D02C3367D91}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E4010317-F11E-4917-AC5A-1D02C3367D91}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E4010317-F11E-4917-AC5A-1D02C3367D91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{323989FE-5B85-4F9E-82D3-2C03328C9565}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{323989FE-5B85-4F9E-82D3-2C03328C9565}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{323989FE-5B85-4F9E-82D3-2C03328C9565}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{323989FE-5B85-4F9E-82D3-2C03328C9565}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
