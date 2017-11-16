@@ -44,6 +44,14 @@
     <Reference Include="CIS.Clients.AEPEnergy">
       <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Clients.AEPEnergy.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.Clients.AEPEnergy.Infrastructure, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Clients.AEPEnergy.Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Clients.AEPEnergy.Miramar, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Clients.AEPEnergy.Miramar.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.Components">
       <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Components.dll</HintPath>
     </Reference>
