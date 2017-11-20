@@ -72,12 +72,15 @@
         private static void Simulate_AESCIS17193(string custNo)
         {
             CopyCustomer(custNo);
-            CopyRate(custNo);
             ClearOldRecords(custNo);
+            CopyRate(custNo);
             Create814EMarketMock(custNo, DateTime.Now);
             ImportTransaction();
             GenerateEventsFor814Market();
             ProcessEvents();
+            //ExecuteTask("CustomerPromotionTask");
+            //ExecuteTask("CustomerPromotionTask");
+            //ExecuteTask("WelcomeLetterTask");
             //ProductRolloverProcessor
         }
 
@@ -93,6 +96,23 @@
 
             };
             baseImport.MyImportTransaction();
+        }
+
+        private static void ExecuteTask(string taskId)
+        {
+            var adminDataAccess = new CIS.Clients.AEPEnergy.Miramar.DataAccess.AdminDataAccess(_clientConfig.ConnectionBillingAdmin);
+            var clientInfo = adminDataAccess.LoadClientInfo(CIS.Clients.AEPEnergy.Common.ClientConfigurationFactory.ClientId);
+            //clientInfo.AdminConnection = _clientConfig.ConnectionBillingAdmin;
+            //clientInfo.ClientConnection = "";
+            var factory = new CIS.Clients.AEPEnergy.Miramar.MiramarTaskFactory();
+            var instance = factory.GetTask(clientInfo, taskId);
+            var serviceToken = new CIS.Clients.AEPEnergy.Infrastructure.Threading.ServiceToken();
+            instance.Execute(serviceToken);
+        }
+
+        private static void ExecuteCustomerPromotionTask()
+        {
+            
         }
 
         private static void GenerateEventsFor814Market()

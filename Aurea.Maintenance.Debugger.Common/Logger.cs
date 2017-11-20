@@ -12,6 +12,7 @@
 
         internal static void Error(Exception ex, string v)
         {
+            Console.WriteLine($"{v} : \r\n{ex.Message}");
         }
     }
 }
