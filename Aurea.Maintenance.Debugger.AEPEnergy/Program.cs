@@ -78,9 +78,9 @@
             ImportTransaction();
             GenerateEventsFor814Market();
             ProcessEvents();
-            ExecuteTask("CustomerPromotionTask");
-            ExecuteTask("CustomerPromotionTask");
-            ExecuteTask("WelcomeLetterTask");
+            //ExecuteTask("CustomerPromotionTask");
+            //ExecuteTask("CustomerPromotionTask");
+            //ExecuteTask("WelcomeLetterTask");
             //ProductRolloverProcessor
         }
 
