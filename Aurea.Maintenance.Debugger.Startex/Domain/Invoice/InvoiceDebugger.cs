@@ -17,9 +17,9 @@
             ClientEnvironmentConfiguration clientConfig)
         {
             // Setup - Update values of the variables below to debug your case.
-            var customerId = 200542;
-            var startDate = new DateTime(2017, 7, 17);
-            var endDate = new DateTime(2017, 8, 15);
+            var customerId = 368083;
+            var startDate = new DateTime(2017, 6, 30);
+            var endDate = new DateTime(2017, 7, 31);
             var invoiceDate = DateTime.Now;
 
             // Initialize and setup invoice.
