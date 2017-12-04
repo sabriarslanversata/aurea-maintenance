@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27004.2005
@@ -14,6 +14,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aurea.Maintenance.Debugger.Stream", "Aurea.Maintenance.Debugger.Stream\Aurea.Maintenance.Debugger.Stream.csproj", "{E4010317-F11E-4917-AC5A-1D02C3367D91}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aurea.Maintenance.Debugger.AEPEnergy", "Aurea.Maintenance.Debugger.AEPEnergy\Aurea.Maintenance.Debugger.AEPEnergy.csproj", "{323989FE-5B85-4F9E-82D3-2C03328C9565}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aurea.Maintenance.Jira", "Aurea.Maintenance.Jira\Aurea.Maintenance.Jira.csproj", "{BC8680F7-0072-4E67-B570-D7590A4347F2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{323989FE-5B85-4F9E-82D3-2C03328C9565}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{323989FE-5B85-4F9E-82D3-2C03328C9565}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{323989FE-5B85-4F9E-82D3-2C03328C9565}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC8680F7-0072-4E67-B570-D7590A4347F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC8680F7-0072-4E67-B570-D7590A4347F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC8680F7-0072-4E67-B570-D7590A4347F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC8680F7-0072-4E67-B570-D7590A4347F2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
