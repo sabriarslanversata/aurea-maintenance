@@ -36,7 +36,7 @@
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\Aurea.dll</HintPath>
     </Reference>
     <Reference Include="Aurea.TaskToaster">
-      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\Aurea.TaskToaster.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\TaskToaster\Aurea.TaskToaster.dll</HintPath>
     </Reference>
     <Reference Include="CIS.BusinessEntity, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -63,6 +63,10 @@
     <Reference Include="CIS.Export, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Export.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Framework, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Framework.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Framework.Event.EventGenerator">
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Framework.Event.EventGenerator.dll</HintPath>

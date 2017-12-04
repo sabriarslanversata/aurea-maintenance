@@ -35,13 +35,13 @@
       <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\Aurea.dll</HintPath>
     </Reference>
     <Reference Include="CIS.BusinessComponent">
-      <HintPath>..\..\AureaCIS\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.BusinessComponent.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.BusinessComponent.dll</HintPath>
     </Reference>
     <Reference Include="CIS.BusinessEntity">
-      <HintPath>..\..\AureaCIS\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.BusinessEntity.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.BusinessEntity.dll</HintPath>
     </Reference>
     <Reference Include="CIS.BusinessEntity.Security">
-      <HintPath>..\..\AureaCIS\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.BusinessEntity.Security.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.BusinessEntity.Security.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Framework">
       <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Framework.dll</HintPath>
