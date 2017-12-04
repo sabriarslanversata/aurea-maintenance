@@ -71,6 +71,11 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Framework.Event.EventGeneratorBase.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.Import, Version=16.1.0.0, Culture=neutral, PublicKeyToken=null" />
+    <Reference Include="CIS.Library.Cryptography, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Library.Cryptography.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -87,6 +92,9 @@
   <ItemGroup>
     <None Include="App.config">
       <SubType>Designer</SubType>
+    </None>
+    <None Include="MockData\ISTAMassEnroll11302017pa.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
