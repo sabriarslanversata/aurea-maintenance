@@ -1,5 +1,7 @@
 ﻿namespace Aurea.Maintenance.Debugger.Common
 {
+    using System;
+    using CIS.Framework.ExceptionManagement;
     using System.IO;
     using System.Collections.Generic;
     using System.Configuration;
@@ -9,7 +11,7 @@
     using CIS.BusinessComponent;
     using CIS.BusinessEntity;
     using CIS.Framework.Security;
-    using Aurea.Maintenance.Debugger.Common.Models;
+    using Common.Models;
 
     public static class ClientConfiguration
     {
@@ -21,9 +23,8 @@
         public static GlobalApplicationConfigurationDS.GlobalApplicationConfiguration SetConfigurationContext(ClientEnvironmentConfiguration config)
         {
             var applicationConfiguration = GlobalApplicationConfigurationBC.Load(config.ConnectionBillingAdmin, config.ClientId);
-            SecurityManager.SetSecurityContext(applicationConfiguration, 0, config.ConnectionBillingAdmin, string.Empty, string.Empty, string.Empty);
 
-            RewriteAppSettings(new Dictionary<string, string>
+            var settings = new Dictionary<string, string>
             {
                 {"AdminConnectionString", config.ConnectionBillingAdmin},
                 {"Connection.BillingAdministration", config.ConnectionBillingAdmin},
@@ -31,8 +32,18 @@
                 {"Connection.BillingAdmin", config.ConnectionBillingAdmin},
                 {"BillingAdminDbConnection", config.ConnectionBillingAdmin},
                 {"conBillingAdminString", config.ConnectionBillingAdmin},
-                {"BillingAdmin", config.ConnectionBillingAdmin}
-            });
+                {"BillingAdmin", config.ConnectionBillingAdmin},
+                {"Connection.Tdsp", applicationConfiguration.ConnectionTdsp}
+            };
+
+            RewriteAppSettings(Assembly.GetExecutingAssembly(), settings);
+            RewriteAppSettings(Assembly.GetEntryAssembly(), settings);
+
+            SecurityManager.SetSecurityContext(applicationConfiguration, 0, 
+                config.ConnectionBillingAdmin, 
+                applicationConfiguration.ConnectionTdsp, 
+                string.Empty, 
+                string.Empty);
 
             // Set culture to en-EN to prevent string manipulation issues in base code
             var culture = "en-US";
@@ -43,11 +54,10 @@
             return applicationConfiguration;
         }
 
-        private static void RewriteAppSettings(Dictionary<string, string> configDictionary)
+        private static void RewriteAppSettings(Assembly assembly, Dictionary<string, string> configDictionary)
         {
-            var executingAssembly = Assembly.GetExecutingAssembly();
-            var appPath = Path.GetDirectoryName(executingAssembly.Location);
-            var appConfigFile = Path.Combine(appPath, executingAssembly.ManifestModule.Name + ".config");
+            var appPath = Path.GetDirectoryName(assembly.Location);
+            var appConfigFile = Path.Combine(appPath ?? throw new InvalidArgumentException("AppPath"), assembly.ManifestModule.Name + ".config");
             var configFileMap = new ExeConfigurationFileMap { ExeConfigFilename = appConfigFile };
             var config = ConfigurationManager.OpenMappedExeConfiguration(configFileMap, ConfigurationUserLevel.None);
 

@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{C9B5C59E-99B6-426B-A0D7-1A00080FC858}</ProjectGuid>
+    <ProjectGuid>{E4010317-F11E-4917-AC5A-1D02C3367D91}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Aurea.Maintenance.Debugger.Texpo</RootNamespace>
-    <AssemblyName>Aurea.Maintenance.Debugger.Texpo</AssemblyName>
+    <RootNamespace>Aurea.Maintenance.Debugger.Stream</RootNamespace>
+    <AssemblyName>Aurea.Maintenance.Debugger.Stream</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -33,43 +33,29 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Aurea">
-      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\Aurea.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\Aurea.dll</HintPath>
     </Reference>
-    <Reference Include="Aurea.TaskToaster">
-      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\Aurea.TaskToaster.dll</HintPath>
+    <Reference Include="CIS.Billing.BusinessObject">
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Billing.BusinessObject.dll</HintPath>
     </Reference>
-    <Reference Include="CIS.BusinessEntity, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.BusinessEntity.dll</HintPath>
+    <Reference Include="CIS.BusinessComponent.Market">
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.BusinessComponent.Market.dll</HintPath>
     </Reference>
-    <Reference Include="CIS.Clients">
-      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Clients.dll</HintPath>
+    <Reference Include="CIS.BusinessEntity">
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.BusinessEntity.dll</HintPath>
     </Reference>
-    <Reference Include="CIS.Clients.Texpo">
-      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Clients.Texpo.dll</HintPath>
-    </Reference>
-    <Reference Include="CIS.Components, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Components.dll</HintPath>
-    </Reference>
-    <Reference Include="CIS.Components.Maintenance, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Components.Maintenance.dll</HintPath>
+    <Reference Include="CIS.Clients.Stream">
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Clients.Stream.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Engine.Event, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Engine.Event.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Engine.Event.dll</HintPath>
     </Reference>
-    <Reference Include="CIS.Export, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Export.dll</HintPath>
+    <Reference Include="CIS.Framework.Event.EventHandler">
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Framework.Event.EventHandler.dll</HintPath>
     </Reference>
-    <Reference Include="CIS.Framework.Event.EventGenerator">
-      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Framework.Event.EventGenerator.dll</HintPath>
-    </Reference>
-    <Reference Include="CIS.Framework.Event.EventGeneratorBase, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Framework.Event.EventGeneratorBase.dll</HintPath>
+    <Reference Include="CIS.Framework.Event.EventHandlerBase">
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Framework.Event.EventHandlerBase.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -85,14 +71,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Aurea.Maintenance.Debugger.Common\Aurea.Maintenance.Debugger.Common.csproj">
       <Project>{5243be0e-a73b-4a56-b992-143871c94bd2}</Project>
       <Name>Aurea.Maintenance.Debugger.Common</Name>
+      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
