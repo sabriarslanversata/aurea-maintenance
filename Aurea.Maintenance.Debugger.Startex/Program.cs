@@ -10,12 +10,11 @@
         public static void Main(string[] args)
         {
             // Set client configuration and then the application configuration context.            
-            var clientConfig = ClientConfiguration.GetClientConfiguration(Clients.StarTex, Stages.Production);
+            var clientConfig = ClientConfiguration.GetClientConfiguration(Clients.StarTex, Stages.Development);
             var applicationConfig = ClientConfiguration.SetConfigurationContext(clientConfig);
 
             // Call debugger method
-            InvoiceDebugger.InvoiceXmlGeneration(applicationConfig, clientConfig, 11945696);
-            //InvoiceDebugger.InvoicePdfGeneration(11990281);
+            InvoiceDebugger.InvoiceGeneration(applicationConfig, clientConfig);
 
             // Await exiting the application for debugging purposes. Set break and await exit to alert debugger!
 #if DEBUG
