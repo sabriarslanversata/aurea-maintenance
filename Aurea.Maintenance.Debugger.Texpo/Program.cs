@@ -240,7 +240,8 @@ b1x3zeE1G4Q4
 
             #endregion
 
-            SimulateImportMassEnrollment(@"C:\AESCIS\ISTAMassEnroll11302017pa.xls");
+            string fileName = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData\\ISTAMassEnroll11302017pa.xls");
+            SimulateImportMassEnrollment(fileName);
             Console.ReadLine();
         }
 

@@ -93,6 +93,9 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="MockData\ISTAMassEnroll11302017pa.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Aurea.Maintenance.Debugger.Common\Aurea.Maintenance.Debugger.Common.csproj">
