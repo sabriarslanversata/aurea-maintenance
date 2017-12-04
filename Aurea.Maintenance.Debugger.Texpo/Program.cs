@@ -1,6 +1,11 @@
 ﻿
 
 
+using System.Security.Policy;
+using Aurea.IO;
+using Aurea.Logging;
+using CIS.Clients.Texpo.Import;
+
 namespace Aurea.Maintenance.Debugger.Texpo
 {
     using System;
@@ -16,7 +21,7 @@ namespace Aurea.Maintenance.Debugger.Texpo
     using Common.Models;
 
     using CIS.BusinessEntity;
-
+    using System.Linq;
 
     public class Program
     {
@@ -41,6 +46,7 @@ namespace Aurea.Maintenance.Debugger.Texpo
 
         private static ClientEnvironmentConfiguration _clientConfig;
         private static GlobalApplicationConfigurationDS.GlobalApplicationConfiguration _appConfig;
+        private static ILogger _logger = new Logger();
 
         public class MyExport : CIS.Clients.Texpo.Export.MainProcess//CIS.Export.BaseExport
         {
@@ -209,7 +215,8 @@ b1x3zeE1G4Q4
             _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.Texpo, Stages.Development);
             _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
 
-            
+
+
             #region old Cases
 
             //ExecuteExport();
@@ -225,11 +232,93 @@ b1x3zeE1G4Q4
             
             //execute Maintenance.CalculateConsumptionDueDates 
             myTask.Execute();
+            
+
+            //SimulateLetterGeneration("360533");
+            ProcessEvents();
 			*/
 
             #endregion
 
-            SimulateLetterGeneration("360533");
+            SimulateImportMassEnrollment(@"C:\AESCIS\ISTAMassEnroll11302017pa.xls");
+            Console.ReadLine();
+        }
+
+        private static void SimulateImportMassEnrollment(string fileName)
+        {
+            DeleteFileImportStatus(fileName);
+            var massEnrollImporter = new MassEnrollImporter(_clientConfig.ConnectionBillingAdmin, _appConfig.ConnectionCsr, _logger);
+            var data = massEnrollImporter.ConvertToEnrollRows(massEnrollImporter.CheckEnrollRows(massEnrollImporter.GetDataSetFromMassEnrollExcelFile(fileName), fileName)).ToArray();
+            var totalRecords = data.Count();
+
+            _logger.Info($"Texpo MassEnroll. {totalRecords} record(s) has/have been sucessfuly read. From file: {fileName}.");
+
+            foreach (var rec in data)
+            {
+                CopyRateAndProduct(rec.RateId);
+            }
+
+            var bSuccess = massEnrollImporter.ImportFile(fileName);
+            _logger.Info($"massEnrollImporter has return with {bSuccess}");
+
+        }
+
+        private static void DeleteFileImportStatus(string fileName)
+        {
+            var fileNameToInsert = Path.GetFileName(fileName);
+            string checkSum;
+
+            using (var f = File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.None))
+            {
+                using (var reader = new StreamReader(f))
+                {
+                    var cry = new CIS.Library.Cryptography.Hash(CIS.Library.Cryptography.Hash.ServiceProviderOptions.MD5);
+                    checkSum = cry.Encrypt(reader.ReadToEnd(), "arc3iWY=");
+                }
+            }
+
+            _logger.Info($"going to delete old import status for '{fileNameToInsert}' and chksum '{checkSum}'");
+
+            var sql = $"DELETE FROM dbo.tblFile WHERE [FileName] = '{fileNameToInsert}' OR [FileHash] = '{checkSum}'";
+            DB.ExecuteQuery(sql);
+        }
+
+        private static void CopyRateAndProduct(string rateId)
+        {
+            string sql=$@"
+
+PRINT 'Copy Rate'
+SET IDENTITY_INSERT daes_Texpo..Rate ON
+
+INSERT INTO daes_Texpo..Rate ([RateID], [CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [LDCCode], [ConsUnitId], [ActiveFlag], [LDCRateCode])
+SELECT  [RateID], [CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [LDCCode], [ConsUnitId], [ActiveFlag], [LDCRateCode]
+FROM  saes_Texpo..Rate WHERE RateID = '{rateId}'
+AND NOT EXISTS(SELECT 1 FROM daes_Texpo..Rate WHERE RateID = '{rateId}')
+
+SET IDENTITY_INSERT daes_Texpo..Rate OFF
+
+PRINT 'Copy RateDetail'
+SET IDENTITY_INSERT daes_Texpo..RateDetail ON
+
+INSERT INTO daes_Texpo..RateDetail ([RateDetID], [RateID], [CategoryID], [RateTypeID], [ConsUnitID], [RateDescID], [EffectiveDate], [ExpirationDate], [RateAmt], [RateAmt2], [RateAmt3], [FixedAdder], [MinDetAmt], [MaxDetAmt], [GLAcct], [RangeLower], [RangeUpper], [CustType], [Graduated], [Progressive], [AmountCap], [MaxRateAmt], [MinRateAmt], [CategoryRollup], [Taxable], [ChargeType], [MiscData1], [FixedCapRate], [ScaleFactor1], [ScaleFactor2], [TemplateRateDetID], [Margin], [UsageClassId], [LegacyRateDetailId], [Active], [StatusID], [Building], [ServiceTypeID], [TaxCategoryID], [UtilityID], [UtilityInvoiceTemplateDetailID], [RateVariableTypeId], [MinDays], [MaxDays], [MeterMultiplierFlag], [CreateDate], [BlockPriceIndicator], [RateTransitionId], [BlendRatio], [ContractVolumeID], [CreatedByUserId], [ModifiedByUserId], [ModifiedDate], [TOUTemplateID], [TOUTemplateRegisterID], [TOUTemplateRegisterName])
+SELECT  [RateDetID], [RateID], [CategoryID], [RateTypeID], [ConsUnitID], [RateDescID], [EffectiveDate], [ExpirationDate], [RateAmt], [RateAmt2], [RateAmt3], [FixedAdder], [MinDetAmt], [MaxDetAmt], [GLAcct], [RangeLower], [RangeUpper], [CustType], [Graduated], [Progressive], [AmountCap], [MaxRateAmt], [MinRateAmt], [CategoryRollup], [Taxable], [ChargeType], [MiscData1], [FixedCapRate], [ScaleFactor1], [ScaleFactor2], [TemplateRateDetID], [Margin], [UsageClassId], [LegacyRateDetailId], [Active], [StatusID], [Building], [ServiceTypeID], [TaxCategoryID], [UtilityID], [UtilityInvoiceTemplateDetailID], [RateVariableTypeId], [MinDays], [MaxDays], [MeterMultiplierFlag], [CreateDate], [BlockPriceIndicator], [RateTransitionId], [BlendRatio], [ContractVolumeID], [CreatedByUserId], [ModifiedByUserId], [ModifiedDate], [TOUTemplateID], [TOUTemplateRegisterID], [TOUTemplateRegisterName]
+FROM  saes_Texpo..RateDetail WHERE RateID = '{rateId}'
+AND NOT EXISTS(SELECT 1 FROM daes_Texpo..RateDetail WHERE RateID = '{rateId}')
+
+SET IDENTITY_INSERT daes_Texpo..RateDetail OFF
+
+PRINT 'Copy Product'
+SET IDENTITY_INSERT daes_Texpo..Product ON
+
+INSERT INTO daes_Texpo..Product ([ProductID], [RateID], [LDCCode], [PlanType], [TDSPTemplateID], [Description], [BeginDate], [EndDate], [CustType], [Graduated], [RangeTier1], [RangeTier2], [SortOrder], [ActiveFlag], [Uplift], [CSATDSPTemplateID], [CAATDSPTemplateID], [PriceDescription], [MarketingCode], [RateTypeID], [Default], [ConsUnitID], [DivisionCode], [ServiceType], [CSPId], [TermsId], [RolloverProductId], [CommissionId], [CommissionAmt], [CancelFeeId], [MonthlyChargeId], [ProductCode], [RatePackageId], [ProductName], [TermDate], [DiscountTypeId], [DiscountAmount], [ProductZoneID], [IsGreen], [IsBestChoice], [ActiveEnrollmentFlag], [DepositAmount], [CreditScoreThreshold], [Incentives])
+SELECT  [ProductID], [RateID], [LDCCode], [PlanType], [TDSPTemplateID], [Description], [BeginDate], [EndDate], [CustType], [Graduated], [RangeTier1], [RangeTier2], [SortOrder], [ActiveFlag], [Uplift], [CSATDSPTemplateID], [CAATDSPTemplateID], [PriceDescription], [MarketingCode], [RateTypeID], [Default], [ConsUnitID], [DivisionCode], [ServiceType], [CSPId], [TermsId], [RolloverProductId], [CommissionId], [CommissionAmt], [CancelFeeId], [MonthlyChargeId], [ProductCode], [RatePackageId], [ProductName], [TermDate], [DiscountTypeId], [DiscountAmount], [ProductZoneID], [IsGreen], [IsBestChoice], [ActiveEnrollmentFlag], [DepositAmount], [CreditScoreThreshold], [Incentives]
+FROM  saes_Texpo..Product WHERE RateId = '{rateId}'
+AND NOT EXISTS(SELECT 1 FROM daes_Texpo..Product WHERE RateId = '{rateId}')
+
+SET IDENTITY_INSERT daes_Texpo..Product OFF
+
+";
+            DB.ExecuteQuery(sql);
         }
 
         private static void SimulateLetterGeneration(string custNo)
