@@ -8,7 +8,7 @@
     {
         public static void Main(string[] args)
         {
-            var client = new JiraRestClient("https://jira.devfactory.com", "kkilicoglu", "Sdq215914366*-");
+            var client = new JiraRestClient("https://jira.devfactory.com", "kkilicoglu", "xxx");
 
             var user = client.GetUser("kkilicoglu");
 
