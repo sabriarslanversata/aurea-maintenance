@@ -42,10 +42,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.BusinessEntity.dll</HintPath>
     </Reference>
-    <Reference Include="CIS.Clients">
+    <Reference Include="CIS.Clients, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Clients.dll</HintPath>
     </Reference>
-    <Reference Include="CIS.Clients.Texpo">
+    <Reference Include="CIS.Clients.Texpo, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Clients.Texpo.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Components, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -75,7 +77,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Framework.Event.EventGeneratorBase.dll</HintPath>
     </Reference>
-    <Reference Include="CIS.Import, Version=16.1.0.0, Culture=neutral, PublicKeyToken=null" />
+    <Reference Include="CIS.Import, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Import.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.Library.Cryptography, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Library.Cryptography.dll</HintPath>
