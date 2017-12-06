@@ -123,7 +123,34 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Connected Services\TexpoWS\Enrollment.wsdl" />
+    <None Include="MockData\ISTAMassEnroll10302017pav3..xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="MockData\ISTAMassEnroll11302017pa.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="MockData\ISTAMassEnroll11302017pav1..xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="MockData\ISTAMassEnroll11302017pav2.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="MockData\Success\ISTAMassEnroll12012017.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="MockData\Success\ISTAMassEnroll12012017pa.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="MockData\Success\ISTAMassEnroll12012017v1.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="MockData\Success\ISTAMassEnroll12042017pa.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="MockData\Success\READY_FOR_ISTA_MassEnrollTEXPOPGE12012017v2.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="MockData\Success\READY_FOR_ISTA_MassEnrollTEXPOPGE12042017v1.xls">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Properties\DataSources\System.Data.DataSet.datasource" />

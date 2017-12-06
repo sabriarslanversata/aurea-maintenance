@@ -243,9 +243,15 @@ b1x3zeE1G4Q4
 			*/
 
             #endregion
-
-            string fileName = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData\\ISTAMassEnroll11302017pa.xls");
-            SimulateImportMassEnrollment(fileName);
+            
+            string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
+            Directory.EnumerateFiles(dirToProcess, "*.xls", SearchOption.AllDirectories).ForEach(
+                filename =>
+                {
+                    SimulateImportMassEnrollment(filename);
+                }
+            );
+            
             Console.ReadLine();
         }
 
