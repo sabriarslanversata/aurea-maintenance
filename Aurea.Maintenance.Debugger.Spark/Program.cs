@@ -58,16 +58,22 @@
         public static void Main(string[] args)
         {
             // Set client configuration and then the application configuration context.            
-            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.StarTex, Stages.Development);
+            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.Spark, Stages.Development);
             _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
 
-            
-            simulateAESCIS14129("002576466");
+            SimulateCalcuateNextRateTransitionDate();
+            //simulateAESCIS14129("002576466");
             //ProcessEvents();
 
             //PrepareMockDataForLetterGeneration();
             //GenerateEventsForLetterGeneration();
             //RestoreData2OriginalLetterGeneration();
+        }
+
+        private static void SimulateCalcuateNextRateTransitionDate()
+        {
+            var maintenance = new MyMaintenance(_appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _clientConfig.ConnectionBillingAdmin);
+            maintenance.CalcuateNextRateTransitionDate();
         }
 
         private static void simulateAESCIS14129(string custNo)
