@@ -127,7 +127,7 @@
 
         private static void CopyCustomersAndDetailsForProductRollOver(List<int> custIdList)
         {
-            //copy +Customer, +Address, +Premise, +CustomerAdditionalInfo, +AccountsReceivable, +Rate, +RateDetail, +RateTransition, +Product, --Terms, +Contract, ClientCustomer.Contract, Meter ...
+            //copy +Customer, +Address, +Premise, +CustomerAdditionalInfo, +AccountsReceivable, +Rate, +RateDetail, +RateTransition, +Product, --Terms, +Contract, +ClientCustomer.Contract, +Meter, +EdiLoadProfile ...
             foreach (var custId in custIdList)
             {
                 var sql = $@"
@@ -313,6 +313,22 @@ WHERE
   AND NOT EXISTS(SELECT 1 FROM daes_Spark..Meter dst WHERE src.MeterId = dst.MeterId )
 
 SET IDENTITY_INSERT daes_Spark..Meter OFF
+
+
+PRINT 'Copy EdiLoadProfile'
+
+SET IDENTITY_INSERT daes_Spark..EdiLoadProfile ON
+INSERT INTO daes_Spark..EdiLoadProfile
+([EdiLoadProfileId], [LoadProfile], [LDCCOde], [Migr_LoadProfile])
+SELECT
+ [EdiLoadProfileId], [LoadProfile], [LDCCOde], [Migr_LoadProfile]
+FROM saes_Spark..EdiLoadProfile src
+WHERE
+  src.EdiLoadProfileId IN ( SELECT EdiLoadProfileId FROM saes_Spark..Meter WHERE MeterId IN (SELECT MeterId FROM saes_Spark..Meter WHERE PremID IN (SELECT PremID FROM saes_Spark..Premise WHERE CustId = @CustId)))
+  AND NOT EXISTS(SELECT 1 FROM daes_Spark..EdiLoadProfile dst WHERE src.EdiLoadProfileId = dst.EdiLoadProfileId )
+
+SET IDENTITY_INSERT daes_Spark..EdiLoadProfile OFF
+
 
 ";
                 try
