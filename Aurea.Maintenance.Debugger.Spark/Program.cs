@@ -128,9 +128,12 @@
         private static void CopyCustomersAndDetailsForProductRollOver(List<int> custIdList)
         {
             //copy +Customer, +Address, +Premise, +CustomerAdditionalInfo, +AccountsReceivable, +Rate, +RateDetail, +RateTransition, +Product, --Terms, +Contract, +ClientCustomer.Contract, +Meter, +EdiLoadProfile ...
+            var currentIterationNumber = 0;
             foreach (var custId in custIdList)
             {
-                var sql = $@"
+                using (var ts = TransactionFactory.CreateTransactionScope())
+                {
+                    var sql = $@"
 DECLARE @CustID AS INT = {custId}
 
 PRINT 'BEGIN Copy Customer'
@@ -301,20 +304,6 @@ WHERE
 	src.CustId = @CustId
 	AND NOT EXISTS(SELECT 1 FROM daes_Spark.ClientCustomer.CustomerAdditionalInfo dst WHERE src.CustId = dst.CustId )
 
-PRINT 'Copy Meter'
-SET IDENTITY_INSERT daes_Spark..Meter ON
-INSERT INTO daes_Spark..Meter
-( [MeterID], [ESIIDID], [AcctID], [AddrID], [TypeID], [PremID], [MeterNo], [MeterUniqueNo], [Pool], [MeterReadType], [MeterFactoryID], [MeterFactor], [BegRead], [EndRead], [DateFrom], [Dateto], [MeterStatus], [SourceLevel], [CreateDate], [EdiRateClassId], [EdiLoadProfileId], [AMSIndicator])
-SELECT
- [MeterID], [ESIIDID], [AcctID], [AddrID], [TypeID], [PremID], [MeterNo], [MeterUniqueNo], [Pool], [MeterReadType], [MeterFactoryID], [MeterFactor], [BegRead], [EndRead], [DateFrom], [Dateto], [MeterStatus], [SourceLevel], [CreateDate], [EdiRateClassId], [EdiLoadProfileId], [AMSIndicator]
-FROM saes_Spark..Meter src
-WHERE
-  src.MeterID IN (SELECT MeterId FROM saes_Spark..Meter WHERE PremID IN (SELECT PremID FROM saes_Spark..Premise WHERE CustId = @CustId))
-  AND NOT EXISTS(SELECT 1 FROM daes_Spark..Meter dst WHERE src.MeterId = dst.MeterId )
-
-SET IDENTITY_INSERT daes_Spark..Meter OFF
-
-
 PRINT 'Copy EdiLoadProfile'
 
 SET IDENTITY_INSERT daes_Spark..EdiLoadProfile ON
@@ -329,15 +318,34 @@ WHERE
 
 SET IDENTITY_INSERT daes_Spark..EdiLoadProfile OFF
 
+PRINT 'Copy Meter'
+SET IDENTITY_INSERT daes_Spark..Meter ON
+INSERT INTO daes_Spark..Meter
+( [MeterID], [ESIIDID], [AcctID], [AddrID], [TypeID], [PremID], [MeterNo], [MeterUniqueNo], [Pool], [MeterReadType], [MeterFactoryID], [MeterFactor], [BegRead], [EndRead], [DateFrom], [Dateto], [MeterStatus], [SourceLevel], [CreateDate], [EdiRateClassId], [EdiLoadProfileId], [AMSIndicator])
+SELECT
+ [MeterID], [ESIIDID], [AcctID], [AddrID], [TypeID], [PremID], [MeterNo], [MeterUniqueNo], [Pool], [MeterReadType], [MeterFactoryID], [MeterFactor], [BegRead], [EndRead], [DateFrom], [Dateto], [MeterStatus], [SourceLevel], [CreateDate], [EdiRateClassId], [EdiLoadProfileId], [AMSIndicator]
+FROM saes_Spark..Meter src
+WHERE
+  src.MeterID IN (SELECT MeterId FROM saes_Spark..Meter WHERE PremID IN (SELECT PremID FROM saes_Spark..Premise WHERE CustId = @CustId))
+  AND NOT EXISTS(SELECT 1 FROM daes_Spark..Meter dst WHERE src.MeterId = dst.MeterId )
+
+SET IDENTITY_INSERT daes_Spark..Meter OFF
+
+
+
 
 ";
-                try
-                {
-                    DB.ExecuteQuery(sql);
-                }
-                catch (Exception e)
-                {
-                    _logger.Error(e, $"Error Occurred when copying customer {custId}");
+                    try
+                    {
+                        DB.ExecuteQuery(sql);
+                        ts.Complete();
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.Error(e, $"Error Occurred when copying customer {custId}, currentIterationNumber {currentIterationNumber}");
+                    }
+                    currentIterationNumber++;
+                    _logger.Info($"{currentIterationNumber} copied");
                 }
             }
         }
