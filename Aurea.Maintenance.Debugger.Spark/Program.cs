@@ -1,4 +1,7 @@
-﻿namespace Aurea.Maintenance.Debugger.Spark
+﻿using Aurea.Maintenance.Debugger.Spark.Extensions;
+using Aurea.Maintenance.Debugger.Spark.Models;
+
+namespace Aurea.Maintenance.Debugger.Spark
 {
     using System;
     using Common;
@@ -67,11 +70,9 @@
         private static ClientEnvironmentConfiguration _clientConfig;
         private static GlobalApplicationConfigurationDS.GlobalApplicationConfiguration _appConfig;
 
-        private static ILogger _logger = new Logger();
+        // ReSharper disable once InconsistentNaming
+        private static readonly ILogger _logger = new Logger();
 
-        private static string _CustIdsToCopy =
-                "1749306,103068,1693741,1748242,1501035,1724010,1735480,1105846,90391,100672,227085,102461,163911,175374,90932,98862,109823,112572,55497,61777,113936,229332,1859074,135315,55216,1550323,1403255,1404806,1529722,101008,103231,1693847,53163,72545,88783,1734605,1734622,99688,142788,1099378,1648940,1716743,1732551,89850,54043,57817,1534618,164982,1653128,1696034,174162,90022,94087,98587,54418,1751709,1933196,1635423,1933217,1933220,1933235,1933241,1933269,1933325,1933388,1933426,1933453,1933473,1933483,1933496,1854905,69344,91717,174282,106878,110659,228754,1698473,81708,175710,163839,94516,154124,158842,68252,95828,52734,53725,106085,111186,71826,78311,83160,160982,1631043,1732045,60191,71626,81710,102644,170211,63832,70979,110458,128239,174277,78420,93379,94922,53905,102079,1510123,1715100,167355,135545,155548,228956,53227,125356,167088,1732023,74053,1550288,56548,161960,164976,57442,1104720,110725,112339,119575,135928,174463,56798,63440,104855,131356,72436,97103,114832,164702,172812,61166,68051,104385,105927,53057,96183,103179,112487,146218,1760418,95325,114424,91104,56400,61679,92544,106061,161960,57210,110258,53009,167088,1763324,100672,100938,101648,116870,55065,60210,92747,55176,138677,138779,158842,107168,312020,101547,106085,113135,58270,71626,176237,54974,102751,108207,78972,97833,101299,58110,61539,53620,54204,63773,198541,118578,55209,72545,164632,228533,74875,96075,101887,56072,72161,101426,161679,57610,58746,89573,1644135,78285,96163,1821843,57612,58193,62470,81001,90322,100172,106773"
-            ;
         public static void Main(string[] args)
         {
             // Set client configuration and then the application configuration context.            
@@ -89,6 +90,9 @@
             RestoreData2OriginalLetterGeneration();
             */
             #endregion
+            var myCust = new Customer();
+            myCust.CustID = 1;
+            var result = myCust.CopyEntity(_appConfig.ConnectionCsr);
 
             //FindAndCopyCustomersWhichRTsWithNo814_C();
             SimulateCalcuateNextRateTransitionDate();
@@ -132,13 +136,14 @@
 
         private static void CopyCustomersAndDetailsForProductRollOver(List<int> custIdList)
         {
+            
             //copy +Customer, +Address, +Premise, +CustomerAdditionalInfo, +AccountsReceivable, +Rate, +RateDetail, +RateTransition, +Product, --Terms, +Contract, +ClientCustomer.Contract, +Meter, +EdiLoadProfile ...
             var currentIterationNumber = 0;
             foreach (var custId in custIdList)
             {
                 using (var ts = TransactionFactory.CreateTransactionScope())
                 {
-                    var sql = $@"
+                            var sql = $@"
 DECLARE @CustID AS INT = {custId}
 
 PRINT 'BEGIN Copy Customer'
@@ -357,7 +362,6 @@ SET IDENTITY_INSERT daes_Spark..Meter OFF
 
         private static void SimulateProductRollOver()
         {
-            //copy Customer, Rate, RateDetails, RateTransition, Product, Premise, CustomerAdditionalInfo, ...
             var dataGateway = new DataGateway
             {
                 ClientId = 48,

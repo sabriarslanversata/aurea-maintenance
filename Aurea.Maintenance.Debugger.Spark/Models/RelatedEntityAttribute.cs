@@ -1,0 +1,29 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Aurea.Maintenance.Debugger.Spark.Extensions;
+
+namespace Aurea.Maintenance.Debugger.Spark.Models
+{
+    [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = true)]
+    public class RelatedEntityAttribute : System.Attribute
+    {
+        public Type RelatedEntity;
+        public string RelatedField;
+        public string EntityField;
+        public bool IsRequired;
+        
+        public RelatedEntityAttribute(Type relatedEntity)
+        {
+            this.RelatedEntity = relatedEntity;
+            var tableAttr = relatedEntity.GetCustomAttributesIncludingBaseInterfaces<TableAttribute>().First();
+            if (tableAttr.HasIdentity)
+            {
+                this.EntityField = tableAttr.PrimaryKey;
+            }
+
+        }
+    }
+}

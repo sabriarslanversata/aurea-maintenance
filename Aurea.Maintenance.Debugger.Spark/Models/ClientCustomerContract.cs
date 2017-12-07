@@ -1,0 +1,18 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+// ReSharper disable InconsistentNaming
+
+namespace Aurea.Maintenance.Debugger.Spark.Models
+{
+    [Table("Contract", PrimaryKey = "ContractID", TableSchema = "ClientCustomer", HasIdentity = false)]
+    [RelatedEntity(typeof(Contract), IsRequired = true)]
+    public class ClientCustomerContract:ICopyableEntity
+    {
+        public int ContractID { get; set; }
+        public decimal SegmentationAdjustmentToEnergyRate { get; set; }
+        public string SegmentationLabel { get; set; }
+    }
+}

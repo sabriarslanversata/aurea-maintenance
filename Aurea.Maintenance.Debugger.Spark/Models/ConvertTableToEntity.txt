@@ -1,0 +1,25 @@
+﻿select STUFF((
+select 
+	CHAR(13)+CHAR(10)+
+	'public ' +
+	case 
+	when data_type = 'int' then ' int '
+	when data_type = 'tinyint' then ' int '
+	when data_type = 'smallint' then ' int '
+	when data_type = 'varchar' then ' string '
+	when data_type = 'nvarchar' then ' string '
+	when data_type = 'char' then ' string '
+	when data_type = 'smalldatetime' then ' DateTime '
+	when data_type = 'datetime' then ' DateTime '
+	when data_type = 'datetime2' then ' DateTime '
+	when data_type = 'float' then ' float '
+	when data_type = 'money' then ' decimal '
+	when data_type = 'smallmoney' then ' decimal '
+	when data_type = 'decimal' then ' decimal '
+	when data_type = 'bit' then ' short '
+	end+
+	column_name+ '{get; set;}' 
+from information_schema.columns
+where table_name = '[ReplaceWithTableName]' and table_schema='[ReplaceWithSchema]'
+order by ordinal_position
+FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '')

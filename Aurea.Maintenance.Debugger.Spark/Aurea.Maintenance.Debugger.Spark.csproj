@@ -97,6 +97,30 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\AddressExtension.cs" />
+    <Compile Include="Extensions\AttributeExtension.cs" />
+    <Compile Include="Extensions\ClassExtension.cs" />
+    <Compile Include="Extensions\ClientCustomerContractExtension.cs" />
+    <Compile Include="Extensions\CustomerExtension.cs" />
+    <Compile Include="Models\RequiredEntityAttribute.cs" />
+    <Compile Include="Models\TableAttributes.cs" />
+    <Compile Include="Extensions\ICopyableExtension.cs" />
+    <Compile Include="Extensions\MeterExtension.cs" />
+    <Compile Include="Models\AccountsReceivable.cs" />
+    <Compile Include="Models\Address.cs" />
+    <Compile Include="Models\ClientCustomerContract.cs" />
+    <Compile Include="Models\ClientCustomerCustomerAdditionalInfo.cs" />
+    <Compile Include="Models\Contract.cs" />
+    <Compile Include="Models\Customer.cs" />
+    <Compile Include="Models\CustomerAdditionalInfo.cs" />
+    <Compile Include="Models\EdiLoadProfile.cs" />
+    <Compile Include="Models\ICopyableEntity.cs" />
+    <Compile Include="Models\Meter.cs" />
+    <Compile Include="Models\Premise.cs" />
+    <Compile Include="Models\Product.cs" />
+    <Compile Include="Models\Rate.cs" />
+    <Compile Include="Models\RateDetail.cs" />
+    <Compile Include="Models\RateTransition.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -108,6 +132,9 @@
       <Project>{5243BE0E-A73B-4A56-B992-143871C94BD2}</Project>
       <Name>Aurea.Maintenance.Debugger.Common</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Models\ConvertTableToEntity.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
