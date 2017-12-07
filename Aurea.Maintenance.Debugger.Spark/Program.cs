@@ -90,9 +90,10 @@
             RestoreData2OriginalLetterGeneration();
             */
             #endregion
-            var myCust = new Customer();
-            myCust.CustID = 1;
-            var result = myCust.CopyEntityFromSaes2Daes(_appConfig.ConnectionCsr, "Spark", _logger, true);
+
+            //var myCust = new Customer();
+            //myCust.CustID = 1;
+            //var result = myCust.CopyEntityFromSaes2Daes(_appConfig.ConnectionCsr, "Spark", _logger, true);
             
             //FindAndCopyCustomersWhichRTsWithNo814_C();
             SimulateCalcuateNextRateTransitionDate();
