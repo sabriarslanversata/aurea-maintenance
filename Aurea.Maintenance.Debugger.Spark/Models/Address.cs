@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Aurea.Maintenance.Debugger.Spark.Extensions;
+using Aurea.Maintenance.Debugger.Common.Models;
+
 // ReSharper disable InconsistentNaming
 
 namespace Aurea.Maintenance.Debugger.Spark.Models

@@ -97,15 +97,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Extensions\AddressExtension.cs" />
-    <Compile Include="Extensions\AttributeExtension.cs" />
-    <Compile Include="Extensions\ClassExtension.cs" />
-    <Compile Include="Extensions\ClientCustomerContractExtension.cs" />
-    <Compile Include="Extensions\CustomerExtension.cs" />
-    <Compile Include="Models\RelatedEntityAttribute.cs" />
-    <Compile Include="Models\TableAttributes.cs" />
-    <Compile Include="Extensions\ICopyableExtension.cs" />
-    <Compile Include="Extensions\MeterExtension.cs" />
     <Compile Include="Models\AccountsReceivable.cs" />
     <Compile Include="Models\Address.cs" />
     <Compile Include="Models\ClientCustomerContract.cs" />
@@ -114,7 +105,6 @@
     <Compile Include="Models\Customer.cs" />
     <Compile Include="Models\CustomerAdditionalInfo.cs" />
     <Compile Include="Models\EdiLoadProfile.cs" />
-    <Compile Include="Models\ICopyableEntity.cs" />
     <Compile Include="Models\Meter.cs" />
     <Compile Include="Models\Premise.cs" />
     <Compile Include="Models\Product.cs" />

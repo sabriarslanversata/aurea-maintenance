@@ -1,7 +1,4 @@
-﻿using Aurea.Maintenance.Debugger.Spark.Extensions;
-using Aurea.Maintenance.Debugger.Spark.Models;
-
-namespace Aurea.Maintenance.Debugger.Spark
+﻿namespace Aurea.Maintenance.Debugger.Spark
 {
     using System;
     using Common;
@@ -23,6 +20,9 @@ namespace Aurea.Maintenance.Debugger.Spark
     using System.Runtime.Remoting.Contexts;
     using CIS.Clients.Spark.Model.Customer;
     using CIS.Framework.Data;
+    using Aurea.Maintenance.Debugger.Common.Extensions;
+    using Aurea.Maintenance.Debugger.Spark.Models;
+
 
     public class Program
     {
@@ -92,8 +92,8 @@ namespace Aurea.Maintenance.Debugger.Spark
             #endregion
             var myCust = new Customer();
             myCust.CustID = 1;
-            var result = myCust.CopyEntity(_appConfig.ConnectionCsr, _logger, true);
-
+            var result = myCust.CopyEntityFromSaes2Daes(_appConfig.ConnectionCsr, _logger, true);
+            
             //FindAndCopyCustomersWhichRTsWithNo814_C();
             SimulateCalcuateNextRateTransitionDate();
             SimulateProductRollOver();
