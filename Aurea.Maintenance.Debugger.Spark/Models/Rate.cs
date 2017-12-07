@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 namespace Aurea.Maintenance.Debugger.Spark.Models
 {
     [Table("Rate")]
+    [RelatedEntity(typeof(RateDetail), RelatedField = "RateID")]
     public class Rate : ICopyableEntity
     {
         public int RateID { get; set; }

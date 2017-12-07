@@ -18,6 +18,7 @@ namespace Aurea.Maintenance.Debugger.Spark.Models
         public RelatedEntityAttribute(Type relatedEntity)
         {
             this.RelatedEntity = relatedEntity;
+            this.IsRequiredBeforeCopy = false;
             var tableAttr = relatedEntity.GetCustomAttributesIncludingBaseInterfaces<TableAttribute>().First();
             if (tableAttr.HasIdentity)
             {

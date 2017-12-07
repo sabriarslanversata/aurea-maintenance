@@ -12,7 +12,11 @@ namespace Aurea.Maintenance.Debugger.Spark.Models
     [RelatedEntity(typeof(Address), RelatedField = "SiteAddrId", IsRequiredBeforeCopy = true)]
     [RelatedEntity(typeof(Address), RelatedField = "MailAddrId", IsRequiredBeforeCopy = true)]
     [RelatedEntity(typeof(Address), RelatedField = "CorrAddrId", IsRequiredBeforeCopy = true)]
-    [RelatedEntity(typeof(Rate), RelatedField = "RateId", IsRequiredBeforeCopy = true)]
+    [RelatedEntity(typeof(Rate), RelatedField = "AcctsRecID", IsRequiredBeforeCopy = true)]
+    [RelatedEntity(typeof(AccountsReceivable), RelatedField = "RateId", IsRequiredBeforeCopy = true)]
+    [RelatedEntity(typeof(CustomerAdditionalInfo), RelatedField = "CustID")]
+    [RelatedEntity(typeof(Contract), RelatedField = "CustID")]
+    [RelatedEntity(typeof(RateTransition), RelatedField = "CustID")]
     public class Customer : ICopyableEntity
     {
         public int CustID { get; set; }

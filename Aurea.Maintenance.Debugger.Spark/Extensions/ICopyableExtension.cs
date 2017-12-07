@@ -34,16 +34,13 @@ namespace Aurea.Maintenance.Debugger.Spark.Extensions
         private static bool CopyChildEntity<T>(T entity, TableAttribute tableAttribute, IEnumerable<RelatedEntityAttribute> relatedAttributes, string connectionString, ILogger logger, bool dryRun)
         {
             logger.Info($"Start copying table {tableAttribute.TableName}");
-            foreach (var relatedAttribute in relatedAttributes)
+            foreach (var relatedAttribute in relatedAttributes.Where(x => x.IsRequiredBeforeCopy))
             {
-                if (relatedAttribute.IsRequiredBeforeCopy)
+                var childTableAttribute = relatedAttribute.RelatedEntity.GetCustomAttributesIncludingBaseInterfaces<TableAttribute>().First();
+                var childRelatedAttributes = relatedAttribute.RelatedEntity.GetCustomAttributesIncludingBaseInterfaces<RelatedEntityAttribute>();
+                if (!CopyChildEntity(relatedAttribute.RelatedEntity, childTableAttribute, childRelatedAttributes, connectionString, logger, dryRun))
                 {
-                    var childTableAttribute = relatedAttribute.RelatedEntity.GetCustomAttributesIncludingBaseInterfaces<TableAttribute>().First();
-                    var childRelatedAttributes = relatedAttribute.RelatedEntity.GetCustomAttributesIncludingBaseInterfaces<RelatedEntityAttribute>();
-                    if (!CopyChildEntity(relatedAttribute.RelatedEntity, childTableAttribute, childRelatedAttributes, connectionString, logger, dryRun))
-                    {
-                        return false;
-                    }
+                    return false;
                 }
             }
 
@@ -54,6 +51,18 @@ namespace Aurea.Maintenance.Debugger.Spark.Extensions
                 {
                     SqlHelper.ExecuteNonQuery(SqlHelper.CreateCommand(connectionString, sql, CommandType.Text));
                 }
+
+                foreach (var relatedAttribute in relatedAttributes.Where(x => !x.IsRequiredBeforeCopy))
+                {
+                    var childTableAttribute = relatedAttribute.RelatedEntity.GetCustomAttributesIncludingBaseInterfaces<TableAttribute>().First();
+                    var childRelatedAttributes = relatedAttribute.RelatedEntity.GetCustomAttributesIncludingBaseInterfaces<RelatedEntityAttribute>();
+                    if (!CopyChildEntity(relatedAttribute.RelatedEntity, childTableAttribute, childRelatedAttributes, connectionString, logger,
+                        dryRun))
+                    {
+                        return false;
+                    }
+                }
+
                 return true;
             }
             catch (Exception e)

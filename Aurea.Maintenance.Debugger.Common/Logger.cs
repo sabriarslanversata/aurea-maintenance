@@ -10,17 +10,15 @@ namespace Aurea.Maintenance.Debugger.Common
     {
         public void Log(LogLevel type, string message, long? messageId = null)
         {
-            string logMessage = $"{DateTime.Now.ToString("s")} {type} - {message}";
-            Console.WriteLine(logMessage);
-            Debug.WriteLine(logMessage);
+            Console.WriteLine($"{DateTime.Now.ToString("s")} {type} - {message}");
+            Debug.WriteLine($"{type} - {message}");
             
         }
 
         internal static void Error(Exception ex, string v)
         {
-            string logMessage = $"{DateTime.Now.ToString("s")} Error {v} : \r\n{ex.Message}";
-            Console.WriteLine(logMessage);
-            Debug.WriteLine(logMessage);
+            Console.WriteLine($"{DateTime.Now.ToString("s")} Error {v} : \r\n{ex.Message}");
+            Debug.WriteLine($"Error {v} : \r\n{ex.Message}");
         }
     }
 }
