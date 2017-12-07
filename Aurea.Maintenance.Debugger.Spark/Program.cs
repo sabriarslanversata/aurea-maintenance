@@ -92,7 +92,7 @@ namespace Aurea.Maintenance.Debugger.Spark
             #endregion
             var myCust = new Customer();
             myCust.CustID = 1;
-            var result = myCust.CopyEntity(_appConfig.ConnectionCsr);
+            var result = myCust.CopyEntity(_appConfig.ConnectionCsr, _logger, true);
 
             //FindAndCopyCustomersWhichRTsWithNo814_C();
             SimulateCalcuateNextRateTransitionDate();
