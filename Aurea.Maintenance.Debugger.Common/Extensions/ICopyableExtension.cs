@@ -3,17 +3,19 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Aurea.Logging;
 using Aurea.Maintenance.Debugger.Common;
 using Aurea.Maintenance.Debugger.Common.Models;
 using CIS.Framework.Data;
+using CIS.Framework.Security;
 
 namespace Aurea.Maintenance.Debugger.Common.Extensions
 {
 	public static class ICopyableExtension
 	{
-		public static bool CopyEntityFromSaes2Daes<T>(this T entity, string connectionString, ILogger logger, bool dryRun) where T :  ICopyableEntity
+		public static bool CopyEntityFromSaes2Daes<T>(this T entity, string connectionString, string dbPrefix, ILogger logger, bool dryRun) where T :  ICopyableEntity
 		{
 			logger.Info($"Starting copying of type {entity.ToString()}");
 			using (var ts = TransactionFactory.CreateTransactionScope())
@@ -21,7 +23,7 @@ namespace Aurea.Maintenance.Debugger.Common.Extensions
 				var tableAttribute = entity.GetType().GetCustomAttributesIncludingBaseInterfaces<TableAttribute>().First();
 				var relatedAttributes = entity.GetType().GetCustomAttributesIncludingBaseInterfaces<RelatedEntityAttribute>();
 
-				if (CopyChildEntity(entity.GetType(), tableAttribute, relatedAttributes, connectionString, logger, dryRun))
+				if (CopyChildEntity(entity.GetType(), tableAttribute, relatedAttributes, connectionString,dbPrefix, logger, dryRun))
 				{
 					ts.Complete();
 					return true;
@@ -31,20 +33,20 @@ namespace Aurea.Maintenance.Debugger.Common.Extensions
 			}
 		}
 
-		private static bool CopyChildEntity(Type entity, TableAttribute tableAttribute, IEnumerable<RelatedEntityAttribute> relatedAttributes, string connectionString, ILogger logger, bool dryRun)
+		private static bool CopyChildEntity(Type entity, TableAttribute tableAttribute, IEnumerable<RelatedEntityAttribute> relatedAttributes, string connectionString, string dbPrefix, ILogger logger, bool dryRun)
 		{
 			logger.Info($"Start copying entity {tableAttribute.TableName}");
 			foreach (var relatedAttribute in relatedAttributes.Where(x => x.IsRequiredBeforeCopy && !x.RelatedEntity.Equals(entity)))
 			{
 				var childTableAttribute = relatedAttribute.RelatedEntity.GetCustomAttributesIncludingBaseInterfaces<TableAttribute>().First();
 				var childRelatedAttributes = relatedAttribute.RelatedEntity.GetCustomAttributesIncludingBaseInterfaces<RelatedEntityAttribute>();
-				if (!CopyChildEntity(relatedAttribute.RelatedEntity, childTableAttribute, childRelatedAttributes, connectionString, logger, dryRun))
+				if (!CopyChildEntity(relatedAttribute.RelatedEntity, childTableAttribute, childRelatedAttributes, connectionString,dbPrefix, logger, dryRun))
 				{
 					return false;
 				}
 			}
 
-			var sql = ConstructCopySql(entity, tableAttribute);
+			var sql = ConstructCopySql(entity, tableAttribute, relatedAttributes.First(), dbPrefix);
 			try
 			{
 				if (!dryRun)
@@ -56,7 +58,7 @@ namespace Aurea.Maintenance.Debugger.Common.Extensions
 				{
 					var childTableAttribute = relatedAttribute.RelatedEntity.GetCustomAttributesIncludingBaseInterfaces<TableAttribute>().First();
 					var childRelatedAttributes = relatedAttribute.RelatedEntity.GetCustomAttributesIncludingBaseInterfaces<RelatedEntityAttribute>();
-					if (!CopyChildEntity(relatedAttribute.RelatedEntity, childTableAttribute, childRelatedAttributes, connectionString, logger,
+					if (!CopyChildEntity(relatedAttribute.RelatedEntity, childTableAttribute, childRelatedAttributes, connectionString, dbPrefix, logger,
 						dryRun))
 					{
 						return false;
@@ -72,34 +74,25 @@ namespace Aurea.Maintenance.Debugger.Common.Extensions
 			}
 		}
 
-		private static string ConstructCopySql(Type entity, TableAttribute tableAttribute)
+		private static string ConstructCopySql(Type entity, TableAttribute tableAttribute, RelatedEntityAttribute relatedAttribute, string dbPrefix)
 		{
+			
 			var fields = entity.GetProperties();
-		    var sql = new StringBuilder();
+		    var fieldNames = string.Join(", ", fields.Select(x => $"[{x.Name}]").ToArray());
+			var sql = new StringBuilder();
+			if (tableAttribute.HasIdentity)
+			{
+				sql.AppendLine($"SET IDENTITY_INSERT [daes_{dbPrefix}].[{tableAttribute.TableSchema}].[{tableAttribute.TableName}] ON ");
+			}
+
+			sql.AppendLine($@"INSERT INTO [daes_{dbPrefix}].[{tableAttribute.TableSchema}].[{tableAttribute.TableName}] ({fieldNames}) ");
+		    sql.AppendLine($@"SELECT {fieldNames} FROM [saes_{dbPrefix}].[{tableAttribute.TableSchema}].[{tableAttribute.TableName}] src ");
+		    sql.AppendLine($@"WHERE {tableAttribute.PrimaryKey} = {relatedAttribute.EntityField}  ");
+		    sql.AppendLine($@"AND NOT EXISTS(SELECT 1 FROM [daes_{dbPrefix}].[{tableAttribute.TableSchema}].[{tableAttribute.TableName}] dst WHERE dst.{tableAttribute.PrimaryKey} = src.{tableAttribute.PrimaryKey}");
 		    if (tableAttribute.HasIdentity)
 		    {
-		        sql.Append($"SET IDENTITY_INSERT daes_Spark.{tableAttribute.TableSchema}.{tableAttribute.TableName} ON");
+		        sql.AppendLine($"SET IDENTITY_INSERT [daes_{dbPrefix}].[{tableAttribute.TableSchema}].[{tableAttribute.TableName}] OFF ");
 		    }
-			var sqls = @"PRINT 'Copy Addresses'
-SET IDENTITY_INSERT daes_Spark..Address ON
-
-INSERT INTO daes_Spark..Address
-([AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [Migr_Enrollid], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [CchVersion])
-SELECT
-  [AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [Migr_Enrollid], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [CchVersion] 
-FROM  saes_Spark..Address src
-WHERE AddrID IN (
-	SELECT SiteAddrId FROM saes_Spark..Customer WHERE CustID = @CustID
-	UNION
-	SELECT MailAddrId FROM saes_Spark..Customer WHERE CustID = @CustID
-	UNION
-	SELECT CorrAddrId FROM saes_Spark..Customer WHERE CustID = @CustID
-	UNION
-	SELECT AddrId FROM saes_Spark..Premise WHERE CustID = @CustID
-	UNION
-	SELECT AddrId FROM saes_Spark..Meter WHERE PremID IN (SELECT PremID FROM saes_Spark..Premise WHERE CustId = @CustId)
-)
-AND NOT EXISTS (SELECT 1 FROM daes_Spark..Address dst WHERE src.AddrID = dst.AddrID)";
 
 			return sql.ToString();
 		}
