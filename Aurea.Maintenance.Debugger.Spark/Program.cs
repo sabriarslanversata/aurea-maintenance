@@ -1,12 +1,4 @@
-﻿
-
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Remoting.Contexts;
-using CIS.Clients.Spark.Model.Customer;
-using CIS.Framework.Data;
-
-namespace Aurea.Maintenance.Debugger.Spark
+﻿namespace Aurea.Maintenance.Debugger.Spark
 {
     using System;
     using Common;
@@ -23,6 +15,11 @@ namespace Aurea.Maintenance.Debugger.Spark
     using CIS.Clients.Spark.Model;
     using CIS.Clients.Spark.Processors.Customers.Context;
     using CIS.Clients.Spark.Processors.Customers.Task;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Runtime.Remoting.Contexts;
+    using CIS.Clients.Spark.Model.Customer;
+    using CIS.Framework.Data;
 
     public class Program
     {
@@ -93,7 +90,34 @@ namespace Aurea.Maintenance.Debugger.Spark
             */
             #endregion
 
-            CopyCustomersAndDetailsForProductRollOver(_CustIdsToCopy.Split(',').ToList());
+            var custIdSql = @"
+            SELECT top 1000 rt.CustId
+            FROM dbo.RateTransition rt
+            left JOIN dbo.RateTransition prevRT WITH(NOLOCK) ON prevRt.RateTransitionID = (SELECT MAX(RateTransitionID) FROM dbo.RateTransition rt2 WHERE rt2.CustID = rt.CustID AND rt2.RateTransitionID < rt.RateTransitionID) 
+            LEFT JOIN dbo.ChangeRequest cr WITH(NOLOCK) ON cr.ElementPrimaryKey = rt.RateTransitionID AND cr.ElementID = 6
+            left join Product pro WITH(NOLOCK) on pro.RateID = rt.RateID
+            left join Product pro2 WITH(NOLOCK) on pro2.RateID = prevRT.RateID
+            left join Premise p WITH(NOLOCK) on p.CustId = rt.CustId
+            Left Join PremiseStatus ps WITH(NOLOCK) ON ps.PremiseStatusID = p.StatusID
+            left JOIN CustomerAdditionalInfo cai WITH(NOLOCK) ON cai.CustID = rt.CustID
+            WHERE
+                rt.RateID<> prevRT.RateID
+                AND cr.ChangeRequestID IS  NULL
+                AND ps.ActiveFlag = 1
+                AND pro.ProductCode<> pro2.ProductCode
+                AND p.LDCId = 13
+                AND cai.BillingTypeID = 3
+            order by rt.SwitchDate desc
+            ";
+
+            var ds = SqlHelper.ExecuteDataset(_appConfig.ConnectionCsr.Replace("daes_", "saes_"), CommandType.Text, custIdSql);
+            if (ds == null || ds.Tables.Count == 0 || ds.Tables[0].Rows.Count == 0)
+                return;
+            var custIdList = ds.Tables[0].AsEnumerable().Select(row => row.Field<int>("CustId")).ToList();
+            
+            //custIdList = ds.Tables[0].AsEnumerable().Select(row => row.Field<int>("CustId")).ToList();
+
+            CopyCustomersAndDetailsForProductRollOver(custIdList);
             SimulateCalcuateNextRateTransitionDate();
             SimulateProductRollOver();
 
@@ -101,9 +125,9 @@ namespace Aurea.Maintenance.Debugger.Spark
             Console.ReadLine();
         }
 
-        private static void CopyCustomersAndDetailsForProductRollOver(List<string> custIdList)
+        private static void CopyCustomersAndDetailsForProductRollOver(List<int> custIdList)
         {
-            //copy +Customer, +Address, +Premise, +CustomerAdditionalInfo, +AccountsReceivable, +Rate, RateDetails, RateTransition, Product, Terms, Contract, Meter ...
+            //copy +Customer, +Address, +Premise, +CustomerAdditionalInfo, +AccountsReceivable, +Rate, +RateDetail, +RateTransition, +Product, --Terms, +Contract, ClientCustomer.Contract, Meter ...
             foreach (var custId in custIdList)
             {
                 var sql = $@"
@@ -114,104 +138,117 @@ PRINT 'BEGIN Copy Customer'
 PRINT 'Copy Addresses'
 SET IDENTITY_INSERT daes_Spark..Address ON
 
-INSERT INTO daes_Spark..Address ([AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [Migr_Enrollid], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [CchVersion])
-SELECT [AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [Migr_Enrollid], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [CchVersion] 
-FROM  saes_Spark..Address WHERE AddrID IN (
+INSERT INTO daes_Spark..Address
+([AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [Migr_Enrollid], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [CchVersion])
+SELECT
+  [AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [Migr_Enrollid], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [CchVersion] 
+FROM  saes_Spark..Address src
+WHERE AddrID IN (
 	SELECT SiteAddrId FROM saes_Spark..Customer WHERE CustID = @CustID
+    UNION
+    SELECT MailAddrId FROM saes_Spark..Customer WHERE CustID = @CustID
+    UNION
+    SELECT CorrAddrId FROM saes_Spark..Customer WHERE CustID = @CustID
+    UNION
+    SELECT AddrId FROM saes_Spark..Premise WHERE CustID = @CustID
+    UNION
+    SELECT AddrId FROM saes_Spark..Meter WHERE PremID IN (SELECT PremID FROM saes_Spark..Premise WHERE CustId = @CustId)
 )
-AND NOT EXISTS (
-SELECT 1 FROM daes_Spark..Address WHERE AddrID IN (
-	SELECT SiteAddrId FROM saes_Spark..Customer WHERE CustID = @CustID
-	)
-)
+AND NOT EXISTS (SELECT 1 FROM daes_Spark..Address dst WHERE src.AddrID = dst.AddrID)
 
-INSERT INTO daes_Spark..Address ([AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [Migr_Enrollid], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [CchVersion])
-SELECT [AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [Migr_Enrollid], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [CchVersion] 
-FROM  saes_Spark..Address WHERE AddrID IN (
-	SELECT MailAddrId FROM saes_Spark..Customer WHERE CustID = @CustID
-)
-AND NOT EXISTS (
-SELECT 1 FROM daes_Spark..Address WHERE AddrID IN (
-	SELECT MailAddrId FROM saes_Spark..Customer WHERE CustID = @CustID
-	)
-)
-
-INSERT INTO daes_Spark..Address ([AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [Migr_Enrollid], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [CchVersion])
-SELECT [AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [Migr_Enrollid], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [CchVersion] 
-FROM  saes_Spark..Address WHERE AddrID IN (
-	SELECT CorrAddrId FROM saes_Spark..Customer WHERE CustID = @CustID
-)
-AND NOT EXISTS (
-SELECT 1 FROM daes_Spark..Address WHERE AddrID IN (
-	SELECT CorrAddrId FROM saes_Spark..Customer WHERE CustID = @CustID
-	)
-)
-
-INSERT INTO daes_Spark..Address ([AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [Migr_Enrollid], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [CchVersion])
-SELECT [AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [Migr_Enrollid], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [CchVersion] 
-FROM  saes_Spark..Address WHERE AddrID IN (
-	SELECT AddrId FROM saes_Spark..Premise WHERE CustID = @CustID
-)
-AND NOT EXISTS (
-SELECT 1 FROM daes_Spark..Address WHERE AddrID IN (
-	SELECT AddrId FROM saes_Spark..Premise WHERE CustID = @CustID
-	)
-)
 
 SET IDENTITY_INSERT daes_Spark..Address OFF
 
 PRINT 'Copy Rate'
 SET IDENTITY_INSERT daes_Spark..Rate ON
 
-INSERT INTO daes_Spark..Rate ([RateID], [CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [LDCCode], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [ConsUnitId], [ActiveFlag], [LDCRateCode], [migr_plan_id], [migr_custid])
-SELECT  [RateID], [CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [LDCCode], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [ConsUnitId], [ActiveFlag], [LDCRateCode], [migr_plan_id], [migr_custid]
-FROM  saes_Spark..Rate WHERE RateID IN (
-	SELECT RateID FROM saes_Spark..Customer WHERE CustID = @CustID
-)
-AND NOT EXISTS(SELECT 1 FROM daes_Spark..Rate WHERE RateID IN (
-	SELECT RateID FROM saes_Spark..Customer WHERE CustID = @CustID
-	)
-)
 
-INSERT INTO daes_Spark..Rate ([RateID], [CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [LDCCode], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [ConsUnitId], [ActiveFlag], [LDCRateCode], [migr_plan_id], [migr_custid])
-SELECT  [RateID], [CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [LDCCode], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [ConsUnitId], [ActiveFlag], [LDCRateCode], [migr_plan_id], [migr_custid]
-FROM  saes_Spark..Rate WHERE RateID IN (
-	SELECT RateID FROM saes_Spark..Product WHERE ProductId IN (SELECT ProductID FROM saes_Spark..Contract WHERE CustID = @CustID)
-)
-AND NOT EXISTS(SELECT 1 FROM daes_Spark..Rate WHERE RateID IN (
-	SELECT RateID FROM saes_Spark..Product WHERE ProductId IN (SELECT ProductID FROM saes_Spark..Contract WHERE CustID = @CustID)
-	)
-)
+INSERT INTO daes_Spark..Rate
+([RateID], [CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [LDCCode], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [ConsUnitId], [ActiveFlag], [LDCRateCode], [migr_plan_id], [migr_custid])
+SELECT
+  [RateID], [CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [LDCCode], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [ConsUnitId], [ActiveFlag], [LDCRateCode], [migr_plan_id], [migr_custid]
+FROM  saes_Spark..Rate src
+WHERE
+    RateID IN (
+        SELECT RateID FROM saes_Spark..Product WHERE ProductId IN (SELECT ProductID FROM saes_Spark..Contract WHERE CustID = @CustID)
+        UNION
+        SELECT RateID FROM saes_Spark..Customer WHERE CustID = @CustID
+    )
+    AND NOT EXISTS(SELECT 1 FROM daes_Spark..Rate dst WHERE src.RateID = dst.RateId)
+
 SET IDENTITY_INSERT daes_Spark..Rate OFF
+
+PRINT 'Copy RateDetail'
+
+SET IDENTITY_INSERT daes_Spark..RateDetail ON
+INSERT INTO daes_Spark..RateDetail
+([RateDetID], [RateID], [CategoryID], [RateTypeID], [ConsUnitID], [RateDescID], [EffectiveDate], [ExpirationDate], [RateAmt], [RateAmt2], [RateAmt3], [FixedAdder], [MinDetAmt], [MaxDetAmt], [GLAcct], [RangeLower], [RangeUpper], [CustType], [Graduated], [Progressive], [AmountCap], [MaxRateAmt], [MinRateAmt], [CategoryRollup], [Taxable], [ChargeType], [MiscData1], [FixedCapRate], [ScaleFactor1], [ScaleFactor2], [TemplateRateDetID], [Margin], [HALRateDetailId], [UsageClassId], [LegacyRateDetailId], [Building], [ServiceTypeID], [TaxCategoryID], [UtilityID], [UtilityInvoiceTemplateDetailID], [Active], [StatusID], [RateVariableTypeId], [MinDays], [MaxDays], [BlockPriceIndicator], [RateTransitionId], [CreateDate], [MeterMultiplierFlag], [BlendRatio], [ContractVolumeID], [CreatedByUserId], [ModifiedByUserId], [ModifiedDate], [TOUTemplateID], [TOUTemplateRegisterID], [TOUTemplateRegisterName])
+SELECT 
+ [RateDetID], [RateID], [CategoryID], [RateTypeID], [ConsUnitID], [RateDescID], [EffectiveDate], [ExpirationDate], [RateAmt], [RateAmt2], [RateAmt3], [FixedAdder], [MinDetAmt], [MaxDetAmt], [GLAcct], [RangeLower], [RangeUpper], [CustType], [Graduated], [Progressive], [AmountCap], [MaxRateAmt], [MinRateAmt], [CategoryRollup], [Taxable], [ChargeType], [MiscData1], [FixedCapRate], [ScaleFactor1], [ScaleFactor2], [TemplateRateDetID], [Margin], [HALRateDetailId], [UsageClassId], [LegacyRateDetailId], [Building], [ServiceTypeID], [TaxCategoryID], [UtilityID], [UtilityInvoiceTemplateDetailID], [Active], [StatusID], [RateVariableTypeId], [MinDays], [MaxDays], [BlockPriceIndicator], [RateTransitionId], [CreateDate], [MeterMultiplierFlag], [BlendRatio], [ContractVolumeID], [CreatedByUserId], [ModifiedByUserId], [ModifiedDate], [TOUTemplateID], [TOUTemplateRegisterID], [TOUTemplateRegisterName]
+FROM saes_Spark..RateDetail src
+WHERE
+  src.RateId IN (
+SELECT RateId FROM saes_Spark..Customer WHERE CustId = @CustId
+UNION
+SELECT RateID FROM saes_Spark..Product WHERE ProductId IN (SELECT ProductID FROM saes_Spark..Contract WHERE CustID = @CustID)
+  )
+  AND NOT EXISTS(SELECT 1 FROM daes_Spark..RateDetail dst WHERE src.RateDetID = dst.RateDetID )
+
+SET IDENTITY_INSERT daes_Spark..RateDetail OFF
+
+PRINT 'Copy RateTransition'
+SET IDENTITY_INSERT daes_Spark..RateTransition ON
+INSERT INTO daes_Spark..RateTransition
+([RateTransitionID], [CustID], [RateID], [UserID], [CreatedDate], [SwitchDate], [EndDate], [StatusID], [SoldDate], [RolloverFlag])
+SELECT
+ [RateTransitionID], [CustID], [RateID], [UserID], [CreatedDate], [SwitchDate], [EndDate], [StatusID], [SoldDate], [RolloverFlag]
+FROM saes_Spark..RateTransition src
+WHERE
+  src.CustId = @CustId
+  AND NOT EXISTS(SELECT 1 FROM daes_Spark..RateTransition dst WHERE src.RateTransitionId = dst.RateTransitionId )
+
+SET IDENTITY_INSERT daes_Spark..RateTransition OFF
 
 PRINT 'Copy Customer'
 SET IDENTITY_INSERT daes_Spark..Customer ON
 
 INSERT INTO daes_Spark..Customer ([CustID], [CSPID], [CSPCustID], [PropertyID], [PropertyCustID], [CustomerTypeID], [CustNo], [CustName], [LastName], [FirstName], [MidName], [CompanyName], [DBA], [FederalTaxID], [AcctsRecID], [DistributedAR], [ProductionCycle], [BillCycle], [RateID], [SiteAddrID], [MailAddrId], [CorrAddrID], [MailToSiteAddress], [BillCustID], [MasterCustID], [Master], [CustStatus], [BilledThru], [CSRStatus], [CustType], [Services], [FEIN], [DOB], [Taxable], [LateFees], [NoOfAccts], [ConsolidatedInv], [SummaryInv], [MsgID], [TDSPTemplateID], [TDSPGroupID], [LifeSupportIndictor], [LifeSupportStatus], [LifeSupportDate], [SpecialBenefitsPlan], [BillFormat], [PrintLayoutID], [CreditScore], [HitIndicator], [RequiredDeposit], [AccountManager], [EnrollmentAlias], [ContractID], [ContractTerm], [ContractStartDate], [ContractEndDate], [UserDefined1], [CreateDate], [RateChangeDate], [ConversionAccountNo], [PermitContactName], [CustomerPrivacy], [UsagePrivacy], [CompanyRegistrationNumber], [VATNumber], [AccountStatus], [AutoCreditAfterInvoiceFlag], [LidaDiscount], [DoNotDisconnect], [DDPlus1], [CsrImportDate], [DeliveryTypeID], [SpecialNeedsAddrID], [PaymentModelId], [PORFlag], [PowerOutageAddrId])
 SELECT [CustID], [CSPID], [CSPCustID], [PropertyID], [PropertyCustID], [CustomerTypeID], [CustNo], [CustName], [LastName], [FirstName], [MidName], [CompanyName], [DBA], [FederalTaxID], [AcctsRecID], [DistributedAR], [ProductionCycle], [BillCycle], [RateID], [SiteAddrID], [MailAddrId], [CorrAddrID], [MailToSiteAddress], [BillCustID], [MasterCustID], [Master], [CustStatus], [BilledThru], [CSRStatus], [CustType], [Services], [FEIN], [DOB], [Taxable], [LateFees], [NoOfAccts], [ConsolidatedInv], [SummaryInv], [MsgID], [TDSPTemplateID], [TDSPGroupID], [LifeSupportIndictor], [LifeSupportStatus], [LifeSupportDate], [SpecialBenefitsPlan], [BillFormat], [PrintLayoutID], [CreditScore], [HitIndicator], [RequiredDeposit], [AccountManager], [EnrollmentAlias], [ContractID], [ContractTerm], [ContractStartDate], [ContractEndDate], [UserDefined1], [CreateDate], [RateChangeDate], [ConversionAccountNo], [PermitContactName], [CustomerPrivacy], [UsagePrivacy], [CompanyRegistrationNumber], [VATNumber], [AccountStatus], [AutoCreditAfterInvoiceFlag], [LidaDiscount], [DoNotDisconnect], [DDPlus1], [CsrImportDate], [DeliveryTypeID], [SpecialNeedsAddrID], [PaymentModelId], [PORFlag], [PowerOutageAddrId]
-FROM  saes_Spark..Customer WHERE CustID = @CustID
-AND NOT EXISTS(SELECT 1 FROM daes_Spark..Customer WHERE CustId = @CustID)
+FROM  saes_Spark..Customer src
+WHERE
+    CustID = @CustID
+    AND NOT EXISTS(SELECT 1 FROM daes_Spark..Customer dst WHERE src.CustId = dst.CustID)
+
 SET IDENTITY_INSERT daes_Spark..Customer OFF
 
 PRINT 'Copy Premise'
 ALTER TABLE daes_Spark..Customer NOCHECK CONSTRAINT ALL
+
 ALTER TABLE daes_Spark..Premise NOCHECK CONSTRAINT ALL
 SET IDENTITY_INSERT daes_Spark..Premise ON
 
 INSERT INTO daes_Spark..Premise ([PremID], [CustID], [CSPID], [AddrID], [TDSPTemplateID], [ServiceCycle], [TDSP], [TaxAssessment], [PremNo], [PremDesc], [PremStatus], [PremType], [LocationCode], [SpecialNeedsFlag], [SpecialNeedsStatus], [SpecialNeedsDate], [ReadingIncrement], [Metered], [Taxable], [BeginServiceDate], [EndServiceDate], [SourceLevel], [StatusID], [StatusDate], [CreateDate], [UnitID], [PropertyCommonID], [RateID], [DeleteFlag], [LBMPId], [PipelineId], [GasLossId], [LDCID], [GasPoolID], [DeliveryPoint], [ConsumptionBandIndex], [LastModifiedDate], [CreatedByID], [ModifiedByID], [BillingAccountNumber], [NameKey], [GasSupplyServiceOption], [IntervalUsageTypeId], [LDC_UnMeteredAcct], [AltPremNo], [OnSwitchHold], [SwitchHoldStartDate], [ConsumptionImportTypeId], [TDSPTemplateEffectiveDate], [ServiceDeliveryPoint], [UtilityContractID], [LidaDiscount], [GasCapacityAssignment], [CPAEnrollmentTypes], [IsTOU], [SupplierPricingStructureNr], [SupplierGroupNumber])
 SELECT [PremID], [CustID], [CSPID], [AddrID], [TDSPTemplateID], [ServiceCycle], [TDSP], [TaxAssessment], [PremNo], [PremDesc], [PremStatus], [PremType], [LocationCode], [SpecialNeedsFlag], [SpecialNeedsStatus], [SpecialNeedsDate], [ReadingIncrement], [Metered], [Taxable], [BeginServiceDate], [EndServiceDate], [SourceLevel], 10/*[StatusID]*/, [StatusDate], [CreateDate], [UnitID], [PropertyCommonID], [RateID], [DeleteFlag], [LBMPId], [PipelineId], [GasLossId], [LDCID], [GasPoolID], [DeliveryPoint], [ConsumptionBandIndex], [LastModifiedDate], [CreatedByID], [ModifiedByID], [BillingAccountNumber], [NameKey], [GasSupplyServiceOption], [IntervalUsageTypeId], [LDC_UnMeteredAcct], [AltPremNo], [OnSwitchHold], [SwitchHoldStartDate], [ConsumptionImportTypeId], [TDSPTemplateEffectiveDate], [ServiceDeliveryPoint], [UtilityContractID], [LidaDiscount], [GasCapacityAssignment], [CPAEnrollmentTypes], [IsTOU], [SupplierPricingStructureNr], [SupplierGroupNumber]
-FROM  saes_Spark..Premise WHERE CustID = @CustID
-AND NOT EXISTS(SELECT 1 FROM daes_Spark..Premise WHERE CustId = @CustID)
+FROM  saes_Spark..Premise src
+WHERE
+    CustID = @CustID
+    AND NOT EXISTS(SELECT 1 FROM daes_Spark..Premise dst WHERE src.PremId = dst.PremId)
+
 SET IDENTITY_INSERT daes_Spark..Premise OFF
 ALTER TABLE daes_Spark..Premise WITH CHECK CHECK CONSTRAINT ALL
 
 PRINT 'Copy Product'
 SET IDENTITY_INSERT daes_Spark..Product ON
 
-INSERT INTO daes_Spark..Product ([ProductID], [RateID], [LDCCode], [PlanType], [TDSPTemplateID], [Description], [BeginDate], [EndDate], [CustType], [Graduated], [RangeTier1], [RangeTier2], [SortOrder], [ActiveFlag], [Uplift], [CSATDSPTemplateID], [CAATDSPTemplateID], [PriceDescription], [MarketingCode], [RateTypeID], [ConsUnitID], [Default], [DivisionCode], [RateDescription], [ServiceType], [CSPId], [TermsId], [RolloverProductId], [CommissionId], [CommissionAmt], [CancelFeeId], [MonthlyChargeId], [ProductCode], [RatePackageId], [ProductName], [TermDate], [DiscountTypeId], [DiscountAmount], [ProductZoneID], [IsGreen], [IsBestChoice], [ActiveEnrollmentFlag], [CreditScoreThreshold], [DepositAmount], [Incentives])
-SELECT  [ProductID], [RateID], [LDCCode], [PlanType], [TDSPTemplateID], [Description], [BeginDate], [EndDate], [CustType], [Graduated], [RangeTier1], [RangeTier2], [SortOrder], [ActiveFlag], [Uplift], [CSATDSPTemplateID], [CAATDSPTemplateID], [PriceDescription], [MarketingCode], -1 /*[RateTypeID]*/, [ConsUnitID], [Default], [DivisionCode], [RateDescription], [ServiceType], [CSPId], [TermsId], /*[RolloverProductId]*/NULL, [CommissionId], [CommissionAmt], [CancelFeeId], [MonthlyChargeId], [ProductCode], [RatePackageId], [ProductName], [TermDate], [DiscountTypeId], [DiscountAmount], [ProductZoneID], [IsGreen], [IsBestChoice], [ActiveEnrollmentFlag], [CreditScoreThreshold], [DepositAmount], [Incentives]
-FROM  saes_Spark..Product WHERE ProductId IN (SELECT ProductID FROM saes_Spark..Contract WHERE CustID = @CustID)
-AND NOT EXISTS(SELECT 1 FROM daes_Spark..Product WHERE ProductId IN (SELECT ProductID FROM saes_Spark..Contract WHERE CustID = @CustID))
+INSERT INTO daes_Spark..Product 
+([ProductID], [RateID], [LDCCode], [PlanType], [TDSPTemplateID], [Description], [BeginDate], [EndDate], [CustType], [Graduated], [RangeTier1], [RangeTier2], [SortOrder], [ActiveFlag], [Uplift], [CSATDSPTemplateID], [CAATDSPTemplateID], [PriceDescription], [MarketingCode], [RateTypeID], [ConsUnitID], [Default], [DivisionCode], [RateDescription], [ServiceType], [CSPId], [TermsId], [RolloverProductId], [CommissionId], [CommissionAmt], [CancelFeeId], [MonthlyChargeId], [ProductCode], [RatePackageId], [ProductName], [TermDate], [DiscountTypeId], [DiscountAmount], [ProductZoneID], [IsGreen], [IsBestChoice], [ActiveEnrollmentFlag], [CreditScoreThreshold], [DepositAmount], [Incentives])
+SELECT
+ [ProductID], [RateID], [LDCCode], [PlanType], [TDSPTemplateID], [Description], [BeginDate], [EndDate], [CustType], [Graduated], [RangeTier1], [RangeTier2], [SortOrder], [ActiveFlag], [Uplift], [CSATDSPTemplateID], [CAATDSPTemplateID], [PriceDescription], [MarketingCode], -1 /*[RateTypeID]*/, [ConsUnitID], [Default], [DivisionCode], [RateDescription], [ServiceType], [CSPId], [TermsId], /*[RolloverProductId]*/NULL, [CommissionId], [CommissionAmt], [CancelFeeId], [MonthlyChargeId], [ProductCode], [RatePackageId], [ProductName], [TermDate], [DiscountTypeId], [DiscountAmount], [ProductZoneID], [IsGreen], [IsBestChoice], [ActiveEnrollmentFlag], [CreditScoreThreshold], [DepositAmount], [Incentives]
+FROM  saes_Spark..Product src
+WHERE
+    ( ProductId IN (SELECT ProductID FROM saes_Spark..Contract WHERE CustID = @CustID) or src.RateId IN (SELECT RateId FROM saes_Spark..Customer WHERE CustId = @CustId) )
+    AND NOT EXISTS(SELECT 1 FROM daes_Spark..Product dst WHERE dst.ProductId = src.ProductId )
+
 SET IDENTITY_INSERT daes_Spark..Product OFF
 
 PRINT 'Copy Contract'
@@ -219,17 +256,30 @@ SET IDENTITY_INSERT daes_Spark..Contract ON
 
 INSERT INTO daes_Spark..Contract ([ContractID], [SignedDate], [BeginDate], [EndDate], [TermLength], [ContractTypeID], [ContactName], [ContactPhone], [ContactFax], [ProductID], [CreatedByID], [CreateDate], [CustID], [AutoRenewFlag], [Service], [ActiveFlag], [RateCode], [TDSPTemplateID], [ContractTerm], [RateDetID], [RateID], [Terms], [ContractName], [ContractLength], [AccountManagerID], [MeterChargeCode], [AggregatorFee], [TermDate], [Bandwidth], [FinanceCharge], [ContractNumber], [PremID], [AnnualUsage], [CurePeriod], [ContractStatusID], [RenewalRate], [RenewalStartDate], [RenewalTerm], [ChangeReason])
 SELECT  [ContractID], [SignedDate], [BeginDate], [EndDate], [TermLength], [ContractTypeID], [ContactName], [ContactPhone], [ContactFax], [ProductID], [CreatedByID], [CreateDate], [CustID], [AutoRenewFlag], [Service], [ActiveFlag], [RateCode], [TDSPTemplateID], [ContractTerm], [RateDetID], [RateID], [Terms], [ContractName], [ContractLength], [AccountManagerID], [MeterChargeCode], [AggregatorFee], [TermDate], [Bandwidth], [FinanceCharge], [ContractNumber], [PremID], [AnnualUsage], [CurePeriod], [ContractStatusID], [RenewalRate], [RenewalStartDate], [RenewalTerm], [ChangeReason]
-FROM  saes_Spark..Contract WHERE CustID = @CustID
-AND NOT EXISTS(SELECT 1 FROM daes_Spark..Contract WHERE CustID = @CustID)
+FROM  saes_Spark..Contract src
+WHERE CustID = @CustID
+AND NOT EXISTS(SELECT 1 FROM daes_Spark..Contract dst WHERE src.ContractID = dst.ContractID)
 SET IDENTITY_INSERT daes_Spark..Contract OFF
+
+PRINT 'Copy ClientCustomer.Contract'
+INSERT INTO daes_Spark.ClientCustomer.Contract
+( [ContractID], [SegmentationAdjustmentToEnergyRate], [SegmentationLabel])
+SELECT
+ [ContractID], [SegmentationAdjustmentToEnergyRate], [SegmentationLabel]
+FROM saes_Spark.ClientCustomer.Contract src
+WHERE
+  src.ContractId IN (SELECT ContractId FROM saes_Spark..Contract WHERE CustId = @CustId)
+  AND NOT EXISTS(SELECT 1 FROM daes_Spark.ClientCustomer.Contract dst WHERE src.ContractID = dst.ContractID )
 
 PRINT 'Copy AccountsReceivable'
 SET IDENTITY_INSERT daes_Spark..AccountsReceivable ON
 
 INSERT INTO daes_Spark..AccountsReceivable ([AcctsRecID], [ResetDate], [ARDate], [PrevBal], [CurrInvs], [CurrPmts], [CurrAdjs], [BalDue], [LateFee], [LateFeeRate], [LateFeeMaxAmount], [LateFeeTypeID], [AuthorizedPymt], [PastDue], [BalAge0], [BalAge1], [BalAge2], [BalAge3], [BalAge4], [BalAge5], [BalAge6], [Deposit], [DepositBeginDate], [PaymentPlanFlag], [PaymentPlanTrueUpFlag], [PaymentPlanAmount], [PaymentPlanTrueUpPeriod], [PaymentPlanTrueUpThresholdAmount], [PaymentPlanTrueUpType], [PaymentPlanEffectiveDate], [PrePaymentFlag], [PrePaymentDailyAmount], [CapitalCredit], [Terms], [StatusID], [GracePeriod], [PaymentPlanTotalVariance], [PaymentPlanVarianceUnit], [LateFeeGracePeriod], [CancelFeeTypeId], [CancelFeeAmount], [Migr_acct_no], [InvoiceMinimumAmount], [LateFeeThresholdAmt], [LastInvoiceAcctsRecHistID], [LastPaymentAcctsRecHistId], [LastAdjustmentAcctsRecHistId], [DeferredBalance])
 SELECT  [AcctsRecID], [ResetDate], [ARDate], [PrevBal], [CurrInvs], [CurrPmts], [CurrAdjs], [BalDue], [LateFee], [LateFeeRate], [LateFeeMaxAmount], [LateFeeTypeID], [AuthorizedPymt], [PastDue], [BalAge0], [BalAge1], [BalAge2], [BalAge3], [BalAge4], [BalAge5], [BalAge6], [Deposit], [DepositBeginDate], [PaymentPlanFlag], [PaymentPlanTrueUpFlag], [PaymentPlanAmount], [PaymentPlanTrueUpPeriod], [PaymentPlanTrueUpThresholdAmount], [PaymentPlanTrueUpType], [PaymentPlanEffectiveDate], [PrePaymentFlag], [PrePaymentDailyAmount], [CapitalCredit], [Terms], [StatusID], [GracePeriod], [PaymentPlanTotalVariance], [PaymentPlanVarianceUnit], [LateFeeGracePeriod], [CancelFeeTypeId], [CancelFeeAmount], [Migr_acct_no], [InvoiceMinimumAmount], [LateFeeThresholdAmt], [LastInvoiceAcctsRecHistID], [LastPaymentAcctsRecHistId], [LastAdjustmentAcctsRecHistId], [DeferredBalance]
-FROM  saes_Spark..AccountsReceivable WHERE AcctsRecID IN (SELECT AcctsRecID FROM saes_Spark..Customer WHERE CustID = @CustID)
-AND NOT EXISTS(SELECT 1 FROM daes_Spark..AccountsReceivable WHERE AcctsRecID IN (SELECT AcctsRecID FROM saes_Spark..Customer WHERE CustID = @CustID))
+FROM  saes_Spark..AccountsReceivable src
+WHERE
+    AcctsRecID IN (SELECT AcctsRecID FROM saes_Spark..Customer WHERE CustID = @CustID)
+    AND NOT EXISTS(SELECT 1 FROM daes_Spark..AccountsReceivable dst WHERE src.AcctsRecID = dst.AcctsRecID)
 SET IDENTITY_INSERT daes_Spark..AccountsReceivable OFF
 
 PRINT 'Copy CustomerAdditionalInfo'
@@ -249,10 +299,30 @@ SELECT
 FROM daes_Spark.ClientCustomer.CustomerAdditionalInfo src
 WHERE
 	src.CustId = @CustId
-	AND NOT EXISTS(SELECT 1 FROM daes_Spark.ClientCustomer.CustomerAdditionalInfo dst WHERE src.CustId = dst.CustId)
+	AND NOT EXISTS(SELECT 1 FROM daes_Spark.ClientCustomer.CustomerAdditionalInfo dst WHERE src.CustId = dst.CustId )
+
+PRINT 'Copy Meter'
+SET IDENTITY_INSERT daes_Spark..Meter ON
+INSERT INTO daes_Spark..Meter
+( [MeterID], [ESIIDID], [AcctID], [AddrID], [TypeID], [PremID], [MeterNo], [MeterUniqueNo], [Pool], [MeterReadType], [MeterFactoryID], [MeterFactor], [BegRead], [EndRead], [DateFrom], [Dateto], [MeterStatus], [SourceLevel], [CreateDate], [EdiRateClassId], [EdiLoadProfileId], [AMSIndicator])
+SELECT
+ [MeterID], [ESIIDID], [AcctID], [AddrID], [TypeID], [PremID], [MeterNo], [MeterUniqueNo], [Pool], [MeterReadType], [MeterFactoryID], [MeterFactor], [BegRead], [EndRead], [DateFrom], [Dateto], [MeterStatus], [SourceLevel], [CreateDate], [EdiRateClassId], [EdiLoadProfileId], [AMSIndicator]
+FROM saes_Spark..Meter src
+WHERE
+  src.MeterID IN (SELECT MeterId FROM saes_Spark..Meter WHERE PremID IN (SELECT PremID FROM saes_Spark..Premise WHERE CustId = @CustId))
+  AND NOT EXISTS(SELECT 1 FROM daes_Spark..Meter dst WHERE src.MeterId = dst.MeterId )
+
+SET IDENTITY_INSERT daes_Spark..Meter OFF
 
 ";
-                DB.ExecuteQuery(sql);
+                try
+                {
+                    DB.ExecuteQuery(sql);
+                }
+                catch (Exception e)
+                {
+                    _logger.Error(e, $"Error Occurred when copying customer {custId}");
+                }
             }
         }
 
@@ -272,7 +342,7 @@ WHERE
             var dataset = SqlHelper.ExecuteDataset(_appConfig.ConnectionCsr, CommandType.StoredProcedure, "cspProductRolloverList");
             if (dataset == null || dataset.Tables.Count == 0 || dataset.Tables[0].Rows.Count == 0)
                 return;
-
+            
             lstcustomersForRollover = (from DataRow dr in dataset.Tables[0].Rows
                 select new CustomerProductRolloverModel()
                 {
