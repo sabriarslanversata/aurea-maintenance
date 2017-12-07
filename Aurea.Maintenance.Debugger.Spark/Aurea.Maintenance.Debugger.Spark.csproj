@@ -32,6 +32,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Aurea, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\Aurea.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.BusinessEntity">
       <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.BusinessEntity.dll</HintPath>
     </Reference>
@@ -42,6 +46,10 @@
     <Reference Include="CIS.Clients.Spark, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Clients.Spark.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Clients.Spark.Model, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Clients.Spark.Model.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Components, Version=16.1.0.0, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="CIS.Components.Maintenance, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
