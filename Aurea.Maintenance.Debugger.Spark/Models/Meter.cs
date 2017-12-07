@@ -8,8 +8,10 @@ using System.Threading.Tasks;
 namespace Aurea.Maintenance.Debugger.Spark.Models
 {
     [Table("Meter")]
-    [RequiredEntity(typeof(EdiLoadProfile), SourceField = "EdiLoadProfileId")]
-    public class Meter:ICopyableEntity
+    [RelatedEntity(typeof(EdiLoadProfile), RelatedField = "EdiLoadProfileId")]
+    [RelatedEntity(typeof(Address), RelatedField = "AddrID", IsRequiredBeforeCopy = true)]
+    [RelatedEntity(typeof(Premise), RelatedField = "PremID", IsRequiredBeforeCopy = true)]
+    public class Meter : ICopyableEntity
     {
         public int MeterID { get; set; }
         public int ESIIDID { get; set; }

@@ -13,8 +13,8 @@ namespace Aurea.Maintenance.Debugger.Spark.Models
         public Type RelatedEntity;
         public string RelatedField;
         public string EntityField;
-        public bool IsRequired;
-        
+        public bool IsRequiredBeforeCopy;
+
         public RelatedEntityAttribute(Type relatedEntity)
         {
             this.RelatedEntity = relatedEntity;

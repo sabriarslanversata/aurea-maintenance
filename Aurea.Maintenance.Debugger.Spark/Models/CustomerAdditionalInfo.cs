@@ -8,7 +8,8 @@ using System.Threading.Tasks;
 namespace Aurea.Maintenance.Debugger.Spark.Models
 {
     [Table("CustomerAdditionalInfo", PrimaryKey = "CustID", HasIdentity = false)]
-    public class CustomerAdditionalInfo:ICopyableEntity
+    [RelatedEntity(typeof(Customer), RelatedField = "CustID", IsRequiredBeforeCopy = true)]
+    public class CustomerAdditionalInfo : ICopyableEntity
     {
         public int CustID { get; set; }
         public int CSPDUNSID { get; set; }

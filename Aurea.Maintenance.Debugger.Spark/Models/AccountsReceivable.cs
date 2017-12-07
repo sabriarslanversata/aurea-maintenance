@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Aurea.Maintenance.Debugger.Spark.Models
 {
     [Table("AccountsReceivable", PrimaryKey = "AcctsRecID")]
-    [RelatedEntity(typeof(Customer), IsRequired = true)]
+    [RelatedEntity(typeof(Customer), IsRequiredBeforeCopy = true)]
     public class AccountsReceivable:ICopyableEntity
     {
         public int AcctsRecID { get; set; }

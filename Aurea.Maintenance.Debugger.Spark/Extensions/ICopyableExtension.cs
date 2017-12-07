@@ -13,7 +13,7 @@ namespace Aurea.Maintenance.Debugger.Spark.Extensions
         {
             var result = false;
             var tableAttribute = entity.GetType().GetCustomAttributesIncludingBaseInterfaces<TableAttribute>();
-            var requiredAttributes = entity.GetType().GetCustomAttributesIncludingBaseInterfaces<RequiredEntityAttribute>();
+            var requiredAttributes = entity.GetType().GetCustomAttributesIncludingBaseInterfaces<RelatedEntityAttribute>();
             
             return result;
         }

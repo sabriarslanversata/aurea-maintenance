@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 namespace Aurea.Maintenance.Debugger.Spark.Models
 {
     [Table("Contract")]
-    [RelatedEntity(typeof(Product), IsRequired = true, RelatedField = "ProductID")]
-    [RelatedEntity(typeof(Customer), IsRequired = true, RelatedField = "CustID")]
-    [RelatedEntity(typeof(Rate), IsRequired = true, RelatedField = "RateID")]
-    [RelatedEntity(typeof(RateDetail), IsRequired = true, RelatedField = "RateDetID")]
+    [RelatedEntity(typeof(Product), IsRequiredBeforeCopy = true, RelatedField = "ProductID")]
+    [RelatedEntity(typeof(Customer), IsRequiredBeforeCopy = true, RelatedField = "CustID")]
+    [RelatedEntity(typeof(Rate), IsRequiredBeforeCopy = true, RelatedField = "RateID")]
+    [RelatedEntity(typeof(RateDetail), IsRequiredBeforeCopy = true, RelatedField = "RateDetID")]
     public class Contract : ICopyableEntity
     {
         public int ContractID { get; set; }

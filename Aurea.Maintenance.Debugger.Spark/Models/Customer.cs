@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 namespace Aurea.Maintenance.Debugger.Spark.Models
 {
     [Table("Customer", PrimaryKey = "CustID")]
-    [RequiredEntity(typeof(Address), SourceField = "SiteAddrId")]
-    [RequiredEntity(typeof(Address), SourceField = "MailAddrId")]
-    [RequiredEntity(typeof(Address), SourceField = "CrrAddrId")]
-    [RequiredEntity(typeof(Rate), SourceField = "RateId")]
+    [RelatedEntity(typeof(Address), RelatedField = "SiteAddrId", IsRequiredBeforeCopy = true)]
+    [RelatedEntity(typeof(Address), RelatedField = "MailAddrId", IsRequiredBeforeCopy = true)]
+    [RelatedEntity(typeof(Address), RelatedField = "CorrAddrId", IsRequiredBeforeCopy = true)]
+    [RelatedEntity(typeof(Rate), RelatedField = "RateId", IsRequiredBeforeCopy = true)]
     public class Customer : ICopyableEntity
     {
         public int CustID { get; set; }

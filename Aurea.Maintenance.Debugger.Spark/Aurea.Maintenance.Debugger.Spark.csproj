@@ -102,7 +102,7 @@
     <Compile Include="Extensions\ClassExtension.cs" />
     <Compile Include="Extensions\ClientCustomerContractExtension.cs" />
     <Compile Include="Extensions\CustomerExtension.cs" />
-    <Compile Include="Models\RequiredEntityAttribute.cs" />
+    <Compile Include="Models\RelatedEntityAttribute.cs" />
     <Compile Include="Models\TableAttributes.cs" />
     <Compile Include="Extensions\ICopyableExtension.cs" />
     <Compile Include="Extensions\MeterExtension.cs" />
