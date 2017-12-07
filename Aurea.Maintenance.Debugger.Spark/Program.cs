@@ -90,6 +90,16 @@
             */
             #endregion
 
+            //FindAndCopyCustomersWhichRTsWithNo814_C();
+            SimulateCalcuateNextRateTransitionDate();
+            SimulateProductRollOver();
+
+            _logger.Info("Debug session end");
+            Console.ReadLine();
+        }
+
+        private static void FindAndCopyCustomersWhichRTsWithNo814_C()
+        {
             var custIdSql = @"
             SELECT top 1000 rt.CustId
             FROM dbo.RateTransition rt
@@ -114,15 +124,10 @@
             if (ds == null || ds.Tables.Count == 0 || ds.Tables[0].Rows.Count == 0)
                 return;
             var custIdList = ds.Tables[0].AsEnumerable().Select(row => row.Field<int>("CustId")).ToList();
-            
+
             //custIdList = ds.Tables[0].AsEnumerable().Select(row => row.Field<int>("CustId")).ToList();
 
             CopyCustomersAndDetailsForProductRollOver(custIdList);
-            SimulateCalcuateNextRateTransitionDate();
-            SimulateProductRollOver();
-
-            _logger.Info("Debug session end");
-            Console.ReadLine();
         }
 
         private static void CopyCustomersAndDetailsForProductRollOver(List<int> custIdList)
@@ -362,12 +367,11 @@ SET IDENTITY_INSERT daes_Spark..Meter OFF
             };
             var context = new ProductRolloverContext(_logger, dataGateway);
             var rollover = new ProductRollover(context);
-            var lstcustomersForRollover = new List<CustomerProductRolloverModel>();
             var dataset = SqlHelper.ExecuteDataset(_appConfig.ConnectionCsr, CommandType.StoredProcedure, "cspProductRolloverList");
             if (dataset == null || dataset.Tables.Count == 0 || dataset.Tables[0].Rows.Count == 0)
                 return;
             
-            lstcustomersForRollover = (from DataRow dr in dataset.Tables[0].Rows
+            var lstcustomersForRollover = (from DataRow dr in dataset.Tables[0].Rows
                 select new CustomerProductRolloverModel()
                 {
                     CustId = CIS.Framework.Data.Utility.GetInt32(dr, "CustId", 0),
