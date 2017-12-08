@@ -103,6 +103,24 @@
             Console.ReadLine();
         }
 
+        private static void PrepareDataForRTTrigger(int custId)
+        {
+            var lastRTId = 0;
+            var sql = $@"SELECT TOP 1 RateTransitionID from daes_Spark..RateTransition WHERE CustId = {custId} ORDER BY CreatedDate DESC";
+            var reader = SqlHelper.ExecuteReader(SqlHelper.CreateCommand(_appConfig.ConnectionCsr, sql, CommandType.Text));
+            while (reader.Read())
+            {
+                lastRTId = reader.GetInt32(0);
+            }
+            if (lastRTId > 0)
+            {
+                sql = $"DELETE FROM daes_Spark.ClientCustomer.RateTransition WHERE RateTransitionID = {lastRTId}";
+                SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
+                sql = $"DELETE FROM daes_Spark..RateTransition WHERE RateTransitionID = {lastRTId}";
+                SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
+            }
+        }
+
         private static void FindAndCopyCustomersWhichRTsWithNo814_C()
         {
             var custIdSql = @"
@@ -138,7 +156,7 @@
         private static void CopyCustomersAndDetailsForProductRollOver(List<int> custIdList)
         {
             
-            //copy +Customer, +Address, +Premise, +CustomerAdditionalInfo, +AccountsReceivable, +Rate, +RateDetail, +RateTransition, +Product, --Terms, +Contract, +ClientCustomer.Contract, +Meter, +EdiLoadProfile ...
+            //copy +Customer, +Address, +Premise, +CustomerAdditionalInfo, +AccountsReceivable, +Rate, +RateDetail, +RateTransition, +Product, --Terms, +Contract, +ClientCustomer.Contract, +Meter, +EdiLoadProfile, ClientCustomer.RateTransition ...
             var currentIterationNumber = 0;
             foreach (var custId in custIdList)
             {
@@ -222,6 +240,15 @@ WHERE
   AND NOT EXISTS(SELECT 1 FROM daes_Spark..RateTransition dst WHERE src.RateTransitionId = dst.RateTransitionId )
 
 SET IDENTITY_INSERT daes_Spark..RateTransition OFF
+
+INSERT INTO daes_Spark.ClientCustomer.RateTransition
+( [RateTransitionID], [ProductChangeType], [LDCRateCode], [NextRateTransitionDate], [SegmentationLabel], [SegmentationAdjustmentToEnergyRate], [MeterReadDate], [DesiredStartDate])
+SELECT
+  [RateTransitionID], [ProductChangeType], [LDCRateCode], [NextRateTransitionDate], [SegmentationLabel], [SegmentationAdjustmentToEnergyRate], [MeterReadDate], [DesiredStartDate]
+FROM saes_Spark.ClientCustomer.RateTransition src
+WHERE
+  src.RateTransitionID IN (SELECT RateTransitionID FROM saes_Spark..RateTransition WHERE CustId = @CustId) 
+  AND NOT EXISTS(SELECT 1 FROM daes_Spark.ClientCustomer.RateTransition dst WHERE src.RateTransitionID = dst.RateTransitionID )
 
 PRINT 'Copy Customer'
 SET IDENTITY_INSERT daes_Spark..Customer ON
@@ -348,7 +375,8 @@ SET IDENTITY_INSERT daes_Spark..Meter OFF
 ";
                     try
                     {
-                        DB.ExecuteQuery(sql);
+                        SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
+                        PrepareDataForRTTrigger(custId);
                         ts.Complete();
                     }
                     catch (Exception e)
@@ -480,26 +508,26 @@ SET IDENTITY_INSERT daes_Spark..Meter OFF
 
         private static void PrepareMockDataForLetterGeneration()
         {
-            DB.ExecuteQuery("UPDATE config.LDCConfiguration SET SendRenewalNoticeOne = 0 WHERE LDCId IN (SELECT LDCId FROM LDC WHERE MarketID = 1)");
-            DB.ExecuteQuery("DELETE FROM Letter WHERE CreateDate > DateAdd(dd,-2,GETDATE()) ");
-            DB.ExecuteQuery("UPDATE Premise SET LDCId = 11 WHERE CustID = 1865754");
-            DB.ExecuteQuery("UPDATE config.LDCConfiguration SET QueueLettersForEmail = 1 WHERE LDCId = 11");
-            DB.ExecuteQuery("UPDATE Customer SET ContractEndDate = '2016-12-30' WHERE CustID = 1865754");
-            DB.ExecuteQuery("DELETE FROM Letter WHERE LetterTypeId = 701 AND CustID = 1865754");
-            DB.ExecuteQuery("UPDATE Contract SET EndDate = '2016-12-31' WHERE CustID = 1865754");
-            DB.ExecuteQuery("UPDATE CustomerAdditionalInfo SET BillingTypeId = 2 WHERE CustID = 1865754");
-            DB.ExecuteQuery("UPDATE Address SET Email = 'test@example.com' WHERE AddrID IN (SELECT MailAddrId FROM Customer WHERE CustID = 1865754)");
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, "UPDATE config.LDCConfiguration SET SendRenewalNoticeOne = 0 WHERE LDCId IN (SELECT LDCId FROM LDC WHERE MarketID = 1)");
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, "DELETE FROM Letter WHERE CreateDate > DateAdd(dd,-2,GETDATE()) ");
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, "UPDATE Premise SET LDCId = 11 WHERE CustID = 1865754");
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, "UPDATE config.LDCConfiguration SET QueueLettersForEmail = 1 WHERE LDCId = 11");
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, "UPDATE Customer SET ContractEndDate = '2016-12-30' WHERE CustID = 1865754");
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, "DELETE FROM Letter WHERE LetterTypeId = 701 AND CustID = 1865754");
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, "UPDATE Contract SET EndDate = '2016-12-31' WHERE CustID = 1865754");
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, "UPDATE CustomerAdditionalInfo SET BillingTypeId = 2 WHERE CustID = 1865754");
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, "UPDATE Address SET Email = 'test@example.com' WHERE AddrID IN (SELECT MailAddrId FROM Customer WHERE CustID = 1865754)");
         }
 
         private static void RestoreData2OriginalLetterGeneration()
         {
-            DB.ExecuteQuery("UPDATE Address SET Email = NULL WHERE AddrID IN (SELECT MailAddrId FROM Customer WHERE CustID = 1865754)");
-            DB.ExecuteQuery("UPDATE CustomerAdditionalInfo SET BillingTypeId = 1 WHERE CustID = 1865754");
-            DB.ExecuteQuery("UPDATE Contract SET EndDate = '2017-11-30' WHERE CustID = 1865754");
-            DB.ExecuteQuery("UPDATE Customer SET ContractEndDate = '2017-11-29' WHERE CustID = 1865754");
-            DB.ExecuteQuery("UPDATE config.LDCConfiguration SET QueueLettersForEmail = 0 WHERE LDCId = 11");
-            DB.ExecuteQuery("UPDATE Premise SET LDCId = 3 WHERE CustID = 1865754");
-            DB.ExecuteQuery("UPDATE config.LDCConfiguration SET SendRenewalNoticeOne = 1 WHERE LDCId IN (SELECT LDCId FROM LDC WHERE MarketID = 1)");
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, "UPDATE Address SET Email = NULL WHERE AddrID IN (SELECT MailAddrId FROM Customer WHERE CustID = 1865754)");
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, "UPDATE CustomerAdditionalInfo SET BillingTypeId = 1 WHERE CustID = 1865754");
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, "UPDATE Contract SET EndDate = '2017-11-30' WHERE CustID = 1865754");
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, "UPDATE Customer SET ContractEndDate = '2017-11-29' WHERE CustID = 1865754");
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, "UPDATE config.LDCConfiguration SET QueueLettersForEmail = 0 WHERE LDCId = 11");
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, "UPDATE Premise SET LDCId = 3 WHERE CustID = 1865754");
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, "UPDATE config.LDCConfiguration SET SendRenewalNoticeOne = 1 WHERE LDCId IN (SELECT LDCId FROM LDC WHERE MarketID = 1)");
         }
 
         private static void ClearOldRecords(string custNo)
@@ -528,14 +556,14 @@ DELETE FROM daes_Spark..ChangeLog WHERE (CustID = @CustId OR PremID = @PremID)
 UPDATE daes_Spark..Premise SET StatusId = 10 WHERE CustId = @CustId";
             try
             {
-                DB.ExecuteQuery(sql);
+                SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
             }
             catch 
             {
             }
             try
             {
-                DB.ExecuteQuery(sql);
+                SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
             }
             catch
             {
@@ -580,7 +608,7 @@ FROM   saes_SparkMarket..tbl_814_Service_Date ss
 WHERE [Service_Key] IN (SELECT Service_Key FROM daes_SparkMarket..tbl_814_Service WHERE [814_Key] IN (SELECT [814_Key] FROM saes_Spark..CustomerTransactionRequest WHERE CustID = @CustID AND TransactionTypeId = 43))
 AND NOT EXISTS(SELECT 1 FROM daes_SparkMarket..tbl_814_Service_Date dss WHERE ss.[Service_Key] = dss.[Service_Key] )
 SET IDENTITY_INSERT daes_SparkMarket..tbl_814_Service_Date OFF";
-            DB.ExecuteQuery(sql);
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
         }
 
         private static void Create814RMarketMock(string custNo, DateTime transactionDate)
@@ -612,7 +640,7 @@ FROM   saes_SparkMarket..tbl_814_Service_Date ss
 WHERE [Service_Key] IN (SELECT Service_Key FROM daes_SparkMarket..tbl_814_Service WHERE [814_Key] IN (SELECT [814_Key] FROM saes_Spark..CustomerTransactionRequest WHERE CustID = @CustID AND TransactionTypeId = 41))
 AND NOT EXISTS(SELECT 1 FROM daes_SparkMarket..tbl_814_Service_Date dss WHERE ss.[Service_Key] = dss.[Service_Key] )
 SET IDENTITY_INSERT daes_SparkMarket..tbl_814_Service_Date OFF";
-            DB.ExecuteQuery(sql);
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
         }
 
         private static void CopyCustomer(string custNo)
@@ -755,7 +783,7 @@ AND NOT EXISTS(SELECT 1 FROM daes_Spark..CustomerAdditionalInfo WHERE CustID = @
 --SET IDENTITY_INSERT daes_Spark..CustomerAdditionalInfo OFF
 
 PRINT 'END Copy Customer'";
-            DB.ExecuteQuery(sql);
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
         }
 
         private static void Change814DSchedule(DateTime scheduleDate)
@@ -765,24 +793,7 @@ UPDATE daes_SparkMarket..tbl_814_service SET SpecialReadSwitchDate = '{scheduleD
 UPDATE daes_Spark..CustomerTransactionRequest SET RequestDate = '{scheduleDate.ToString("yyyy-MM-dd")}' WHERE SourceId = 22748557 AND TransactionTypeId = 43
 UPDATE daes_BillingAdmin..EventActionQueue SET ScheduledDate = '{scheduleDate.ToString("yyyy-MM-dd")}' WHERE RequestID IN (SELECT RequestID FROM daes_Spark..CustomerTransactionRequest WHERE CustID = 1807055 AND TransactionTypeId = 43) AND ISNULL(ScheduledDate,0) <> 0
 ";
-            DB.ExecuteQuery(sql);
-        }
-        
-        public sealed class DB
-        {
-            public static void ExecuteQuery(string sql)
-            {
-                using (IDbConnection connection = new SqlConnection(_appConfig.ConnectionCsr))
-                {
-                    connection.Open();
-                    var cmd = connection.CreateCommand();
-                    cmd.CommandType = CommandType.Text;
-                    cmd.CommandText = sql;
-                    cmd.CommandTimeout = 1000 * 60 * 5;
-                    cmd.ExecuteNonQuery();
-                    connection.Close();
-                }
-            }
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
         }
     }
 }
