@@ -10,7 +10,7 @@ using Aurea.Maintenance.Debugger.Common.Models;
 namespace Aurea.Maintenance.Debugger.Spark.Models
 {
     [Table("Product")]
-    [RelatedEntity(typeof(Rate), RelatedField = "RateID", IsRequiredBeforeCopy = true)]
+    [RelatedEntity(typeof(Rate), RelatedField = "RateID"/*, IsRequiredBeforeCopy = true*/)]
     public class Product:ICopyableEntity
     {
         public int ProductID { get; set; }

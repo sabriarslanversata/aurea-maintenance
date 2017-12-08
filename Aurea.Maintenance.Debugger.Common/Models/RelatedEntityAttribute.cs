@@ -13,12 +13,14 @@ namespace Aurea.Maintenance.Debugger.Common.Models
         public Type RelatedEntity;
         public string RelatedField;
         public string EntityField;
-        public bool IsRequiredBeforeCopy;
+        //public bool IsRequiredBeforeCopy;
+        public int Sequence;
 
         public RelatedEntityAttribute(Type relatedEntity)
         {
             this.RelatedEntity = relatedEntity;
-            this.IsRequiredBeforeCopy = false;
+            //this.IsRequiredBeforeCopy = false;
+            this.Sequence = 1;
             var tableAttr = relatedEntity.GetCustomAttributesIncludingBaseInterfaces<TableAttribute>().First();
             if (tableAttr.HasIdentity)
             {

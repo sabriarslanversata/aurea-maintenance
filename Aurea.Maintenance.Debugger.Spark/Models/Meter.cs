@@ -11,8 +11,8 @@ namespace Aurea.Maintenance.Debugger.Spark.Models
 {
     [Table("Meter")]
     [RelatedEntity(typeof(EdiLoadProfile), RelatedField = "EdiLoadProfileId")]
-    [RelatedEntity(typeof(Address), RelatedField = "AddrID", IsRequiredBeforeCopy = true)]
-    [RelatedEntity(typeof(Premise), RelatedField = "PremID", IsRequiredBeforeCopy = true)]
+    [RelatedEntity(typeof(Address), RelatedField = "AddrID"/*, IsRequiredBeforeCopy = true*/)]
+    [RelatedEntity(typeof(Premise), RelatedField = "PremID"/*, IsRequiredBeforeCopy = true*/)]
     public class Meter : ICopyableEntity
     {
         public int MeterID { get; set; }

@@ -91,10 +91,8 @@
             */
             #endregion
 
-            //var myCust = new Customer();
-            //myCust.CustID = 1;
-            //var result = myCust.CopyEntityFromSaes2Daes(_appConfig.ConnectionCsr, "Spark", _logger, true);
-            
+            TestCopyCustomer();
+
             //FindAndCopyCustomersWhichRTsWithNo814_C();
             //CopyCustomersAndDetailsForProductRollOver(new List<int>{ 101993 , 500551 });
             SimulateCalcuateNextRateTransitionDate();
@@ -104,6 +102,12 @@
             Console.ReadLine();
         }
 
+        private static void TestCopyCustomer()
+        {
+            var myCust = new Customer();
+            myCust.CustID = 1;
+            var result = myCust.CopyEntityFromSaes2Daes(_appConfig.ConnectionCsr, "Spark", _logger, true);
+        }
         private static void PrepareDataForRTTrigger(int custId)
         {
             var lastRTId = 0;

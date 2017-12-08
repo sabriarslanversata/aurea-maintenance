@@ -74,15 +74,15 @@
 
 		    
 
-            foreach (var relatedAttribute in relatedAttributes.Where(x => x.IsRequiredBeforeCopy && !x.RelatedEntity.Equals(entity)))
-			{
-				var childTableAttribute = relatedAttribute.RelatedEntity.GetCustomAttributesIncludingBaseInterfaces<TableAttribute>().First();
-				var childRelatedAttributes = relatedAttribute.RelatedEntity.GetCustomAttributesIncludingBaseInterfaces<RelatedEntityAttribute>();
-				if (!CopyChildEntity(relatedAttribute.RelatedEntity, entityId, childTableAttribute, childRelatedAttributes))
-				{
-					return false;
-				}
-			}
+            //foreach (var relatedAttribute in relatedAttributes.Where(x => x.IsRequiredBeforeCopy && !x.RelatedEntity.Equals(entity)))
+			//{
+			//	var childTableAttribute = relatedAttribute.RelatedEntity.GetCustomAttributesIncludingBaseInterfaces<TableAttribute>().First();
+			//	var childRelatedAttributes = relatedAttribute.RelatedEntity.GetCustomAttributesIncludingBaseInterfaces<RelatedEntityAttribute>();
+			//	if (!CopyChildEntity(relatedAttribute.RelatedEntity, entityId, childTableAttribute, childRelatedAttributes))
+			//	{
+			//		return false;
+			//	}
+			//}
 
 			var sql = ConstructCopySql(entity, tableAttribute, relatedAttributes.First(), entityId);
 			try
@@ -94,7 +94,7 @@
 
                 _processedEntities.Add($"{entity.FullName}_{entityId}");
 
-                foreach (var relatedAttribute in relatedAttributes.Where(x => !x.IsRequiredBeforeCopy && !x.RelatedEntity.Equals(entity)))
+			    foreach (var relatedAttribute in relatedAttributes.OrderByDescending(x => x.Sequence)) 
 				{
 					var childTableAttribute = relatedAttribute.RelatedEntity.GetCustomAttributesIncludingBaseInterfaces<TableAttribute>().First();
 					var childRelatedAttributes = relatedAttribute.RelatedEntity.GetCustomAttributesIncludingBaseInterfaces<RelatedEntityAttribute>();
@@ -116,13 +116,15 @@
 		private static string ConstructCopySql(Type entity, TableAttribute tableAttribute, RelatedEntityAttribute relatedAttribute, int keyValue)
 		{
 		    var fieldNames = string.Empty;
-		        _fieldNamesCache.TryGetValue(entity.FullName, out fieldNames);
+		    _fieldNamesCache.TryGetValue(entity.FullName, out fieldNames);
 
 		    if (string.IsNullOrEmpty(fieldNames))
 		    {
 		        var fields = entity.GetProperties();
 		        fieldNames = string.Join(", ", fields.Select(x => $"[{x.Name}]").ToArray());
-		    }
+		        _fieldNamesCache.Add(entity.FullName, fieldNames);
+
+            }
 
 		    var sql = new StringBuilder();
 		    if (!_constrainDisabledEntities.Contains(entity.FullName))
@@ -139,7 +141,7 @@
 			sql.AppendLine($@"INSERT INTO [daes_{_dbPrefix}].[{tableAttribute.TableSchema}].[{tableAttribute.TableName}] ({fieldNames}) ");
 		    sql.AppendLine($@"SELECT {fieldNames} FROM [saes_{_dbPrefix}].[{tableAttribute.TableSchema}].[{tableAttribute.TableName}] src ");
 		    sql.AppendLine($@"WHERE {tableAttribute.PrimaryKey} = {keyValue}  ");
-		    sql.AppendLine($@"AND NOT EXISTS(SELECT 1 FROM [daes_{_dbPrefix}].[{tableAttribute.TableSchema}].[{tableAttribute.TableName}] dst WHERE dst.{tableAttribute.PrimaryKey} = src.{tableAttribute.PrimaryKey}");
+		    sql.AppendLine($@"AND NOT EXISTS(SELECT 1 FROM [daes_{_dbPrefix}].[{tableAttribute.TableSchema}].[{tableAttribute.TableName}] dst WHERE dst.{tableAttribute.PrimaryKey} = src.{tableAttribute.PrimaryKey})");
 
             if (tableAttribute.HasIdentity)
 		    {

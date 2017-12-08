@@ -11,7 +11,7 @@ using Aurea.Maintenance.Debugger.Common.Models;
 namespace Aurea.Maintenance.Debugger.Spark.Models
 {
     [Table("AccountsReceivable", PrimaryKey = "AcctsRecID")]
-    [RelatedEntity(typeof(Customer), IsRequiredBeforeCopy = true)]
+    //[RelatedEntity(typeof(Customer)/*, IsRequiredBeforeCopy = true*/)]
     public class AccountsReceivable:ICopyableEntity
     {
         public int AcctsRecID { get; set; }

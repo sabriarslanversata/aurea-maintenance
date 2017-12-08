@@ -10,8 +10,8 @@ using Aurea.Maintenance.Debugger.Common.Models;
 namespace Aurea.Maintenance.Debugger.Spark.Models
 {
     [Table("Premise", PrimaryKey = "PremID")]
-    [RelatedEntity(typeof(Customer), RelatedField = "CustID", IsRequiredBeforeCopy = true)]
-    [RelatedEntity(typeof(Address), RelatedField = "AddrID", IsRequiredBeforeCopy = true)]
+    //[RelatedEntity(typeof(Customer), RelatedField = "CustID"/*, IsRequiredBeforeCopy = true*/)]
+    [RelatedEntity(typeof(Address), RelatedField = "AddrID"/*, IsRequiredBeforeCopy = true*/)]
     public class Premise: ICopyableEntity
     {
         public int PremID { get; set; }
