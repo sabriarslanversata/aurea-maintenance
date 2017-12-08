@@ -56,8 +56,16 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Components.Maintenance.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.Element, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Element.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.Element.Billing">
       <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Element.Billing.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Element.Core, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Element.Core.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Engine.Event">
       <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Engine.Event.dll</HintPath>

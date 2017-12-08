@@ -96,6 +96,7 @@
             //var result = myCust.CopyEntityFromSaes2Daes(_appConfig.ConnectionCsr, "Spark", _logger, true);
             
             //FindAndCopyCustomersWhichRTsWithNo814_C();
+            //CopyCustomersAndDetailsForProductRollOver(new List<int>{ 101993 , 500551 });
             SimulateCalcuateNextRateTransitionDate();
             SimulateProductRollOver();
 
@@ -155,8 +156,10 @@
 
         private static void CopyCustomersAndDetailsForProductRollOver(List<int> custIdList)
         {
-            
-            //copy +Customer, +Address, +Premise, +CustomerAdditionalInfo, +AccountsReceivable, +Rate, +RateDetail, +RateTransition, +Product, --Terms, +Contract, +ClientCustomer.Contract, +Meter, +EdiLoadProfile, ClientCustomer.RateTransition ...
+
+            //copy +Customer, +Address, +Premise, +CustomerAdditionalInfo, +AccountsReceivable, +Rate, +RateDetail, +RateTransition, +Product, --Terms, 
+            //+Contract, +ClientCustomer.Contract, +Meter, +EdiLoadProfile, +ClientCustomer.RateTransition,
+            // RateIndexType, RateIndexRange, ...
             var currentIterationNumber = 0;
             foreach (var custId in custIdList)
             {
@@ -369,8 +372,39 @@ WHERE
 
 SET IDENTITY_INSERT daes_Spark..Meter OFF
 
+PRINT 'Copy RateIndexType'
+SET IDENTITY_INSERT daes_Spark..RateIndexType ON
+INSERT INTO daes_Spark..RateIndexType
+( [RateIndexTypeID], [RateIndexType], [Active])
+SELECT
+ [RateIndexTypeID], [RateIndexType], [Active]
+FROM saes_Spark..RateIndexType src
+WHERE
+  src.RateIndexTypeID IN (SELECT CONVERT(INT, FixedCapRate) FROM saes_Spark..RateDetail WHERE FixedCapRate IS NOT NULL AND RateId IN (
+SELECT RateId FROM saes_Spark..Customer WHERE CustId = @CustId
+UNION
+SELECT RateID FROM saes_Spark..Product WHERE ProductId IN (SELECT ProductID FROM saes_Spark..Contract WHERE CustID = @CustID)
+  )) 
+  AND NOT EXISTS(SELECT 1 FROM daes_Spark..RateIndexType dst WHERE src.RateIndexTypeID = dst.RateIndexTypeID )
 
+SET IDENTITY_INSERT daes_Spark..RateIndexType OFF
 
+PRINT 'Copy RateIndexRange'
+SET IDENTITY_INSERT daes_Spark..RateIndexRange ON
+INSERT INTO daes_Spark..RateIndexRange
+( [RateIndexRangeID], [RateIndexTypeID], [DateFrom], [DateTo], [IndexRate])
+SELECT
+ [RateIndexRangeID], [RateIndexTypeID], [DateFrom], [DateTo], [IndexRate]
+FROM saes_Spark..RateIndexRange src
+WHERE
+  src.RateIndexTypeID IN (SELECT CONVERT(INT, FixedCapRate) FROM saes_Spark..RateDetail WHERE FixedCapRate IS NOT NULL AND RateId IN (
+SELECT RateId FROM saes_Spark..Customer WHERE CustId = @CustId
+UNION
+SELECT RateID FROM saes_Spark..Product WHERE ProductId IN (SELECT ProductID FROM saes_Spark..Contract WHERE CustID = @CustID)
+  )) 
+  AND NOT EXISTS(SELECT 1 FROM daes_Spark..RateIndexRange dst WHERE src.RateIndexRangeID = dst.RateIndexRangeID )
+
+SET IDENTITY_INSERT daes_Spark..RateIndexRange OFF
 
 ";
                     try
@@ -419,7 +453,8 @@ SET IDENTITY_INSERT daes_Spark..Meter OFF
             foreach (var customerProductRolloverModel in lstcustomersForRollover)
             {
                 var customer = context.CustomerDataGateway.LoadCustomerInfo(customerProductRolloverModel.CustId);
-                if (customer.BillingTypeId == 3)
+                CIS.Element.Core.PremiseInfoList listPremises = CIS.Element.Core.PremiseInfoList.Search(customerProductRolloverModel.CustId, "", "", "", true, "");
+                if (customer.BillingTypeId == 3 && listPremises.Count == 1) 
                     rollover.Process(customerProductRolloverModel);
             }
         }
