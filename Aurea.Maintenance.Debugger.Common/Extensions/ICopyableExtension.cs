@@ -20,9 +20,9 @@
         private static string _dbPrefix;
         private static bool _dryRun;
         private static ILogger _logger;
-        private static List<string> _processedEntities = new List<string>();
-        private static List<string> _constrainDisabledEntities = new List<string>();
-        private static Dictionary<string, string> _fieldNamesCache = new Dictionary<string, string>();
+        private static readonly List<string> ProcessedEntities = new List<string>();
+        private static readonly List<string> ConstrainDisabledEntities = new List<string>();
+        private static readonly Dictionary<string, string> FieldNamesCache = new Dictionary<string, string>();
 
 		public static bool CopyEntityFromSaes2Daes<T>(this T entity, string connectionString, string dbPrefix, ILogger logger, bool dryRun) where T :  ICopyableEntity
 		{
@@ -30,9 +30,9 @@
 		    _dbPrefix = dbPrefix;
 		    _dryRun = dryRun;
 		    _logger = logger;
-		    _processedEntities.Clear();
-		    _constrainDisabledEntities.Clear();
-		    _fieldNamesCache.Clear();
+		    ProcessedEntities.Clear();
+		    ConstrainDisabledEntities.Clear();
+		    FieldNamesCache.Clear();
             _logger.Info($"Starting copying of type {entity.ToString()}");
 
             using (var ts = TransactionFactory.CreateTransactionScope())
@@ -45,7 +45,7 @@
 
 			        if (CopyChildEntity(entity.GetType(), _entityId, tableAttribute, relatedAttributes))
 			        {
-                        _constrainDisabledEntities.ForEach(entityName =>
+                        ConstrainDisabledEntities.ForEach(entityName =>
                         {
                             SqlHelper.ExecuteNonQuery(_connectionString, CommandType.Text,
                                 $"ALTER TABLE [daes_{_dbPrefix}].[{tableAttribute.TableSchema}].[{tableAttribute.TableName}] WITH CHECK CHECK CONSTRAINT ALL");
@@ -67,7 +67,7 @@
 		private static bool CopyChildEntity(Type entity, int entityId, TableAttribute tableAttribute, IEnumerable<RelatedEntityAttribute> relatedAttributes)
 		{
 			_logger.Info($"Start copying entity {tableAttribute.TableName}");
-		    if (_processedEntities.Contains($"{entity.FullName}_{entityId}"))
+		    if (ProcessedEntities.Contains($"{entity.FullName}_{entityId}"))
 		    {
 		        return true;
 		    }
@@ -84,7 +84,8 @@
 			//	}
 			//}
 
-			var sql = ConstructCopySql(entity, tableAttribute, relatedAttributes.First(), entityId);
+		    var relatedEntityAttributes = relatedAttributes as RelatedEntityAttribute[] ?? relatedAttributes.ToArray();
+		    var sql = ConstructCopySql(entity, tableAttribute, relatedEntityAttributes.First(), entityId);
 			try
 			{
 				if (!_dryRun)
@@ -92,9 +93,9 @@
 					SqlHelper.ExecuteNonQuery(SqlHelper.CreateCommand(_connectionString, sql, CommandType.Text));
 				}
 
-                _processedEntities.Add($"{entity.FullName}_{entityId}");
+                ProcessedEntities.Add($"{entity.FullName}_{entityId}");
 
-			    foreach (var relatedAttribute in relatedAttributes.OrderByDescending(x => x.Sequence)) 
+			    foreach (var relatedAttribute in relatedEntityAttributes.OrderByDescending(x => x.Sequence)) 
 				{
 					var childTableAttribute = relatedAttribute.RelatedEntity.GetCustomAttributesIncludingBaseInterfaces<TableAttribute>().First();
 					var childRelatedAttributes = relatedAttribute.RelatedEntity.GetCustomAttributesIncludingBaseInterfaces<RelatedEntityAttribute>();
@@ -115,22 +116,21 @@
 
 		private static string ConstructCopySql(Type entity, TableAttribute tableAttribute, RelatedEntityAttribute relatedAttribute, int keyValue)
 		{
-		    var fieldNames = string.Empty;
-		    _fieldNamesCache.TryGetValue(entity.FullName, out fieldNames);
+		    FieldNamesCache.TryGetValue(entity.FullName ?? throw new InvalidOperationException(), out var fieldNames);
 
 		    if (string.IsNullOrEmpty(fieldNames))
 		    {
 		        var fields = entity.GetProperties();
 		        fieldNames = string.Join(", ", fields.Select(x => $"[{x.Name}]").ToArray());
-		        _fieldNamesCache.Add(entity.FullName, fieldNames);
+		        FieldNamesCache.Add(entity.FullName, fieldNames);
 
             }
 
 		    var sql = new StringBuilder();
-		    if (!_constrainDisabledEntities.Contains(entity.FullName))
+		    if (!ConstrainDisabledEntities.Contains(entity.FullName))
 		    {
 		        sql.AppendLine($"ALTER TABLE [daes_{_dbPrefix}].[{tableAttribute.TableSchema}].[{tableAttribute.TableName}] NOCHECK CONSTRAINT ALL");
-		        _constrainDisabledEntities.Add(entity.FullName);
+		        ConstrainDisabledEntities.Add(entity.FullName);
 		    }
 
 		    if (tableAttribute.HasIdentity)
