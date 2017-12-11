@@ -1,4 +1,7 @@
-﻿namespace Aurea.Maintenance.Debugger.Spark
+﻿using System.Threading;
+using CIS.Clients.Spark.Model.Product;
+
+namespace Aurea.Maintenance.Debugger.Spark
 {
     using System;
     using Common;
@@ -91,11 +94,11 @@
             */
             #endregion
 
-            TestCopyCustomer();
+            //TestCopyCustomer();
 
             //FindAndCopyCustomersWhichRTsWithNo814_C();
-            //CopyCustomersAndDetailsForProductRollOver(new List<int>{ 101993 , 500551 });
-            SimulateCalcuateNextRateTransitionDate();
+            CopyCustomersAndDetailsForProductRollOver(new List<int>{ 1782208, 101993 /*, 500551*/ });
+            //SimulateCalcuateNextRateTransitionDate();
             SimulateProductRollOver();
 
             _logger.Info("Debug session end");
@@ -108,20 +111,37 @@
             myCust.CustID = 1;
             var result = myCust.CopyEntityFromSaes2Daes(_appConfig.ConnectionCsr, "Spark", _logger, true);
         }
+
         private static void PrepareDataForRTTrigger(int custId)
         {
-            var lastRTId = 0;
-            var sql = $@"SELECT TOP 1 RateTransitionID from daes_Spark..RateTransition WHERE CustId = {custId} ORDER BY CreatedDate DESC";
-            var reader = SqlHelper.ExecuteReader(SqlHelper.CreateCommand(_appConfig.ConnectionCsr, sql, CommandType.Text));
-            while (reader.Read())
+            var sql = $@"SELECT TOP 2 RateTransitionID from daes_Spark..RateTransition WHERE CustId = {custId} ORDER BY CreatedDate DESC";
+            using (var ds = SqlHelper.ExecuteDataset(_appConfig.ConnectionCsr, CommandType.Text, sql))
             {
-                lastRTId = reader.GetInt32(0);
+                if (ds == null || ds.Tables.Count == 0 || ds.Tables[0].Rows.Count == 0)
+                return;
+                var lastRtIds = ds.Tables[0].AsEnumerable().Select(row => row.Field<int>("RateTransitionID")).ToArray();
+                if (lastRtIds.Length > 1)
+                {
+                    sql = $"DELETE FROM daes_Spark.ClientCustomer.RateTransition WHERE RateTransitionID = {lastRtIds[0]}";
+                    SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
+                    sql = $"DELETE FROM daes_Spark..RateTransition WHERE RateTransitionID = {lastRtIds[0]}";
+                    SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
+
+                    //change next ldcRateCode
+
+                    //sql = $"UPDATE daes_Spark.ClientCustomer.RateTransition SET LDCRateCode = CONVERT(float,LDCRateCode)+0.001 WHERE RateTransitionID = {lastRtIds[1]}";
+                    //SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
+
+                }
             }
-            if (lastRTId > 0)
+
+            sql = $"SELECT RateId FROM daes_Spark..Customer WHERE CustId = {custId}";
+            using (var reader = SqlHelper.ExecuteReader(_appConfig.ConnectionCsr, CommandType.Text, sql))
             {
-                sql = $"DELETE FROM daes_Spark.ClientCustomer.RateTransition WHERE RateTransitionID = {lastRTId}";
-                SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
-                sql = $"DELETE FROM daes_Spark..RateTransition WHERE RateTransitionID = {lastRTId}";
+                int RateId = 0;
+                while (reader.Read())
+                    RateId = reader.GetInt32(0);
+                sql = $"DELETE FROM RateDetatil WHERE RateDetID = (SELECT TOP 1 FROM RateDetail WHERE RateId = {RateId} ORDER BY 1 DESC)";
                 SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
             }
         }
@@ -161,9 +181,10 @@
         private static void CopyCustomersAndDetailsForProductRollOver(List<int> custIdList)
         {
 
-            //copy +Customer, +Address, +Premise, +CustomerAdditionalInfo, +AccountsReceivable, +Rate, +RateDetail, +RateTransition, +Product, --Terms, 
-            //+Contract, +ClientCustomer.Contract, +Meter, +EdiLoadProfile, +ClientCustomer.RateTransition,
-            // RateIndexType, RateIndexRange, ...
+            //copy
+            // +Customer, +Address, +Premise, +CustomerAdditionalInfo, +AccountsReceivable, +Rate, +RateDetail, +RateTransition, +Product, --Terms, 
+            // +Contract, +ClientCustomer.Contract, +Meter, +EdiLoadProfile, +ClientCustomer.RateTransition,
+            // +RateIndexType, +RateIndexRange, +ClientCustomer.ChangeProductRequest, +ClientCorrelation.CorrelationRequest, +ClientCustomer.CustomerCommission
             var currentIterationNumber = 0;
             foreach (var custId in custIdList)
             {
@@ -171,6 +192,7 @@
                 {
                             var sql = $@"
 DECLARE @CustID AS INT = {custId}
+DECLARE @CustNo AS VARCHAR(10) = (SELECT CustNo FROM Customer WHERE CustId = @CustId)
 
 PRINT 'BEGIN Copy Customer'
 
@@ -209,7 +231,13 @@ SELECT
 FROM  saes_Spark..Rate src
 WHERE
     RateID IN (
-        SELECT RateID FROM saes_Spark..Product WHERE ProductId IN (SELECT ProductID FROM saes_Spark..Contract WHERE CustID = @CustID)
+        SELECT RateID FROM saes_Spark..Product WHERE ProductId IN (
+            SELECT ProductID FROM saes_Spark..Contract WHERE CustID = @CustID
+            UNION
+            SELECT ProductId FROM saes_Spark.ClientCustomer.ChangeProductRequest src WHERE src.CustId = @CustId
+            UNION
+            SELECT SegmentationRolloverProductId FROM saes_Spark.ClientCustomer.ChangeProductRequest src WHERE src.CustId = @CustId
+        )
         UNION
         SELECT RateID FROM saes_Spark..Customer WHERE CustID = @CustID
     )
@@ -227,9 +255,15 @@ SELECT
 FROM saes_Spark..RateDetail src
 WHERE
   src.RateId IN (
-SELECT RateId FROM saes_Spark..Customer WHERE CustId = @CustId
-UNION
-SELECT RateID FROM saes_Spark..Product WHERE ProductId IN (SELECT ProductID FROM saes_Spark..Contract WHERE CustID = @CustID)
+    SELECT RateId FROM saes_Spark..Customer WHERE CustId = @CustId
+    UNION
+    SELECT RateID FROM saes_Spark..Product WHERE ProductId IN (
+            SELECT ProductID FROM saes_Spark..Contract WHERE CustID = @CustID
+            UNION
+            SELECT ProductId FROM saes_Spark.ClientCustomer.ChangeProductRequest src WHERE src.CustId = @CustId
+            UNION
+            SELECT SegmentationRolloverProductId FROM saes_Spark.ClientCustomer.ChangeProductRequest src WHERE src.CustId = @CustId
+    )
   )
   AND NOT EXISTS(SELECT 1 FROM daes_Spark..RateDetail dst WHERE src.RateDetID = dst.RateDetID )
 
@@ -294,7 +328,17 @@ SELECT
  [ProductID], [RateID], [LDCCode], [PlanType], [TDSPTemplateID], [Description], [BeginDate], [EndDate], [CustType], [Graduated], [RangeTier1], [RangeTier2], [SortOrder], [ActiveFlag], [Uplift], [CSATDSPTemplateID], [CAATDSPTemplateID], [PriceDescription], [MarketingCode], -1 /*[RateTypeID]*/, [ConsUnitID], [Default], [DivisionCode], [RateDescription], [ServiceType], [CSPId], [TermsId], /*[RolloverProductId]*/NULL, [CommissionId], [CommissionAmt], [CancelFeeId], [MonthlyChargeId], [ProductCode], [RatePackageId], [ProductName], [TermDate], [DiscountTypeId], [DiscountAmount], [ProductZoneID], [IsGreen], [IsBestChoice], [ActiveEnrollmentFlag], [CreditScoreThreshold], [DepositAmount], [Incentives]
 FROM  saes_Spark..Product src
 WHERE
-    ( ProductId IN (SELECT ProductID FROM saes_Spark..Contract WHERE CustID = @CustID) or src.RateId IN (SELECT RateId FROM saes_Spark..Customer WHERE CustId = @CustId) )
+    (
+         src.ProductId IN (
+            SELECT ProductID FROM saes_Spark..Contract WHERE CustID = @CustID
+            UNION
+            SELECT ProductId FROM saes_Spark.ClientCustomer.ChangeProductRequest src WHERE src.CustId = @CustId
+            UNION
+            SELECT SegmentationRolloverProductId FROM saes_Spark.ClientCustomer.ChangeProductRequest src WHERE src.CustId = @CustId
+         )
+         or
+         src.RateId IN (SELECT RateId FROM saes_Spark..Customer WHERE CustId = @CustId
+     ) 
     AND NOT EXISTS(SELECT 1 FROM daes_Spark..Product dst WHERE dst.ProductId = src.ProductId )
 
 SET IDENTITY_INSERT daes_Spark..Product OFF
@@ -410,6 +454,47 @@ SELECT RateID FROM saes_Spark..Product WHERE ProductId IN (SELECT ProductID FROM
 
 SET IDENTITY_INSERT daes_Spark..RateIndexRange OFF
 
+PRINT 'Copy ClientCustomer.ChangeProductRequest'
+SET IDENTITY_INSERT daes_Spark.ClientCustomer.ChangeProductRequest ON
+INSERT INTO daes_Spark.ClientCustomer.ChangeProductRequest
+( [ChangeProductRequestID], [CustId], [ProductId], [ProductChangeType], [ProductEffectiveDate], [PromoCode], [SalesAgent], [MarketerCode], [ContractPath], [ReferAFriendToken], [SoldDate], [SegmentationLabel], [SegmentationAdjustmentToEnergyRate], [SegmentationRolloverProductId], [RequestedContractStartDate], [ContractTermsInMonths], [ActualContractStartDate], [DeletedFlag], [CTRRequestId], [ContractId], [EarlyTerminationFee], [LDCRateCode], [CreateDate], [MeterReadDate], [BufferDate])
+SELECT
+ [ChangeProductRequestID], [CustId], [ProductId], [ProductChangeType], [ProductEffectiveDate], [PromoCode], [SalesAgent], [MarketerCode], [ContractPath], [ReferAFriendToken], [SoldDate], [SegmentationLabel], [SegmentationAdjustmentToEnergyRate], [SegmentationRolloverProductId], [RequestedContractStartDate], [ContractTermsInMonths], [ActualContractStartDate], [DeletedFlag], [CTRRequestId], NULL/*[ContractId]*/, [EarlyTerminationFee], [LDCRateCode], [CreateDate], [MeterReadDate], [BufferDate]
+FROM saes_Spark.ClientCustomer.ChangeProductRequest src
+WHERE
+  src.CustId = @CustId
+  AND NOT EXISTS(SELECT 1 FROM daes_Spark.ClientCustomer.ChangeProductRequest dst WHERE src.ChangeProductRequestID = dst.ChangeProductRequestID )
+
+SET IDENTITY_INSERT daes_Spark.ClientCustomer.ChangeProductRequest OFF
+
+PRINT 'Copy ClientCorrelation.CorrelationRequest'
+SET IDENTITY_INSERT daes_Spark.ClientCorrelation.CorrelationRequest ON
+INSERT INTO daes_Spark.ClientCorrelation.CorrelationRequest
+( [CorrelationRequestID], [ClientRequestID], [IstaCorrelationID], [RequestSourceType], [RequestSourceID], [CustomerAccountNumber], [RequestDate], [RequestMessage], [BatchRequestId], [IsSuccess])
+SELECT
+ [CorrelationRequestID], [ClientRequestID], [IstaCorrelationID], [RequestSourceType], [RequestSourceID], [CustomerAccountNumber], [RequestDate], [RequestMessage], [BatchRequestId], [IsSuccess]
+FROM saes_Spark.ClientCorrelation.CorrelationRequest src
+WHERE
+  src.CustomerAccountNumber = @CustNo 
+  AND NOT EXISTS(SELECT 1 FROM daes_Spark.ClientCorrelation.CorrelationRequest dst WHERE src.CorrelationRequestID = dst.CorrelationRequestID )
+
+SET IDENTITY_INSERT daes_Spark.ClientCorrelation.CorrelationRequest OFF
+
+
+PRINT 'Copy ClientCustomer.CustomerCommission'
+SET IDENTITY_INSERT daes_Spark.ClientCustomer.CustomerCommission ON
+INSERT INTO daes_Spark.ClientCustomer.CustomerCommission
+( [CustomerCommissionId], [CustId], [ProductId], [BrokerCode], [BrokerName], [ContractPromoCode], [MarketerCode], [SalesChannelCode], [UtilityDuns], [CreateDate], [AggregatorFee])
+SELECT
+ [CustomerCommissionId], [CustId], [ProductId], [BrokerCode], [BrokerName], [ContractPromoCode], [MarketerCode], [SalesChannelCode], [UtilityDuns], [CreateDate], [AggregatorFee]
+FROM saes_Spark.ClientCustomer.CustomerCommission src
+WHERE
+  src.CustId = @CustId 
+  AND NOT EXISTS(SELECT 1 FROM daes_Spark.ClientCustomer.CustomerCommission dst WHERE src.CustomerCommissionId = dst.CustomerCommissionId )
+
+SET IDENTITY_INSERT daes_Spark.ClientCustomer.CustomerCommission OFF
+
+
 ";
                     try
                     {
@@ -454,12 +539,49 @@ SET IDENTITY_INSERT daes_Spark..RateIndexRange OFF
                     CurrentRateTransitionId = CIS.Framework.Data.Utility.GetInt32(dr, "CurrentRateTransitionId", 0),
                 }).ToList();
 
-            foreach (var customerProductRolloverModel in lstcustomersForRollover)
+            foreach (var customerProductRolloverModel in lstcustomersForRollover.Where(x => x.CustId == 101993 || x.CustId == 500551)) 
             {
                 var customer = context.CustomerDataGateway.LoadCustomerInfo(customerProductRolloverModel.CustId);
                 CIS.Element.Core.PremiseInfoList listPremises = CIS.Element.Core.PremiseInfoList.Search(customerProductRolloverModel.CustId, "", "", "", true, "");
                 if (customer.BillingTypeId == 3 && listPremises.Count == 1) 
                     rollover.Process(customerProductRolloverModel);
+            }
+        }
+
+        private static void SimulateCustomerContractEvaluation()
+        {
+            try
+            {
+                var dataGateway = new DataGateway
+                {
+                    ClientId = 48,
+                    ConnectionBillingAdmin = _clientConfig.ConnectionBillingAdmin,
+                    ConnectionCsr = _appConfig.ConnectionCsr,
+                    UserId = 0,
+                };
+
+                //if (!(Thread.CurrentPrincipal is SecurityPrincipal))
+                    //Utility.SetSecurityContext(dataGateway.ClientId, dataGateway.ConnectionBillingAdmin, dataGateway.UserId);
+
+                var context = new ChangeProductEvaluationContext(_logger, dataGateway);
+                var contractEvalution = new ChangeProductEvaluation(context);
+
+                List<ChangeProductModel> list = contractEvalution.GetCustomersEligibleForContractCreation();
+                foreach (var model in list)
+                {
+                    try
+                    {
+                        contractEvalution.CreateContract(model);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error(ex, $"Exception Logged for ChangeProductRequest id: {model.Id}, CustomerId: {model.CustId}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex);
             }
         }
 
