@@ -67,8 +67,16 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Element.Core.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.Element.Transaction, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Element.Transaction.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.Engine.Event">
       <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Engine.Event.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Enum, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Enum.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Framework, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
