@@ -359,11 +359,88 @@ SET IDENTITY_INSERT daes_Texpo..Product OFF
         {
             CopyCustomer(custNo);
 
-            //copy Invoice, InvoiceDetail, InvoiceXml, InvoiceTax, InvoiceEnergySavings, Consumption, InvoiceSpecialCharges, ConsumptionDetail, ConsumptionInvDueDate, 
+            //copy +Invoice, +InvoiceDetail, +InvoiceXml, +InvoiceTax, +InvoiceEnergySavings, +InvoiceSpecialCharges, Consumption, 
+            // ConsumptionDetail, ConsumptionInvDueDate, AccountsReceivableHistory, InvoiceLogDetail, InvoiceLog, SpecialCharges, PrintStatus?, InvoicePrintBatch?
             string sql = $@"USE daes_Texpo
 DECLARE @ClientID AS INT = (SELECT ClientID FROM daes_BillingAdmin..Client WHERE Client='TXP')
 DECLARE @CustNo AS VARCHAR(20) = '{custNo}'
 DECLARE @CustID AS INT = (SELECT CustID FROM saes_Texpo..Customer WHERE CustNo = @CustNo)
+
+
+PRINT 'Copy Invoice'
+SET IDENTITY_INSERT daes_Texpo..Invoice ON
+INSERT INTO daes_Texpo..Invoice
+( [InvoiceID], [CustID], [AcctsRecHistID], [ParentInvoiceID], [InvLogID], [RateID], [RevenuePeriod], [Type], [BasePeriod], [CustCode], [InvAmt], [TotalDetailAmount], [InvDate], [PrintDate], [PostDate], [DueDate], [ServiceFrom], [ServiceTo], [UserID], [PaymentPlanFlag], [FinalFlag], [BillingTypeID], [ReferenceInvoiceNo], [TDSPTemplateID], [BillCycle], [EventCleared], [PaidDate], [SpecialInvoiceTypeId], [DeliveryDate], [DeliveryStatus], [DeliveryComment])
+SELECT
+ [InvoiceID], [CustID], [AcctsRecHistID], [ParentInvoiceID], [InvLogID], [RateID], [RevenuePeriod], [Type], [BasePeriod], [CustCode], [InvAmt], [TotalDetailAmount], [InvDate], [PrintDate], [PostDate], [DueDate], [ServiceFrom], [ServiceTo], [UserID], [PaymentPlanFlag], [FinalFlag], [BillingTypeID], [ReferenceInvoiceNo], [TDSPTemplateID], [BillCycle], [EventCleared], [PaidDate], [SpecialInvoiceTypeId], [DeliveryDate], [DeliveryStatus], [DeliveryComment]
+FROM saes_Texpo..Invoice src
+WHERE
+  src.CustId = @CustId
+  AND NOT EXISTS(SELECT 1 FROM daes_Texpo..Invoice dst WHERE src.InvoiceId = dst.InvoiceId )
+SET IDENTITY_INSERT daes_Texpo..Invoice OFF
+
+PRINT 'Copy InvoiceTax'
+SET IDENTITY_INSERT daes_Texpo..InvoiceTax ON
+INSERT INTO daes_Texpo..InvoiceTax
+( [InvoiceTaxID], [InvoiceID], [TaxAssessment], [TaxRate], [ChargeTotal], [TaxTotal], [GeoCode], [TaxType], [TaxCategory], [GroupCode], [ItemCode], [UnitType], [Location], [TaxAuthority], [Description], [PassFlag], [PassType], [InvDetID], [TaxBase], [MaxTax], [ExcessRate], [TaxFee], [MaxUnits], [UnitBase], [UnitTaxBase], [ExcessFee], [ThresholdType], [CalcRate], [Percentage], [MinTaxBase], [MaxTaxBase], [MinUnitBase], [MaxUnitBase], [CchVersion])
+SELECT
+ [InvoiceTaxID], [InvoiceID], [TaxAssessment], [TaxRate], [ChargeTotal], [TaxTotal], [GeoCode], [TaxType], [TaxCategory], [GroupCode], [ItemCode], [UnitType], [Location], [TaxAuthority], [Description], [PassFlag], [PassType], [InvDetID], [TaxBase], [MaxTax], [ExcessRate], [TaxFee], [MaxUnits], [UnitBase], [UnitTaxBase], [ExcessFee], [ThresholdType], [CalcRate], [Percentage], [MinTaxBase], [MaxTaxBase], [MinUnitBase], [MaxUnitBase], [CchVersion]
+FROM saes_Texpo..InvoiceTax src
+WHERE
+  src.InvoiceId IN (SELECT InvoiceId FROM saes_Texpo..Invoice WHERE CustId = @CustId) 
+  AND NOT EXISTS(SELECT 1 FROM daes_Texpo..InvoiceTax dst WHERE src.InvoiceTaxID = dst.InvoiceTaxID )
+
+SET IDENTITY_INSERT daes_Texpo..InvoiceTax OFF
+
+PRINT 'Copy InvoiceDetail'
+SET IDENTITY_INSERT daes_Texpo..InvoiceDetail ON
+INSERT INTO daes_Texpo..InvoiceDetail
+( [InvDetID], [InvoiceID], [PremID], [MeterID], [CategoryID], [RateDescID], [RateDetID], [ConsDetID], [ConsUnitID], [AncChgsID], [CityID], [CountyID], [TaxSourceID], [TaxAssessment], [GeoCode], [GroupCode], [ItemCode], [InvDetDesc], [InvDetAmt], [InvDetQty], [Rate], [ServiceFrom], [ServiceTo], [Unit], [Taxable], [RegisterNumber], [Migr_serv_bill_id], [RateCode], [ReferenceInvDetId], [CchVersion])
+SELECT
+ [InvDetID], [InvoiceID], [PremID], [MeterID], [CategoryID], [RateDescID], [RateDetID], [ConsDetID], [ConsUnitID], [AncChgsID], [CityID], [CountyID], [TaxSourceID], [TaxAssessment], [GeoCode], [GroupCode], [ItemCode], [InvDetDesc], [InvDetAmt], [InvDetQty], [Rate], [ServiceFrom], [ServiceTo], [Unit], [Taxable], [RegisterNumber], [Migr_serv_bill_id], [RateCode], [ReferenceInvDetId], [CchVersion]
+FROM saes_Texpo..InvoiceDetail src
+WHERE
+  src.InvoiceId IN (SELECT InvoiceId FROM saes_Texpo..Invoice WHERE CustId = @CustId) 
+  AND NOT EXISTS(SELECT 1 FROM daes_Texpo..InvoiceDetail dst WHERE src.InvDetID = dst.InvDetID )
+
+SET IDENTITY_INSERT daes_Texpo..InvoiceDetail OFF
+
+PRINT 'Copy InvoiceXml'
+SET IDENTITY_INSERT daes_Texpo..InvoiceXml ON
+INSERT INTO daes_Texpo..InvoiceXml
+( [InvoiceXMLID], [InvoiceID], [InvoiceXML], [CreateDate], [PrintFormatID], [PrintStatusID], [PhysicalFile], [PDFContent], [HasPDF], [MachineName])
+SELECT
+ [InvoiceXMLID], [InvoiceID], [InvoiceXML], [CreateDate], [PrintFormatID], [PrintStatusID], [PhysicalFile], [PDFContent], [HasPDF], [MachineName]
+FROM saes_Texpo..InvoiceXml src
+WHERE
+  src.InvoiceId IN (SELECT InvoiceId FROM saes_Texpo..Invoice WHERE CustId = @CustId) 
+  AND NOT EXISTS(SELECT 1 FROM daes_Texpo..InvoiceXml dst WHERE src.InvoiceXMLID = dst.InvoiceXMLID )
+
+SET IDENTITY_INSERT daes_Texpo..InvoiceXml OFF
+
+
+PRINT 'Copy InvoiceEnergySavings'
+INSERT INTO daes_Texpo..InvoiceEnergySavings
+( [InvoiceID], [SavingsAmount)
+SELECT
+ [InvoiceID], [SavingsAmount]
+FROM saes_Texpo..InvoiceEnergySavings src
+WHERE
+  src.InvoiceId IN (SELECT InvoiceId FROM saes_Texpo..Invoice WHERE CustId = @CustId) 
+  AND NOT EXISTS(SELECT 1 FROM daes_Texpo..InvoiceEnergySavings dst WHERE src.InvoiceID = dst.InvoiceID )
+
+
+PRINT 'Copy InvoiceSpecialCharges'
+SET IDENTITY_INSERT daes_Texpo..InvoiceSpecialCharges ON
+INSERT INTO daes_Texpo..InvoiceSpecialCharges
+( [InvoiceSpecialChargeID], [CustID], [PremID], [SpecialChargeID], [TaxAssessment], [InvoiceID], [ReferencedInvoiceID], [Amount], [SpecialChargeText], [InvoiceDetailID], [ESIID], [CreateDate], [UserID], [BillNowFlag], [PremNo])
+SELECT
+ [InvoiceSpecialChargeID], [CustID], [PremID], [SpecialChargeID], [TaxAssessment], [InvoiceID], [ReferencedInvoiceID], [Amount], [SpecialChargeText], [InvoiceDetailID], [ESIID], [CreateDate], [UserID], [BillNowFlag], [PremNo]
+FROM saes_Texpo..InvoiceSpecialCharges src
+WHERE
+  src.InvoiceId IN (SELECT InvoiceId FROM saes_Texpo..Invoice WHERE CustId = @CustId) 
+  AND NOT EXISTS(SELECT 1 FROM daes_Texpo..InvoiceSpecialCharges dst WHERE src. = dst. )
+SET IDENTITY_INSERT daes_Texpo..InvoiceSpecialCharges OFF
 
 
 ";
@@ -375,7 +452,7 @@ DECLARE @CustID AS INT = (SELECT CustID FROM saes_Texpo..Customer WHERE CustNo =
         private static void CopyCustomer(string custNo)
         {
             //copy +Address, +Rate, +Customer, +Contract, +Premise, +CustomerAdditionalInfo, +AccountsReceivable, +RateDetail, +RateTransition, +Product,
-            // Meter, EdiLoadProfile, RateIndexType, RateIndexRange, ChangeRequest, ChangeRequestDetail, ChangeRequestDetailTransaction
+            // +Meter, +EdiLoadProfile, +RateIndexType, +RateIndexRange, +ChangeRequest, +ChangeRequestDetail, +ChangeRequestDetailTransaction
             string sql = $@"USE daes_Texpo
 DECLARE @ClientID AS INT = (SELECT ClientID FROM daes_BillingAdmin..Client WHERE Client='TXP')
 DECLARE @CustNo AS VARCHAR(20) = '{custNo}'
@@ -515,9 +592,9 @@ PRINT 'Copy EdiLoadProfile'
 
 SET IDENTITY_INSERT daes_Texpo..EdiLoadProfile ON
 INSERT INTO daes_Texpo..EdiLoadProfile
-([EdiLoadProfileId], [LoadProfile], [LDCCOde], [Migr_LoadProfile])
+( [EdiLoadProfileId], [LoadProfile], [LDCCOde])
 SELECT
- [EdiLoadProfileId], [LoadProfile], [LDCCOde], [Migr_LoadProfile]
+  [EdiLoadProfileId], [LoadProfile], [LDCCOde]
 FROM saes_Texpo..EdiLoadProfile src
 WHERE
   src.EdiLoadProfileId IN ( SELECT EdiLoadProfileId FROM saes_Texpo..Meter WHERE MeterId IN (SELECT MeterId FROM saes_Texpo..Meter WHERE PremID IN (SELECT PremID FROM saes_Texpo..Premise WHERE CustId = @CustId)))
@@ -530,7 +607,7 @@ SET IDENTITY_INSERT daes_Texpo..Meter ON
 INSERT INTO daes_Texpo..Meter
 ( [MeterID], [ESIIDID], [AcctID], [AddrID], [TypeID], [PremID], [MeterNo], [MeterUniqueNo], [Pool], [MeterReadType], [MeterFactoryID], [MeterFactor], [BegRead], [EndRead], [DateFrom], [Dateto], [MeterStatus], [SourceLevel], [CreateDate], [EdiRateClassId], [EdiLoadProfileId], [AMSIndicator])
 SELECT
- [MeterID], [ESIIDID], [AcctID], [AddrID], [TypeID], [PremID], [MeterNo], [MeterUniqueNo], [Pool], [MeterReadType], [MeterFactoryID], [MeterFactor], [BegRead], [EndRead], [DateFrom], [Dateto], [MeterStatus], [SourceLevel], [CreateDate], [EdiRateClassId], [EdiLoadProfileId], [AMSIndicator]
+  [MeterID], [ESIIDID], [AcctID], [AddrID], [TypeID], [PremID], [MeterNo], [MeterUniqueNo], [Pool], [MeterReadType], [MeterFactoryID], [MeterFactor], [BegRead], [EndRead], [DateFrom], [Dateto], [MeterStatus], [SourceLevel], [CreateDate], [EdiRateClassId], [EdiLoadProfileId], [AMSIndicator]
 FROM saes_Texpo..Meter src
 WHERE
   src.MeterID IN (SELECT MeterId FROM saes_Texpo..Meter WHERE PremID IN (SELECT PremID FROM saes_Texpo..Premise WHERE CustId = @CustId))
@@ -552,10 +629,6 @@ WHERE
             UNION
             SELECT RateID FROM saes_Texpo..Product WHERE ProductId IN (
                 SELECT ProductID FROM saes_Texpo..Contract WHERE CustID = @CustID
-                UNION
-                SELECT ProductId FROM saes_Texpo.ClientCustomer.ChangeProductRequest WHERE CustId = @CustId
-                UNION
-                SELECT SegmentationRolloverProductId FROM saes_Texpo.ClientCustomer.ChangeProductRequest WHERE CustId = @CustId
             )
         ) 
     )
@@ -577,10 +650,6 @@ WHERE
             UNION
             SELECT RateID FROM saes_Texpo..Product WHERE ProductId IN (
                 SELECT ProductID FROM saes_Texpo..Contract WHERE CustID = @CustID
-                UNION
-                SELECT ProductId FROM saes_Texpo.ClientCustomer.ChangeProductRequest WHERE CustId = @CustId
-                UNION
-                SELECT SegmentationRolloverProductId FROM saes_Texpo.ClientCustomer.ChangeProductRequest WHERE CustId = @CustId
             )
         )
     ) 
@@ -588,13 +657,12 @@ WHERE
 
 SET IDENTITY_INSERT daes_Texpo..RateIndexRange OFF
 
-
 PRINT 'Copy ChangeRequest'
 SET IDENTITY_INSERT daes_Texpo..ChangeRequest ON
 INSERT INTO daes_Texpo..ChangeRequest
 ( [ChangeRequestID], [CustomerID], [PremiseID], [ElementID], [ElementPrimaryKey], [RequiresTransactionFlag], [RequiresApprovalFlag], [ScheduledDate], [StatusID], [CreatedByUserID], [CreateDate], [ModifiedByUserID], [ModifiedDate], [EffectiveDate], [ChangeTransactionID])
 SELECT
- [ChangeRequestID], [CustomerID], [PremiseID], [ElementID], [ElementPrimaryKey], [RequiresTransactionFlag], [RequiresApprovalFlag], [ScheduledDate], 1/*[StatusID]*/, [CreatedByUserID], [CreateDate], [ModifiedByUserID], [ModifiedDate], [EffectiveDate], NULL/*[ChangeTransactionID]*/
+ [ChangeRequestID], [CustomerID], [PremiseID], [ElementID], [ElementPrimaryKey], [RequiresTransactionFlag], [RequiresApprovalFlag], [ScheduledDate], [StatusID], [CreatedByUserID], [CreateDate], [ModifiedByUserID], [ModifiedDate], [EffectiveDate], [ChangeTransactionID]
 FROM saes_Texpo..ChangeRequest src
 WHERE
   src.CustomerId = @CustId
@@ -658,14 +726,17 @@ DELETE FROM MethodLog WHERE MethodId IN (310, 311, 314, 339, 341, 340, 313, 348,
         {
             //var maintenance = new MyMaintenance(_appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _clientConfig.ConnectionBillingAdmin);
             //maintenance.GenerateEvents();
-            if(_directlyCallableEvents==null)
+            if (_directlyCallableEvents == null) 
                 _directlyCallableEvents = EventTypeList.LoadDirectlyCallableEvents(Clients.Texpo.Id());
             if (_directlyCallableEvents.Any(x => x.EventTypeID == eventTypeId))
             {
                 var htParams = new Hashtable {{"EventTypeID", eventTypeId}};
                 var myEvent = _directlyCallableEvents.FirstOrDefault(x => x.EventTypeID == eventTypeId);
-                new EventGenerator().GenerateEvent(Clients.Texpo.Id(), htParams, Clients.Texpo.Abbreviation(), _appConfig.ConnectionCsr,
-                    _clientConfig.ConnectionBillingAdmin, myEvent.AssemblyName, myEvent.ClassName);
+                if (myEvent != null)
+                {
+                    new EventGenerator().GenerateEvent(Clients.Texpo.Id(), htParams, Clients.Texpo.Abbreviation(), _appConfig.ConnectionCsr,
+                        _clientConfig.ConnectionBillingAdmin, myEvent.AssemblyName, myEvent.ClassName);
+                }
             }
         }
 
