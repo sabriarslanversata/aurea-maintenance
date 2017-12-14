@@ -38,6 +38,10 @@
     <Reference Include="Aurea.TaskToaster">
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\TaskToaster\Aurea.TaskToaster.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.BusinessComponent, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.BusinessComponent.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.BusinessEntity, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.BusinessEntity.dll</HintPath>
@@ -57,6 +61,10 @@
     <Reference Include="CIS.Components.Maintenance, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Components.Maintenance.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Element.Core, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Element.Core.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Engine.Event, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -85,6 +93,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Library.Cryptography.dll</HintPath>
     </Reference>
+    <Reference Include="Csla, Version=3.6.2.0, Culture=neutral, PublicKeyToken=93be5fdc093e4c30" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />

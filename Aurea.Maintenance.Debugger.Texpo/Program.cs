@@ -1,4 +1,7 @@
-﻿namespace Aurea.Maintenance.Debugger.Texpo
+﻿using Aurea.Maintenance.Debugger.Common.Extensions;
+using CIS.Engine.Event;
+
+namespace Aurea.Maintenance.Debugger.Texpo
 {
     using System;
     using System.Collections;
@@ -22,6 +25,8 @@
     using CIS.Clients.Texpo.Import;
 
     using System.Transactions;
+    using CIS.BusinessComponent;
+    using CIS.Element.Core.Event;
 
     public class Program
     {
@@ -47,11 +52,14 @@
         private static ClientEnvironmentConfiguration _clientConfig;
         private static GlobalApplicationConfigurationDS.GlobalApplicationConfiguration _appConfig;
         private static ILogger _logger = new Logger();
+        private static EventTypeList _directlyCallableEvents;
 
         public class MyExport : CIS.Clients.Texpo.Export.MainProcess//CIS.Export.BaseExport
         {
-            private static readonly string _uaaDir = Assembly.GetExecutingAssembly().Location + "\\uua\\";
-            private static readonly string _uqcDir = Assembly.GetExecutingAssembly().Location + "\\uqc\\";
+            // ReSharper disable once AssignNullToNotNullAttribute
+            private static readonly string _uaaDir = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) , "uua\\");
+            // ReSharper disable once AssignNullToNotNullAttribute
+            private static readonly string _uqcDir = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "uqc\\");
 
             public MyExport(string connectionMarket, string connectionCsr, string connectionAdmin)
             {
@@ -240,18 +248,24 @@ b1x3zeE1G4Q4
 
             //SimulateLetterGeneration("360533");
             ProcessEvents();
+
+            //string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
+            //Directory.EnumerateFiles(dirToProcess, "*.xls", SearchOption.AllDirectories).ForEach(
+            //    filename =>
+            //    {
+            //        SimulateImportMassEnrollment(filename);
+            //    }
+            //);
+
+            //GenerateEventByType(27);
 			*/
 
             #endregion
-            
-            string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
-            Directory.EnumerateFiles(dirToProcess, "*.xls", SearchOption.AllDirectories).ForEach(
-                filename =>
-                {
-                    SimulateImportMassEnrollment(filename);
-                }
-            );
-            
+
+
+            ProcessEvents();
+            ExecuteExport();
+            Console.WriteLine("Debug session ended");
             Console.ReadLine();
         }
 
@@ -504,6 +518,21 @@ DELETE FROM MethodLog WHERE MethodId IN (310, 311, 314, 339, 341, 340, 313, 348,
         {
             var maintenance = new MyMaintenance(_appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _clientConfig.ConnectionBillingAdmin);
             maintenance.GenerateEvents();
+        }
+
+        private static void GenerateEventByType(int eventTypeId)
+        {
+            //var maintenance = new MyMaintenance(_appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _clientConfig.ConnectionBillingAdmin);
+            //maintenance.GenerateEvents();
+            if(_directlyCallableEvents==null)
+                _directlyCallableEvents = EventTypeList.LoadDirectlyCallableEvents(Clients.Texpo.Id());
+            if (_directlyCallableEvents.Any(x => x.EventTypeID == eventTypeId))
+            {
+                var htParams = new Hashtable {{"EventTypeID", eventTypeId}};
+                var myEvent = _directlyCallableEvents.FirstOrDefault(x => x.EventTypeID == eventTypeId);
+                new EventGenerator().GenerateEvent(Clients.Texpo.Id(), htParams, Clients.Texpo.Abbreviation(), _appConfig.ConnectionCsr,
+                    _clientConfig.ConnectionBillingAdmin, myEvent.AssemblyName, myEvent.ClassName);
+            }
         }
 
         private static void ExecuteExport()
