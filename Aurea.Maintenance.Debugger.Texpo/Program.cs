@@ -355,8 +355,27 @@ SET IDENTITY_INSERT daes_Texpo..Product OFF
             GenerateEvents();
         }
 
+        private static void CopyCustomerWithInvoices(string custNo)
+        {
+            CopyCustomer(custNo);
+
+            //copy Invoice, InvoiceDetail, InvoiceXml, InvoiceTax, InvoiceEnergySavings, Consumption, InvoiceSpecialCharges, ConsumptionDetail, ConsumptionInvDueDate, 
+            string sql = $@"USE daes_Texpo
+DECLARE @ClientID AS INT = (SELECT ClientID FROM daes_BillingAdmin..Client WHERE Client='TXP')
+DECLARE @CustNo AS VARCHAR(20) = '{custNo}'
+DECLARE @CustID AS INT = (SELECT CustID FROM saes_Texpo..Customer WHERE CustNo = @CustNo)
+
+
+";
+
+            
+
+        }
+
         private static void CopyCustomer(string custNo)
         {
+            //copy +Address, +Rate, +Customer, +Contract, +Premise, +CustomerAdditionalInfo, +AccountsReceivable, +RateDetail, +RateTransition, +Product,
+            // Meter, EdiLoadProfile, RateIndexType, RateIndexRange, ChangeRequest, ChangeRequestDetail, ChangeRequestDetailTransaction
             string sql = $@"USE daes_Texpo
 DECLARE @ClientID AS INT = (SELECT ClientID FROM daes_BillingAdmin..Client WHERE Client='TXP')
 DECLARE @CustNo AS VARCHAR(20) = '{custNo}'
@@ -370,47 +389,20 @@ SET IDENTITY_INSERT daes_Texpo..Address ON
 
 INSERT INTO daes_Texpo..Address ([AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [Migr_Enrollid], [CchVersion])
 SELECT [AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [Migr_Enrollid], [CchVersion]
-FROM  saes_Texpo..Address WHERE AddrID IN (
+FROM  saes_Texpo..Address src 
+WHERE
+AddrID IN (
 	SELECT SiteAddrId FROM saes_Texpo..Customer WHERE CustID = @CustID
+    UNION
+    SELECT MailAddrId FROM saes_Texpo..Customer WHERE CustID = @CustID
+    UNION
+    SELECT CorrAddrId FROM saes_Texpo..Customer WHERE CustID = @CustID
+    UNION
+    SELECT AddrId FROM saes_Texpo..Premise WHERE CustID = @CustID
+    UNION
+    SELECT AddrId FROM saes_Texpo..Meter WHERE PremID IN (SELECT PremID FROM saes_Texpo..Premise WHERE CustId = @CustId)
 )
-AND NOT EXISTS (
-SELECT 1 FROM daes_Texpo..Address WHERE AddrID IN (
-	SELECT SiteAddrId FROM saes_Texpo..Customer WHERE CustID = @CustID
-	)
-)
-
-INSERT INTO daes_Texpo..Address ([AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [Migr_Enrollid], [CchVersion])
-SELECT [AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [Migr_Enrollid], [CchVersion]
-FROM  saes_Texpo..Address WHERE AddrID IN (
-	SELECT MailAddrId FROM saes_Texpo..Customer WHERE CustID = @CustID
-)
-AND NOT EXISTS (
-SELECT 1 FROM daes_Texpo..Address WHERE AddrID IN (
-	SELECT MailAddrId FROM saes_Texpo..Customer WHERE CustID = @CustID
-	)
-)
-
-INSERT INTO daes_Texpo..Address ([AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [Migr_Enrollid], [CchVersion])
-SELECT [AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [Migr_Enrollid], [CchVersion]
-FROM  saes_Texpo..Address WHERE AddrID IN (
-	SELECT CorrAddrId FROM saes_Texpo..Customer WHERE CustID = @CustID
-)
-AND NOT EXISTS (
-SELECT 1 FROM daes_Texpo..Address WHERE AddrID IN (
-	SELECT CorrAddrId FROM saes_Texpo..Customer WHERE CustID = @CustID
-	)
-)
-
-INSERT INTO daes_Texpo..Address ([AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [Migr_Enrollid], [CchVersion])
-SELECT [AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [Migr_Enrollid], [CchVersion]
-FROM  saes_Texpo..Address WHERE AddrID IN (
-	SELECT AddrId FROM saes_Texpo..Premise WHERE CustID = @CustID
-)
-AND NOT EXISTS (
-SELECT 1 FROM daes_Texpo..Address WHERE AddrID IN (
-	SELECT AddrId FROM saes_Texpo..Premise WHERE CustID = @CustID
-	)
-)
+AND NOT EXISTS (SELECT 1 FROM daes_Texpo..Address dst WHERE src.AddrID = dst.AddrId)
 
 SET IDENTITY_INSERT daes_Texpo..Address OFF
 
@@ -419,24 +411,35 @@ SET IDENTITY_INSERT daes_Texpo..Rate ON
 
 INSERT INTO daes_Texpo..Rate ([RateID], [CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [LDCCode], [ConsUnitId], [ActiveFlag], [LDCRateCode])
 SELECT  [RateID], [CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [LDCCode], [ConsUnitId], [ActiveFlag], [LDCRateCode]
-FROM  saes_Texpo..Rate WHERE RateID IN (
-	SELECT RateID FROM saes_Texpo..Customer WHERE CustID = @CustID
-)
-AND NOT EXISTS(SELECT 1 FROM daes_Texpo..Rate WHERE RateID IN (
-	SELECT RateID FROM saes_Texpo..Customer WHERE CustID = @CustID
-	)
-)
+FROM  saes_Texpo..Rate src
+WHERE
+    RateID IN (
+        SELECT RateID FROM saes_Texpo..Product WHERE ProductId IN (
+            SELECT ProductID FROM saes_Texpo..Contract WHERE CustID = @CustID
+            UNION
+            SELECT ProductId FROM saes_Texpo.ClientCustomer.ChangeProductRequest WHERE CustId = @CustId
+            UNION
+            SELECT SegmentationRolloverProductId FROM saes_Texpo.ClientCustomer.ChangeProductRequest WHERE CustId = @CustId
+        )
+        UNION
+        SELECT RateID FROM saes_Texpo..Customer WHERE CustID = @CustID
+    )
+AND NOT EXISTS(SELECT 1 FROM daes_Texpo..Rate dst WHERE src.RateID = dst.RateId)
 
-INSERT INTO daes_Texpo..Rate ([RateID], [CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [LDCCode], [ConsUnitId], [ActiveFlag], [LDCRateCode])
-SELECT  [RateID], [CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [LDCCode], [ConsUnitId], [ActiveFlag], [LDCRateCode]
-FROM  saes_Texpo..Rate WHERE RateID IN (
-	SELECT RateID FROM saes_Texpo..Product WHERE ProductId IN (SELECT ProductID FROM saes_Texpo..Contract WHERE CustID = @CustID)
-)
-AND NOT EXISTS(SELECT 1 FROM daes_Texpo..Rate WHERE RateID IN (
-	SELECT RateID FROM saes_Texpo..Product WHERE ProductId IN (SELECT ProductID FROM saes_Texpo..Contract WHERE CustID = @CustID)
-	)
-)
 SET IDENTITY_INSERT daes_Texpo..Rate OFF
+
+PRINT 'Copy RateTransition'
+SET IDENTITY_INSERT daes_Texpo..RateTransition ON
+INSERT INTO daes_Texpo..RateTransition
+([RateTransitionID], [CustID], [RateID], [UserID], [CreatedDate], [SwitchDate], [EndDate], [StatusID], [SoldDate], [RolloverFlag])
+SELECT
+ [RateTransitionID], [CustID], [RateID], [UserID], [CreatedDate], [SwitchDate], [EndDate], [StatusID], [SoldDate], [RolloverFlag]
+FROM saes_Texpo..RateTransition src
+WHERE
+  src.CustId = @CustId
+  AND NOT EXISTS(SELECT 1 FROM daes_Texpo..RateTransition dst WHERE src.RateTransitionId = dst.RateTransitionId )
+
+SET IDENTITY_INSERT daes_Texpo..RateTransition OFF
 
 PRINT 'Copy Customer'
 SET IDENTITY_INSERT daes_Texpo..Customer ON
@@ -462,11 +465,24 @@ ALTER TABLE daes_Texpo..Premise WITH CHECK CHECK CONSTRAINT ALL
 PRINT 'Copy Product'
 SET IDENTITY_INSERT daes_Texpo..Product ON
 
-INSERT INTO daes_Texpo..Product ([ProductID], [RateID], [LDCCode], [PlanType], [TDSPTemplateID], [Description], [BeginDate], [EndDate], [CustType], [Graduated], [RangeTier1], [RangeTier2], [SortOrder], [ActiveFlag], [Uplift], [CSATDSPTemplateID], [CAATDSPTemplateID], [PriceDescription], [MarketingCode], [RateTypeID], [Default], [ConsUnitID], [DivisionCode], [ServiceType], [CSPId], [TermsId], [RolloverProductId], [CommissionId], [CommissionAmt], [CancelFeeId], [MonthlyChargeId], [ProductCode], [RatePackageId], [ProductName], [TermDate], [DiscountTypeId], [DiscountAmount], [ProductZoneID], [IsGreen], [IsBestChoice], [ActiveEnrollmentFlag], [DepositAmount], [CreditScoreThreshold], [Incentives])
-SELECT  [ProductID], [RateID], [LDCCode], [PlanType], [TDSPTemplateID], [Description], [BeginDate], [EndDate], [CustType], [Graduated], [RangeTier1], [RangeTier2], [SortOrder], [ActiveFlag], [Uplift], [CSATDSPTemplateID], [CAATDSPTemplateID], [PriceDescription], [MarketingCode], [RateTypeID], [Default], [ConsUnitID], [DivisionCode], [ServiceType], [CSPId], [TermsId], [RolloverProductId], [CommissionId], [CommissionAmt], [CancelFeeId], [MonthlyChargeId], [ProductCode], [RatePackageId], [ProductName], [TermDate], [DiscountTypeId], [DiscountAmount], [ProductZoneID], [IsGreen], [IsBestChoice], [ActiveEnrollmentFlag], [DepositAmount], [CreditScoreThreshold], [Incentives]
-FROM  saes_Texpo..Product WHERE ProductId IN (SELECT ProductID FROM saes_Texpo..Contract WHERE CustID = @CustID)
-AND NOT EXISTS(SELECT 1 FROM daes_Texpo..Product WHERE ProductId IN (SELECT ProductID FROM saes_Texpo..Contract WHERE CustID = @CustID))
-SET IDENTITY_INSERT daes_Texpo..Product OFF
+INSERT INTO daes_Texpo..Product 
+( [ProductID], [RateID], [LDCCode], [PlanType], [TDSPTemplateID], [Description], [BeginDate], [EndDate], [CustType], [Graduated], [RangeTier1], [RangeTier2], [SortOrder], [ActiveFlag], [Uplift], [CSATDSPTemplateID], [CAATDSPTemplateID], [PriceDescription], [MarketingCode], [RateTypeID], [Default], [ConsUnitID], [DivisionCode], [ServiceType], [CSPId], [TermsId], [RolloverProductId], [CommissionId], [CommissionAmt], [CancelFeeId], [MonthlyChargeId], [ProductCode], [RatePackageId], [ProductName], [TermDate], [DiscountTypeId], [DiscountAmount], [ProductZoneID], [IsGreen], [IsBestChoice], [ActiveEnrollmentFlag], [DepositAmount], [CreditScoreThreshold], [Incentives])
+SELECT
+  [ProductID], [RateID], [LDCCode], [PlanType], [TDSPTemplateID], [Description], [BeginDate], [EndDate], [CustType], [Graduated], [RangeTier1], [RangeTier2], [SortOrder], [ActiveFlag], [Uplift], [CSATDSPTemplateID], [CAATDSPTemplateID], [PriceDescription], [MarketingCode], [RateTypeID], [Default], [ConsUnitID], [DivisionCode], [ServiceType], [CSPId], [TermsId], [RolloverProductId], [CommissionId], [CommissionAmt], [CancelFeeId], [MonthlyChargeId], [ProductCode], [RatePackageId], [ProductName], [TermDate], [DiscountTypeId], [DiscountAmount], [ProductZoneID], [IsGreen], [IsBestChoice], [ActiveEnrollmentFlag], [DepositAmount], [CreditScoreThreshold], [Incentives]
+FROM  saes_Texpo..Product src
+WHERE
+    (
+         src.ProductId IN (
+            SELECT ProductID FROM saes_Texpo..Contract WHERE CustID = @CustID
+            UNION
+            SELECT ProductId FROM saes_Texpo.ClientCustomer.ChangeProductRequest WHERE CustId = @CustId
+         )
+         or
+         src.RateId IN (SELECT RateId FROM saes_Spark..Customer WHERE CustId = @CustId)
+     ) 
+    AND NOT EXISTS(SELECT 1 FROM daes_Texpo..Product dst WHERE dst.ProductId = src.ProductId )
+
+SET IDENTITY_INSERT daes_Spark..Product OFF
 
 PRINT 'Copy Contract'
 SET IDENTITY_INSERT daes_Texpo..Contract ON
@@ -494,6 +510,124 @@ SELECT  [CustID], [CSPDUNSID], [BillingTypeID], [BillingDayOfMonth], [MasterCust
 FROM  saes_Texpo..CustomerAdditionalInfo WHERE CustID = @CustID
 AND NOT EXISTS(SELECT 1 FROM daes_Texpo..CustomerAdditionalInfo WHERE CustID = @CustID)
 --SET IDENTITY_INSERT daes_Texpo..CustomerAdditionalInfo OFF
+
+PRINT 'Copy EdiLoadProfile'
+
+SET IDENTITY_INSERT daes_Texpo..EdiLoadProfile ON
+INSERT INTO daes_Texpo..EdiLoadProfile
+([EdiLoadProfileId], [LoadProfile], [LDCCOde], [Migr_LoadProfile])
+SELECT
+ [EdiLoadProfileId], [LoadProfile], [LDCCOde], [Migr_LoadProfile]
+FROM saes_Texpo..EdiLoadProfile src
+WHERE
+  src.EdiLoadProfileId IN ( SELECT EdiLoadProfileId FROM saes_Texpo..Meter WHERE MeterId IN (SELECT MeterId FROM saes_Texpo..Meter WHERE PremID IN (SELECT PremID FROM saes_Texpo..Premise WHERE CustId = @CustId)))
+  AND NOT EXISTS(SELECT 1 FROM daes_Texpo..EdiLoadProfile dst WHERE src.EdiLoadProfileId = dst.EdiLoadProfileId )
+
+SET IDENTITY_INSERT daes_Texpo..EdiLoadProfile OFF
+
+PRINT 'Copy Meter'
+SET IDENTITY_INSERT daes_Texpo..Meter ON
+INSERT INTO daes_Texpo..Meter
+( [MeterID], [ESIIDID], [AcctID], [AddrID], [TypeID], [PremID], [MeterNo], [MeterUniqueNo], [Pool], [MeterReadType], [MeterFactoryID], [MeterFactor], [BegRead], [EndRead], [DateFrom], [Dateto], [MeterStatus], [SourceLevel], [CreateDate], [EdiRateClassId], [EdiLoadProfileId], [AMSIndicator])
+SELECT
+ [MeterID], [ESIIDID], [AcctID], [AddrID], [TypeID], [PremID], [MeterNo], [MeterUniqueNo], [Pool], [MeterReadType], [MeterFactoryID], [MeterFactor], [BegRead], [EndRead], [DateFrom], [Dateto], [MeterStatus], [SourceLevel], [CreateDate], [EdiRateClassId], [EdiLoadProfileId], [AMSIndicator]
+FROM saes_Texpo..Meter src
+WHERE
+  src.MeterID IN (SELECT MeterId FROM saes_Texpo..Meter WHERE PremID IN (SELECT PremID FROM saes_Texpo..Premise WHERE CustId = @CustId))
+  AND NOT EXISTS(SELECT 1 FROM daes_Texpo..Meter dst WHERE src.MeterId = dst.MeterId )
+
+SET IDENTITY_INSERT daes_Texpo..Meter OFF
+
+PRINT 'Copy RateIndexType'
+SET IDENTITY_INSERT daes_Texpo..RateIndexType ON
+INSERT INTO daes_Texpo..RateIndexType
+( [RateIndexTypeID], [RateIndexType], [Active])
+SELECT
+ [RateIndexTypeID], [RateIndexType], [Active]
+FROM saes_Texpo..RateIndexType src
+WHERE
+    src.RateIndexTypeID IN (
+        SELECT CONVERT(INT, FixedCapRate) FROM saes_Texpo..RateDetail WHERE FixedCapRate IS NOT NULL AND RateId IN (
+            SELECT RateId FROM saes_Texpo..Customer WHERE CustId = @CustId
+            UNION
+            SELECT RateID FROM saes_Texpo..Product WHERE ProductId IN (
+                SELECT ProductID FROM saes_Texpo..Contract WHERE CustID = @CustID
+                UNION
+                SELECT ProductId FROM saes_Texpo.ClientCustomer.ChangeProductRequest WHERE CustId = @CustId
+                UNION
+                SELECT SegmentationRolloverProductId FROM saes_Texpo.ClientCustomer.ChangeProductRequest WHERE CustId = @CustId
+            )
+        ) 
+    )
+    AND NOT EXISTS(SELECT 1 FROM daes_Texpo..RateIndexType dst WHERE src.RateIndexTypeID = dst.RateIndexTypeID )
+
+SET IDENTITY_INSERT daes_Texpo..RateIndexType OFF
+
+PRINT 'Copy RateIndexRange'
+SET IDENTITY_INSERT daes_Texpo..RateIndexRange ON
+INSERT INTO daes_Texpo..RateIndexRange
+( [RateIndexRangeID], [RateIndexTypeID], [DateFrom], [DateTo], [IndexRate])
+SELECT
+ [RateIndexRangeID], [RateIndexTypeID], [DateFrom], [DateTo], [IndexRate]
+FROM saes_Texpo..RateIndexRange src
+WHERE
+    src.RateIndexTypeID IN (
+        SELECT CONVERT(INT, FixedCapRate) FROM saes_Texpo..RateDetail WHERE FixedCapRate IS NOT NULL AND RateId IN (
+            SELECT RateId FROM saes_Texpo..Customer WHERE CustId = @CustId
+            UNION
+            SELECT RateID FROM saes_Texpo..Product WHERE ProductId IN (
+                SELECT ProductID FROM saes_Texpo..Contract WHERE CustID = @CustID
+                UNION
+                SELECT ProductId FROM saes_Texpo.ClientCustomer.ChangeProductRequest WHERE CustId = @CustId
+                UNION
+                SELECT SegmentationRolloverProductId FROM saes_Texpo.ClientCustomer.ChangeProductRequest WHERE CustId = @CustId
+            )
+        )
+    ) 
+    AND NOT EXISTS(SELECT 1 FROM daes_Texpo..RateIndexRange dst WHERE src.RateIndexRangeID = dst.RateIndexRangeID )
+
+SET IDENTITY_INSERT daes_Texpo..RateIndexRange OFF
+
+
+PRINT 'Copy ChangeRequest'
+SET IDENTITY_INSERT daes_Texpo..ChangeRequest ON
+INSERT INTO daes_Texpo..ChangeRequest
+( [ChangeRequestID], [CustomerID], [PremiseID], [ElementID], [ElementPrimaryKey], [RequiresTransactionFlag], [RequiresApprovalFlag], [ScheduledDate], [StatusID], [CreatedByUserID], [CreateDate], [ModifiedByUserID], [ModifiedDate], [EffectiveDate], [ChangeTransactionID])
+SELECT
+ [ChangeRequestID], [CustomerID], [PremiseID], [ElementID], [ElementPrimaryKey], [RequiresTransactionFlag], [RequiresApprovalFlag], [ScheduledDate], 1/*[StatusID]*/, [CreatedByUserID], [CreateDate], [ModifiedByUserID], [ModifiedDate], [EffectiveDate], NULL/*[ChangeTransactionID]*/
+FROM saes_Texpo..ChangeRequest src
+WHERE
+  src.CustomerId = @CustId
+  AND NOT EXISTS(SELECT 1 FROM daes_Texpo..ChangeRequest dst WHERE src.ChangeRequestID = dst.ChangeRequestID )
+
+SET IDENTITY_INSERT daes_Texpo..ChangeRequest OFF
+
+PRINT 'Copy ChangeRequestDetail'
+SET IDENTITY_INSERT daes_Texpo..ChangeRequestDetail ON
+INSERT INTO daes_Texpo..ChangeRequestDetail
+( [ChangeRequestDetailID], [ChangeRequestID], [FieldID], [NewValue], [OldValue], [ChangeCode], [SecObjectControlID])
+SELECT
+ [ChangeRequestDetailID], [ChangeRequestID], [FieldID], [NewValue], [OldValue], [ChangeCode], [SecObjectControlID]
+FROM saes_Texpo..ChangeRequestDetail src
+WHERE
+  src.ChangeRequestID IN (SELECT ChangeRequestID FROM saes_Texpo..ChangeRequest WHERE CustomerId = @CustId)
+  AND NOT EXISTS(SELECT 1 FROM daes_Texpo..ChangeRequestDetail dst WHERE src.ChangeRequestID = dst.ChangeRequestID )
+
+SET IDENTITY_INSERT daes_Texpo..ChangeRequestDetail OFF
+
+
+PRINT 'Copy ChangeRequestDetailTransaction'
+SET IDENTITY_INSERT daes_Texpo..ChangeRequestDetailTransaction ON
+INSERT INTO daes_Texpo..ChangeRequestDetailTransaction
+( [ChangeRequestDetailTransactionID], [ChangeRequestDetailID], [RequestID], [PremiseID])
+SELECT
+ [ChangeRequestDetailTransactionID], [ChangeRequestDetailID], [RequestID], [PremiseID]
+FROM saes_Texpo..ChangeRequestDetailTransaction src
+WHERE
+  src.ChangeRequestDetailID IN (SELECT ChangeRequestDetailID FROM saes_Texpo..ChangeRequestDetail WHERE ChangeRequestID IN (SELECT ChangeRequestID FROM saes_Texpo..ChangeRequest WHERE CustomerId = @CustId))
+  AND NOT EXISTS(SELECT 1 FROM daes_Texpo..ChangeRequestDetailTransaction dst WHERE src.ChangeRequestDetailTransactionID = dst.ChangeRequestDetailTransactionID )
+
+SET IDENTITY_INSERT daes_Texpo..ChangeRequestDetailTransaction OFF
 
 PRINT 'END Copy Customer'
 ";
