@@ -36,16 +36,18 @@
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\Aurea.dll</HintPath>
     </Reference>
     <Reference Include="Aurea.TaskToaster">
-      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\Aurea.TaskToaster.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\TaskToaster\Aurea.TaskToaster.dll</HintPath>
     </Reference>
     <Reference Include="CIS.BusinessEntity, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.BusinessEntity.dll</HintPath>
     </Reference>
-    <Reference Include="CIS.Clients">
+    <Reference Include="CIS.Clients, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Clients.dll</HintPath>
     </Reference>
-    <Reference Include="CIS.Clients.Texpo">
+    <Reference Include="CIS.Clients.Texpo, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Clients.Texpo.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Components, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -64,6 +66,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Export.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.Framework, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Framework.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.Framework.Event.EventGenerator">
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Framework.Event.EventGenerator.dll</HintPath>
     </Reference>
@@ -71,13 +77,19 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Framework.Event.EventGeneratorBase.dll</HintPath>
     </Reference>
-    <Reference Include="CIS.Import, Version=16.1.0.0, Culture=neutral, PublicKeyToken=null" />
+    <Reference Include="CIS.Import, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Import.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.Library.Cryptography, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Library.Cryptography.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -86,6 +98,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Connected Services\TexpoWS\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -93,15 +110,77 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Connected Services\TexpoWS\Aurea.Maintenance.Debugger.Texpo.TexpoWS.EnrollCustomerResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Connected Services\TexpoWS\Aurea.Maintenance.Debugger.Texpo.TexpoWS.EnrollCustomerWithLanguageFlagResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Connected Services\TexpoWS\Aurea.Maintenance.Debugger.Texpo.TexpoWS.EnrollNonTexasCustomerResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Connected Services\TexpoWS\Aurea.Maintenance.Debugger.Texpo.TexpoWS.EnrollNonTexasPremiseResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Connected Services\TexpoWS\Enrollment.wsdl" />
+    <None Include="MockData\ISTAMassEnroll10302017pav3..xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="MockData\ISTAMassEnroll11302017pa.xls">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="MockData\ISTAMassEnroll11302017pav1..xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="MockData\ISTAMassEnroll11302017pav2.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="MockData\Success\ISTAMassEnroll12012017.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="MockData\Success\ISTAMassEnroll12012017pa.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="MockData\Success\ISTAMassEnroll12012017v1.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="MockData\Success\ISTAMassEnroll12042017pa.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="MockData\Success\READY_FOR_ISTA_MassEnrollTEXPOPGE12012017v2.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="MockData\Success\READY_FOR_ISTA_MassEnrollTEXPOPGE12042017v1.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Properties\DataSources\System.Data.DataSet.datasource" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Aurea.Maintenance.Debugger.Common\Aurea.Maintenance.Debugger.Common.csproj">
       <Project>{5243be0e-a73b-4a56-b992-143871c94bd2}</Project>
       <Name>Aurea.Maintenance.Debugger.Common</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadataStorage Include="Connected Services\TexpoWS\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Connected Services\TexpoWS\Enrollment.disco" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Connected Services\TexpoWS\configuration91.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Connected Services\TexpoWS\configuration.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Connected Services\TexpoWS\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

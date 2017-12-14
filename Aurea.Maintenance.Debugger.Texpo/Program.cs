@@ -1,12 +1,4 @@
-﻿
-
-
-using System.Security.Policy;
-using Aurea.IO;
-using Aurea.Logging;
-using CIS.Clients.Texpo.Import;
-
-namespace Aurea.Maintenance.Debugger.Texpo
+﻿namespace Aurea.Maintenance.Debugger.Texpo
 {
     using System;
     using System.Collections;
@@ -22,6 +14,14 @@ namespace Aurea.Maintenance.Debugger.Texpo
 
     using CIS.BusinessEntity;
     using System.Linq;
+
+    using System.Security.Policy;
+    using Aurea.IO;
+    using Aurea.Logging;
+    using Aurea.Maintenance.Debugger.Texpo.TexpoWS;
+    using CIS.Clients.Texpo.Import;
+
+    using System.Transactions;
 
     public class Program
     {
@@ -212,10 +212,14 @@ b1x3zeE1G4Q4
         public static void Main(string[] args)
         {
             // Set client configuration and then the application configuration context.            
-            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.Texpo, Stages.Development);
+            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.Texpo, Stages.Development, TransactionMode.Enlist);
             _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
 
-
+            TransactionManager.DistributedTransactionStarted += delegate
+                (object sender, TransactionEventArgs e)
+            {
+                _logger.Info("Distributed Transaction Started");
+            };
 
             #region old Cases
 
@@ -239,14 +243,22 @@ b1x3zeE1G4Q4
 			*/
 
             #endregion
-
-            string fileName = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData\\ISTAMassEnroll11302017pa.xls");
-            SimulateImportMassEnrollment(fileName);
+            
+            string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
+            Directory.EnumerateFiles(dirToProcess, "*.xls", SearchOption.AllDirectories).ForEach(
+                filename =>
+                {
+                    SimulateImportMassEnrollment(filename);
+                }
+            );
+            
             Console.ReadLine();
         }
 
         private static void SimulateImportMassEnrollment(string fileName)
         {
+            //TexpoWS.EnrollmentSoapClient cl = new EnrollmentSoapClient();
+            //cl.EnrollNonTexasCustomer()
             DeleteFileImportStatus(fileName);
             var massEnrollImporter = new MassEnrollImporter(_clientConfig.ConnectionBillingAdmin, _appConfig.ConnectionCsr, _logger);
             var data = massEnrollImporter.ConvertToEnrollRows(massEnrollImporter.CheckEnrollRows(massEnrollImporter.GetDataSetFromMassEnrollExcelFile(fileName), fileName)).ToArray();

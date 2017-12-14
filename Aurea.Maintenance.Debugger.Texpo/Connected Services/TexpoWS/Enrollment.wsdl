@@ -1,0 +1,741 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="https://services.ista-billing.com/clients/texpo/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" targetNamespace="https://services.ista-billing.com/clients/texpo/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="https://services.ista-billing.com/clients/texpo/">
+      <s:element name="AggregatorFee">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="aggregatorId" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="customerId" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="premiseId" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="commission" type="s:decimal" />
+            <s:element minOccurs="1" maxOccurs="1" name="termLength" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AggregatorFeeResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="AggregatorFeeResult" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="EnrollCustomer">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="customerType" type="tns:CustomerTypeOptions" />
+            <s:element minOccurs="0" maxOccurs="1" name="firstName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="middleName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="lastName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="address1" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="address2" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="city" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="state" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="zip" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="rateId" nillable="true" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="rateMonths" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="email" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="birthDate" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="federalTaxId" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="phone" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="phoneExt" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="fax" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="isNewResidence" type="s:boolean" />
+            <s:element minOccurs="1" maxOccurs="1" name="serviceStartDate" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="heardAboutUs" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="enrollmentGuid" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="divisionId" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="creditScore" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="languageId" nillable="true" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="tpVerificationNum" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="brokerSalesCode" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="productCode" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:simpleType name="CustomerTypeOptions">
+        <s:restriction base="s:string">
+          <s:enumeration value="RESIDENTIAL" />
+          <s:enumeration value="COMMERCIAL" />
+        </s:restriction>
+      </s:simpleType>
+      <s:element name="EnrollCustomerResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="EnrollCustomerResult" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="EnrollCustomerWithLanguageFlag">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="customerType" type="tns:CustomerTypeOptions" />
+            <s:element minOccurs="0" maxOccurs="1" name="firstName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="middleName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="lastName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="address1" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="address2" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="city" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="state" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="zip" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="rateId" nillable="true" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="rateMonths" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="email" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="birthDate" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="federalTaxId" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="phone" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="phoneExt" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="fax" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="isNewResidence" type="s:boolean" />
+            <s:element minOccurs="1" maxOccurs="1" name="serviceStartDate" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="heardAboutUs" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="enrollmentGuid" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="divisionId" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="creditScore" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="tpVerificationNum" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="languageId" nillable="true" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="brokerSalesCode" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="productCode" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="EnrollCustomerWithLanguageFlagResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="EnrollCustomerWithLanguageFlagResult" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="EnrollCustomerPaymentInfo">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="enrollCustomerId" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="firstName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="middleName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="lastName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="creditCardType" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="creditCardNumber" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="creditCardSIC" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="creditCardExpMonth" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="creditCardExpYear" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="billingAddress1" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="billingAddress2" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="billingCity" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="billingState" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="billingZip" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="depositAmount" type="s:decimal" />
+            <s:element minOccurs="1" maxOccurs="1" name="isRecurringPayment" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="EnrollCustomerPaymentInfoResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="EnrollCustomerPaymentInfoResult" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="EnrollPremise">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="enrollPremiseId" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="hasLifeSupport" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="EnrollPremiseResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="EnrollPremiseResult">
+              <s:complexType>
+                <s:sequence>
+                  <s:element ref="s:schema" />
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ImportCustomer">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="enrollCustomerId" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="enrollPremiseId" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="deliveryTypeId" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ImportCustomerResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ImportCustomerResult">
+              <s:complexType>
+                <s:sequence>
+                  <s:element ref="s:schema" />
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ImportNonTexasCustomer">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="enrollCustomerId" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="enrollPremiseId" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="deliveryTypeId" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ImportNonTexasCustomerResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ImportNonTexasCustomerResult">
+              <s:complexType>
+                <s:sequence>
+                  <s:element ref="s:schema" />
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ReferAFriend">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="customerId" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="enrollCustomerId" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ReferAFriendResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="ReferAFriendResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ValidateEsiId">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="esiId" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ValidateEsiIdResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ValidateEsiIdResult">
+              <s:complexType>
+                <s:sequence>
+                  <s:element ref="s:schema" />
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ValidateSecurity">
+        <s:complexType />
+      </s:element>
+      <s:element name="ValidateSecurityResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="ValidateSecurityResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ValidateServiceAddress">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="address1" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="address2" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="city" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="state" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="zip" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ValidateServiceAddressResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ValidateServiceAddressResult">
+              <s:complexType>
+                <s:sequence>
+                  <s:element ref="s:schema" />
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="EnrollNonTexasPremise">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ldcAccountNumber" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ldcDuns" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="addr1" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="addr2" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="city" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="state" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="zip" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="zip4" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="premiseType" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="haslifeSupport" type="s:boolean" />
+            <s:element minOccurs="1" maxOccurs="1" name="serviceCycle" nillable="true" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="metered" type="s:boolean" />
+            <s:element minOccurs="0" maxOccurs="1" name="locationCode" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="enrollmentGuid" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="CspDuns" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="commodity" nillable="true" type="tns:CommodityType" />
+            <s:element minOccurs="0" maxOccurs="1" name="meterNumber" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:simpleType name="CommodityType">
+        <s:restriction base="s:string">
+          <s:enumeration value="ELECTRIC" />
+          <s:enumeration value="GAS" />
+        </s:restriction>
+      </s:simpleType>
+      <s:element name="EnrollNonTexasPremiseResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="EnrollNonTexasPremiseResult" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="EnrollNonTexasCustomer">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="enrollPremiseId" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="customerType" type="tns:CustomerTypeOptions" />
+            <s:element minOccurs="0" maxOccurs="1" name="firstName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="middleName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="lastName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="address1" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="address2" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="city" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="state" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="zip" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="rateId" nillable="true" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="rateMonths" nillable="true" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="email" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="birthDate" nillable="true" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="federalTaxId" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="phone" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="phoneExt" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="fax" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="isNewResidence" type="s:boolean" />
+            <s:element minOccurs="1" maxOccurs="1" name="serviceStartDate" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="heardAboutUs" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="enrollmentGuid" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="divisionId" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="creditScore" nillable="true" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="tpVerificationNum" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="billingTypeId" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="companyName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="contactFirstName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="contactLastName" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="languageId" nillable="true" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="customerContractStartDate" nillable="true" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="brokerSalesCode" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="productCode" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="EnrollNonTexasCustomerResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="EnrollNonTexasCustomerResult" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="AggregatorFeeSoapIn">
+    <wsdl:part name="parameters" element="tns:AggregatorFee" />
+  </wsdl:message>
+  <wsdl:message name="AggregatorFeeSoapOut">
+    <wsdl:part name="parameters" element="tns:AggregatorFeeResponse" />
+  </wsdl:message>
+  <wsdl:message name="EnrollCustomerSoapIn">
+    <wsdl:part name="parameters" element="tns:EnrollCustomer" />
+  </wsdl:message>
+  <wsdl:message name="EnrollCustomerSoapOut">
+    <wsdl:part name="parameters" element="tns:EnrollCustomerResponse" />
+  </wsdl:message>
+  <wsdl:message name="EnrollCustomerWithLanguageFlagSoapIn">
+    <wsdl:part name="parameters" element="tns:EnrollCustomerWithLanguageFlag" />
+  </wsdl:message>
+  <wsdl:message name="EnrollCustomerWithLanguageFlagSoapOut">
+    <wsdl:part name="parameters" element="tns:EnrollCustomerWithLanguageFlagResponse" />
+  </wsdl:message>
+  <wsdl:message name="EnrollCustomerPaymentInfoSoapIn">
+    <wsdl:part name="parameters" element="tns:EnrollCustomerPaymentInfo" />
+  </wsdl:message>
+  <wsdl:message name="EnrollCustomerPaymentInfoSoapOut">
+    <wsdl:part name="parameters" element="tns:EnrollCustomerPaymentInfoResponse" />
+  </wsdl:message>
+  <wsdl:message name="EnrollPremiseSoapIn">
+    <wsdl:part name="parameters" element="tns:EnrollPremise" />
+  </wsdl:message>
+  <wsdl:message name="EnrollPremiseSoapOut">
+    <wsdl:part name="parameters" element="tns:EnrollPremiseResponse" />
+  </wsdl:message>
+  <wsdl:message name="ImportCustomerSoapIn">
+    <wsdl:part name="parameters" element="tns:ImportCustomer" />
+  </wsdl:message>
+  <wsdl:message name="ImportCustomerSoapOut">
+    <wsdl:part name="parameters" element="tns:ImportCustomerResponse" />
+  </wsdl:message>
+  <wsdl:message name="ImportNonTexasCustomerSoapIn">
+    <wsdl:part name="parameters" element="tns:ImportNonTexasCustomer" />
+  </wsdl:message>
+  <wsdl:message name="ImportNonTexasCustomerSoapOut">
+    <wsdl:part name="parameters" element="tns:ImportNonTexasCustomerResponse" />
+  </wsdl:message>
+  <wsdl:message name="ReferAFriendSoapIn">
+    <wsdl:part name="parameters" element="tns:ReferAFriend" />
+  </wsdl:message>
+  <wsdl:message name="ReferAFriendSoapOut">
+    <wsdl:part name="parameters" element="tns:ReferAFriendResponse" />
+  </wsdl:message>
+  <wsdl:message name="ValidateEsiIdSoapIn">
+    <wsdl:part name="parameters" element="tns:ValidateEsiId" />
+  </wsdl:message>
+  <wsdl:message name="ValidateEsiIdSoapOut">
+    <wsdl:part name="parameters" element="tns:ValidateEsiIdResponse" />
+  </wsdl:message>
+  <wsdl:message name="ValidateSecuritySoapIn">
+    <wsdl:part name="parameters" element="tns:ValidateSecurity" />
+  </wsdl:message>
+  <wsdl:message name="ValidateSecuritySoapOut">
+    <wsdl:part name="parameters" element="tns:ValidateSecurityResponse" />
+  </wsdl:message>
+  <wsdl:message name="ValidateServiceAddressSoapIn">
+    <wsdl:part name="parameters" element="tns:ValidateServiceAddress" />
+  </wsdl:message>
+  <wsdl:message name="ValidateServiceAddressSoapOut">
+    <wsdl:part name="parameters" element="tns:ValidateServiceAddressResponse" />
+  </wsdl:message>
+  <wsdl:message name="EnrollNonTexasPremiseSoapIn">
+    <wsdl:part name="parameters" element="tns:EnrollNonTexasPremise" />
+  </wsdl:message>
+  <wsdl:message name="EnrollNonTexasPremiseSoapOut">
+    <wsdl:part name="parameters" element="tns:EnrollNonTexasPremiseResponse" />
+  </wsdl:message>
+  <wsdl:message name="EnrollNonTexasCustomerSoapIn">
+    <wsdl:part name="parameters" element="tns:EnrollNonTexasCustomer" />
+  </wsdl:message>
+  <wsdl:message name="EnrollNonTexasCustomerSoapOut">
+    <wsdl:part name="parameters" element="tns:EnrollNonTexasCustomerResponse" />
+  </wsdl:message>
+  <wsdl:portType name="EnrollmentSoap">
+    <wsdl:operation name="AggregatorFee">
+      <wsdl:input message="tns:AggregatorFeeSoapIn" />
+      <wsdl:output message="tns:AggregatorFeeSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="EnrollCustomer">
+      <wsdl:input message="tns:EnrollCustomerSoapIn" />
+      <wsdl:output message="tns:EnrollCustomerSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="EnrollCustomerWithLanguageFlag">
+      <wsdl:input message="tns:EnrollCustomerWithLanguageFlagSoapIn" />
+      <wsdl:output message="tns:EnrollCustomerWithLanguageFlagSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="EnrollCustomerPaymentInfo">
+      <wsdl:input message="tns:EnrollCustomerPaymentInfoSoapIn" />
+      <wsdl:output message="tns:EnrollCustomerPaymentInfoSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="EnrollPremise">
+      <wsdl:input message="tns:EnrollPremiseSoapIn" />
+      <wsdl:output message="tns:EnrollPremiseSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ImportCustomer">
+      <wsdl:input message="tns:ImportCustomerSoapIn" />
+      <wsdl:output message="tns:ImportCustomerSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ImportNonTexasCustomer">
+      <wsdl:input message="tns:ImportNonTexasCustomerSoapIn" />
+      <wsdl:output message="tns:ImportNonTexasCustomerSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ReferAFriend">
+      <wsdl:input message="tns:ReferAFriendSoapIn" />
+      <wsdl:output message="tns:ReferAFriendSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ValidateEsiId">
+      <wsdl:input message="tns:ValidateEsiIdSoapIn" />
+      <wsdl:output message="tns:ValidateEsiIdSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ValidateSecurity">
+      <wsdl:input message="tns:ValidateSecuritySoapIn" />
+      <wsdl:output message="tns:ValidateSecuritySoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ValidateServiceAddress">
+      <wsdl:input message="tns:ValidateServiceAddressSoapIn" />
+      <wsdl:output message="tns:ValidateServiceAddressSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="EnrollNonTexasPremise">
+      <wsdl:input message="tns:EnrollNonTexasPremiseSoapIn" />
+      <wsdl:output message="tns:EnrollNonTexasPremiseSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="EnrollNonTexasCustomer">
+      <wsdl:input message="tns:EnrollNonTexasCustomerSoapIn" />
+      <wsdl:output message="tns:EnrollNonTexasCustomerSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="EnrollmentSoap" type="tns:EnrollmentSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="AggregatorFee">
+      <soap:operation soapAction="https://services.ista-billing.com/clients/texpo/AggregatorFee" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EnrollCustomer">
+      <soap:operation soapAction="https://services.ista-billing.com/clients/texpo/EnrollCustomer" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EnrollCustomerWithLanguageFlag">
+      <soap:operation soapAction="https://services.ista-billing.com/clients/texpo/EnrollCustomerWithLanguageFlag" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EnrollCustomerPaymentInfo">
+      <soap:operation soapAction="https://services.ista-billing.com/clients/texpo/EnrollCustomerPaymentInfo" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EnrollPremise">
+      <soap:operation soapAction="https://services.ista-billing.com/clients/texpo/EnrollPremise" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ImportCustomer">
+      <soap:operation soapAction="https://services.ista-billing.com/clients/texpo/ImportCustomer" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ImportNonTexasCustomer">
+      <soap:operation soapAction="https://services.ista-billing.com/clients/texpo/ImportNonTexasCustomer" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ReferAFriend">
+      <soap:operation soapAction="https://services.ista-billing.com/clients/texpo/ReferAFriend" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ValidateEsiId">
+      <soap:operation soapAction="https://services.ista-billing.com/clients/texpo/ValidateEsiId" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ValidateSecurity">
+      <soap:operation soapAction="https://services.ista-billing.com/clients/texpo/ValidateSecurity" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ValidateServiceAddress">
+      <soap:operation soapAction="https://services.ista-billing.com/clients/texpo/ValidateServiceAddress" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EnrollNonTexasPremise">
+      <soap:operation soapAction="https://services.ista-billing.com/clients/texpo/EnrollNonTexasPremise" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EnrollNonTexasCustomer">
+      <soap:operation soapAction="https://services.ista-billing.com/clients/texpo/EnrollNonTexasCustomer" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="EnrollmentSoap12" type="tns:EnrollmentSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="AggregatorFee">
+      <soap12:operation soapAction="https://services.ista-billing.com/clients/texpo/AggregatorFee" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EnrollCustomer">
+      <soap12:operation soapAction="https://services.ista-billing.com/clients/texpo/EnrollCustomer" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EnrollCustomerWithLanguageFlag">
+      <soap12:operation soapAction="https://services.ista-billing.com/clients/texpo/EnrollCustomerWithLanguageFlag" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EnrollCustomerPaymentInfo">
+      <soap12:operation soapAction="https://services.ista-billing.com/clients/texpo/EnrollCustomerPaymentInfo" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EnrollPremise">
+      <soap12:operation soapAction="https://services.ista-billing.com/clients/texpo/EnrollPremise" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ImportCustomer">
+      <soap12:operation soapAction="https://services.ista-billing.com/clients/texpo/ImportCustomer" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ImportNonTexasCustomer">
+      <soap12:operation soapAction="https://services.ista-billing.com/clients/texpo/ImportNonTexasCustomer" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ReferAFriend">
+      <soap12:operation soapAction="https://services.ista-billing.com/clients/texpo/ReferAFriend" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ValidateEsiId">
+      <soap12:operation soapAction="https://services.ista-billing.com/clients/texpo/ValidateEsiId" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ValidateSecurity">
+      <soap12:operation soapAction="https://services.ista-billing.com/clients/texpo/ValidateSecurity" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ValidateServiceAddress">
+      <soap12:operation soapAction="https://services.ista-billing.com/clients/texpo/ValidateServiceAddress" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EnrollNonTexasPremise">
+      <soap12:operation soapAction="https://services.ista-billing.com/clients/texpo/EnrollNonTexasPremise" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EnrollNonTexasCustomer">
+      <soap12:operation soapAction="https://services.ista-billing.com/clients/texpo/EnrollNonTexasCustomer" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="Enrollment">
+    <wsdl:port name="EnrollmentSoap" binding="tns:EnrollmentSoap">
+      <soap:address location="http://local.ws.texpobilling.com/txp/Enrollment.asmx" />
+    </wsdl:port>
+    <wsdl:port name="EnrollmentSoap12" binding="tns:EnrollmentSoap12">
+      <soap12:address location="http://local.ws.texpobilling.com/txp/Enrollment.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

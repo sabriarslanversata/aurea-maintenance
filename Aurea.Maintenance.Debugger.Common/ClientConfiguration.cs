@@ -15,14 +15,21 @@
 
     public static class ClientConfiguration
     {
-        public static ClientEnvironmentConfiguration GetClientConfiguration(Clients client, Stages stage)
+        public static ClientEnvironmentConfiguration GetClientConfiguration(Clients client, Stages stage, TransactionMode transactionMode = TransactionMode.Normal)
         {
-            return new ClientEnvironmentConfiguration(client, stage);
+            return new ClientEnvironmentConfiguration(client, stage, transactionMode);
         }
 
         public static GlobalApplicationConfigurationDS.GlobalApplicationConfiguration SetConfigurationContext(ClientEnvironmentConfiguration config)
         {
             var applicationConfiguration = GlobalApplicationConfigurationBC.Load(config.ConnectionBillingAdmin, config.ClientId);
+
+            if (config.TransactionMode == TransactionMode.Enlist)
+            {
+                applicationConfiguration.ConnectionCsr += ";Enlist=false";
+                applicationConfiguration.ConnectionMarket += ";Enlist=false";
+                applicationConfiguration.ConnectionTdsp += ";Enlist=false";
+            }
 
             var settings = new Dictionary<string, string>
             {
