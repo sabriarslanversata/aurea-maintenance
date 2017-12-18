@@ -24,7 +24,7 @@ namespace Aurea.Maintenance.Debugger.Accent
         static void Main(string[] args)
         {
             // Set client configuration and then the application configuration context.            
-            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.Texpo, Stages.Development, TransactionMode.Enlist);
+            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.Accent, Stages.Development, TransactionMode.Enlist);
             _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
 
             TransactionManager.DistributedTransactionStarted += delegate
@@ -33,9 +33,11 @@ namespace Aurea.Maintenance.Debugger.Accent
                 _logger.Info("Distributed Transaction Started");
             };
 
-            Console.WriteLine("Debug session has ended");
+            _logger.Info("Debug session has ended");
             Console.ReadLine();
         }
+
+
 
     }
 }
