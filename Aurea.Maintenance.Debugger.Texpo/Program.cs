@@ -1,21 +1,52 @@
-﻿
-using CIS.BusinessEntity;
-
-namespace Aurea.Maintenance.Debugger.Texpo
+﻿namespace Aurea.Maintenance.Debugger.Texpo
 {
-    using Common;
-    using Common.Models;
-
     using System;
     using System.Collections;
+    using System.Data;
+    using System.Data.SqlClient;
     using System.IO;
     using System.Reflection;
     using System.Text;
 
+    
+    using Common;
+    using Common.Models;
+
+    using CIS.BusinessEntity;
+    using System.Linq;
+
+    using System.Security.Policy;
+    using Aurea.IO;
+    using Aurea.Logging;
+    using Aurea.Maintenance.Debugger.Texpo.TexpoWS;
+    using CIS.Clients.Texpo.Import;
+
+    using System.Transactions;
+
     public class Program
     {
+        public class MyMaintenance : CIS.Clients.Texpo.Maintenance
+        {
+            public MyMaintenance(string connectionCsr, string connectionMarket, string connectionAdmin)
+                : base(connectionCsr, connectionMarket, connectionAdmin)
+            {
+                //
+            }
+
+            public override void InitializeVariables(string maintenanceFunction)
+            {
+                _runHour = "*";
+                _runDay = "*";
+                _runDayOfWeek = "*";
+                _isEnabled = true;
+                SkipIsValidRuntimeVerification = true;
+                _lastRunTime = DateTime.Now.AddYears(-1);
+            }
+        }
+
         private static ClientEnvironmentConfiguration _clientConfig;
         private static GlobalApplicationConfigurationDS.GlobalApplicationConfiguration _appConfig;
+        private static ILogger _logger = new Logger();
 
         public class MyExport : CIS.Clients.Texpo.Export.MainProcess//CIS.Export.BaseExport
         {
@@ -181,14 +212,23 @@ b1x3zeE1G4Q4
         public static void Main(string[] args)
         {
             // Set client configuration and then the application configuration context.            
-            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.Texpo, Stages.Development);
+            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.Texpo, Stages.Development, TransactionMode.Enlist);
             _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
-            
-            ExecuteExport();
+
+            TransactionManager.DistributedTransactionStarted += delegate
+                (object sender, TransactionEventArgs e)
+            {
+                _logger.Info("Distributed Transaction Started");
+            };
+
+            #region old Cases
+
+            //ExecuteExport();
+
             //ExecuteProcessTransactionRequests();
             //GenerateSimpleMarketTransactionEvaluationEvents();
             //ProcessEvents();
-            
+
             /*
 			CalculateConsumptionDueDatesTask myTask = new CalculateConsumptionDueDatesTask();
 
@@ -196,7 +236,274 @@ b1x3zeE1G4Q4
             
             //execute Maintenance.CalculateConsumptionDueDates 
             myTask.Execute();
+            
+
+            //SimulateLetterGeneration("360533");
+            ProcessEvents();
 			*/
+
+            #endregion
+            
+            string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
+            Directory.EnumerateFiles(dirToProcess, "*.xls", SearchOption.AllDirectories).ForEach(
+                filename =>
+                {
+                    SimulateImportMassEnrollment(filename);
+                }
+            );
+            
+            Console.ReadLine();
+        }
+
+        private static void SimulateImportMassEnrollment(string fileName)
+        {
+            //TexpoWS.EnrollmentSoapClient cl = new EnrollmentSoapClient();
+            //cl.EnrollNonTexasCustomer()
+            DeleteFileImportStatus(fileName);
+            var massEnrollImporter = new MassEnrollImporter(_clientConfig.ConnectionBillingAdmin, _appConfig.ConnectionCsr, _logger);
+            var data = massEnrollImporter.ConvertToEnrollRows(massEnrollImporter.CheckEnrollRows(massEnrollImporter.GetDataSetFromMassEnrollExcelFile(fileName), fileName)).ToArray();
+            var totalRecords = data.Count();
+
+            _logger.Info($"Texpo MassEnroll. {totalRecords} record(s) has/have been sucessfuly read. From file: {fileName}.");
+
+            foreach (var rec in data)
+            {
+                CopyRateAndProduct(rec.RateId);
+            }
+
+            var bSuccess = massEnrollImporter.ImportFile(fileName);
+            _logger.Info($"massEnrollImporter has return with {bSuccess}");
+
+        }
+
+        private static void DeleteFileImportStatus(string fileName)
+        {
+            var fileNameToInsert = Path.GetFileName(fileName);
+            string checkSum;
+
+            using (var f = File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.None))
+            {
+                using (var reader = new StreamReader(f))
+                {
+                    var cry = new CIS.Library.Cryptography.Hash(CIS.Library.Cryptography.Hash.ServiceProviderOptions.MD5);
+                    checkSum = cry.Encrypt(reader.ReadToEnd(), "arc3iWY=");
+                }
+            }
+
+            _logger.Info($"going to delete old import status for '{fileNameToInsert}' and chksum '{checkSum}'");
+
+            var sql = $"DELETE FROM dbo.tblFile WHERE [FileName] = '{fileNameToInsert}' OR [FileHash] = '{checkSum}'";
+            DB.ExecuteQuery(sql);
+        }
+
+        private static void CopyRateAndProduct(string rateId)
+        {
+            string sql=$@"
+
+PRINT 'Copy Rate'
+SET IDENTITY_INSERT daes_Texpo..Rate ON
+
+INSERT INTO daes_Texpo..Rate ([RateID], [CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [LDCCode], [ConsUnitId], [ActiveFlag], [LDCRateCode])
+SELECT  [RateID], [CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [LDCCode], [ConsUnitId], [ActiveFlag], [LDCRateCode]
+FROM  saes_Texpo..Rate WHERE RateID = '{rateId}'
+AND NOT EXISTS(SELECT 1 FROM daes_Texpo..Rate WHERE RateID = '{rateId}')
+
+SET IDENTITY_INSERT daes_Texpo..Rate OFF
+
+PRINT 'Copy RateDetail'
+SET IDENTITY_INSERT daes_Texpo..RateDetail ON
+
+INSERT INTO daes_Texpo..RateDetail ([RateDetID], [RateID], [CategoryID], [RateTypeID], [ConsUnitID], [RateDescID], [EffectiveDate], [ExpirationDate], [RateAmt], [RateAmt2], [RateAmt3], [FixedAdder], [MinDetAmt], [MaxDetAmt], [GLAcct], [RangeLower], [RangeUpper], [CustType], [Graduated], [Progressive], [AmountCap], [MaxRateAmt], [MinRateAmt], [CategoryRollup], [Taxable], [ChargeType], [MiscData1], [FixedCapRate], [ScaleFactor1], [ScaleFactor2], [TemplateRateDetID], [Margin], [UsageClassId], [LegacyRateDetailId], [Active], [StatusID], [Building], [ServiceTypeID], [TaxCategoryID], [UtilityID], [UtilityInvoiceTemplateDetailID], [RateVariableTypeId], [MinDays], [MaxDays], [MeterMultiplierFlag], [CreateDate], [BlockPriceIndicator], [RateTransitionId], [BlendRatio], [ContractVolumeID], [CreatedByUserId], [ModifiedByUserId], [ModifiedDate], [TOUTemplateID], [TOUTemplateRegisterID], [TOUTemplateRegisterName])
+SELECT  [RateDetID], [RateID], [CategoryID], [RateTypeID], [ConsUnitID], [RateDescID], [EffectiveDate], [ExpirationDate], [RateAmt], [RateAmt2], [RateAmt3], [FixedAdder], [MinDetAmt], [MaxDetAmt], [GLAcct], [RangeLower], [RangeUpper], [CustType], [Graduated], [Progressive], [AmountCap], [MaxRateAmt], [MinRateAmt], [CategoryRollup], [Taxable], [ChargeType], [MiscData1], [FixedCapRate], [ScaleFactor1], [ScaleFactor2], [TemplateRateDetID], [Margin], [UsageClassId], [LegacyRateDetailId], [Active], [StatusID], [Building], [ServiceTypeID], [TaxCategoryID], [UtilityID], [UtilityInvoiceTemplateDetailID], [RateVariableTypeId], [MinDays], [MaxDays], [MeterMultiplierFlag], [CreateDate], [BlockPriceIndicator], [RateTransitionId], [BlendRatio], [ContractVolumeID], [CreatedByUserId], [ModifiedByUserId], [ModifiedDate], [TOUTemplateID], [TOUTemplateRegisterID], [TOUTemplateRegisterName]
+FROM  saes_Texpo..RateDetail WHERE RateID = '{rateId}'
+AND NOT EXISTS(SELECT 1 FROM daes_Texpo..RateDetail WHERE RateID = '{rateId}')
+
+SET IDENTITY_INSERT daes_Texpo..RateDetail OFF
+
+PRINT 'Copy Product'
+SET IDENTITY_INSERT daes_Texpo..Product ON
+
+INSERT INTO daes_Texpo..Product ([ProductID], [RateID], [LDCCode], [PlanType], [TDSPTemplateID], [Description], [BeginDate], [EndDate], [CustType], [Graduated], [RangeTier1], [RangeTier2], [SortOrder], [ActiveFlag], [Uplift], [CSATDSPTemplateID], [CAATDSPTemplateID], [PriceDescription], [MarketingCode], [RateTypeID], [Default], [ConsUnitID], [DivisionCode], [ServiceType], [CSPId], [TermsId], [RolloverProductId], [CommissionId], [CommissionAmt], [CancelFeeId], [MonthlyChargeId], [ProductCode], [RatePackageId], [ProductName], [TermDate], [DiscountTypeId], [DiscountAmount], [ProductZoneID], [IsGreen], [IsBestChoice], [ActiveEnrollmentFlag], [DepositAmount], [CreditScoreThreshold], [Incentives])
+SELECT  [ProductID], [RateID], [LDCCode], [PlanType], [TDSPTemplateID], [Description], [BeginDate], [EndDate], [CustType], [Graduated], [RangeTier1], [RangeTier2], [SortOrder], [ActiveFlag], [Uplift], [CSATDSPTemplateID], [CAATDSPTemplateID], [PriceDescription], [MarketingCode], [RateTypeID], [Default], [ConsUnitID], [DivisionCode], [ServiceType], [CSPId], [TermsId], [RolloverProductId], [CommissionId], [CommissionAmt], [CancelFeeId], [MonthlyChargeId], [ProductCode], [RatePackageId], [ProductName], [TermDate], [DiscountTypeId], [DiscountAmount], [ProductZoneID], [IsGreen], [IsBestChoice], [ActiveEnrollmentFlag], [DepositAmount], [CreditScoreThreshold], [Incentives]
+FROM  saes_Texpo..Product WHERE RateId = '{rateId}'
+AND NOT EXISTS(SELECT 1 FROM daes_Texpo..Product WHERE RateId = '{rateId}')
+
+SET IDENTITY_INSERT daes_Texpo..Product OFF
+
+";
+            DB.ExecuteQuery(sql);
+        }
+
+        private static void SimulateLetterGeneration(string custNo)
+        {
+            CopyCustomer(custNo);
+            MakeCustomerEligibleForDisconnectLetter(custNo);
+            GenerateEvents();
+        }
+
+        private static void CopyCustomer(string custNo)
+        {
+            string sql = $@"USE daes_Texpo
+DECLARE @ClientID AS INT = (SELECT ClientID FROM daes_BillingAdmin..Client WHERE Client='TXP')
+DECLARE @CustNo AS VARCHAR(20) = '{custNo}'
+DECLARE @CustID AS INT = (SELECT CustID FROM saes_Texpo..Customer WHERE CustNo = @CustNo)
+
+
+PRINT 'BEGIN Copy Customer'
+
+PRINT 'Copy Addresses'
+SET IDENTITY_INSERT daes_Texpo..Address ON
+
+INSERT INTO daes_Texpo..Address ([AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [Migr_Enrollid], [CchVersion])
+SELECT [AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [Migr_Enrollid], [CchVersion]
+FROM  saes_Texpo..Address WHERE AddrID IN (
+	SELECT SiteAddrId FROM saes_Texpo..Customer WHERE CustID = @CustID
+)
+AND NOT EXISTS (
+SELECT 1 FROM daes_Texpo..Address WHERE AddrID IN (
+	SELECT SiteAddrId FROM saes_Texpo..Customer WHERE CustID = @CustID
+	)
+)
+
+INSERT INTO daes_Texpo..Address ([AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [Migr_Enrollid], [CchVersion])
+SELECT [AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [Migr_Enrollid], [CchVersion]
+FROM  saes_Texpo..Address WHERE AddrID IN (
+	SELECT MailAddrId FROM saes_Texpo..Customer WHERE CustID = @CustID
+)
+AND NOT EXISTS (
+SELECT 1 FROM daes_Texpo..Address WHERE AddrID IN (
+	SELECT MailAddrId FROM saes_Texpo..Customer WHERE CustID = @CustID
+	)
+)
+
+INSERT INTO daes_Texpo..Address ([AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [Migr_Enrollid], [CchVersion])
+SELECT [AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [Migr_Enrollid], [CchVersion]
+FROM  saes_Texpo..Address WHERE AddrID IN (
+	SELECT CorrAddrId FROM saes_Texpo..Customer WHERE CustID = @CustID
+)
+AND NOT EXISTS (
+SELECT 1 FROM daes_Texpo..Address WHERE AddrID IN (
+	SELECT CorrAddrId FROM saes_Texpo..Customer WHERE CustID = @CustID
+	)
+)
+
+INSERT INTO daes_Texpo..Address ([AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [Migr_Enrollid], [CchVersion])
+SELECT [AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [Migr_Enrollid], [CchVersion]
+FROM  saes_Texpo..Address WHERE AddrID IN (
+	SELECT AddrId FROM saes_Texpo..Premise WHERE CustID = @CustID
+)
+AND NOT EXISTS (
+SELECT 1 FROM daes_Texpo..Address WHERE AddrID IN (
+	SELECT AddrId FROM saes_Texpo..Premise WHERE CustID = @CustID
+	)
+)
+
+SET IDENTITY_INSERT daes_Texpo..Address OFF
+
+PRINT 'Copy Rate'
+SET IDENTITY_INSERT daes_Texpo..Rate ON
+
+INSERT INTO daes_Texpo..Rate ([RateID], [CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [LDCCode], [ConsUnitId], [ActiveFlag], [LDCRateCode])
+SELECT  [RateID], [CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [LDCCode], [ConsUnitId], [ActiveFlag], [LDCRateCode]
+FROM  saes_Texpo..Rate WHERE RateID IN (
+	SELECT RateID FROM saes_Texpo..Customer WHERE CustID = @CustID
+)
+AND NOT EXISTS(SELECT 1 FROM daes_Texpo..Rate WHERE RateID IN (
+	SELECT RateID FROM saes_Texpo..Customer WHERE CustID = @CustID
+	)
+)
+
+INSERT INTO daes_Texpo..Rate ([RateID], [CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [LDCCode], [ConsUnitId], [ActiveFlag], [LDCRateCode])
+SELECT  [RateID], [CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [LDCCode], [ConsUnitId], [ActiveFlag], [LDCRateCode]
+FROM  saes_Texpo..Rate WHERE RateID IN (
+	SELECT RateID FROM saes_Texpo..Product WHERE ProductId IN (SELECT ProductID FROM saes_Texpo..Contract WHERE CustID = @CustID)
+)
+AND NOT EXISTS(SELECT 1 FROM daes_Texpo..Rate WHERE RateID IN (
+	SELECT RateID FROM saes_Texpo..Product WHERE ProductId IN (SELECT ProductID FROM saes_Texpo..Contract WHERE CustID = @CustID)
+	)
+)
+SET IDENTITY_INSERT daes_Texpo..Rate OFF
+
+PRINT 'Copy Customer'
+SET IDENTITY_INSERT daes_Texpo..Customer ON
+
+INSERT INTO daes_Texpo..Customer ([CustID], [CSPID], [CSPCustID], [PropertyID], [PropertyCustID], [CustomerTypeID], [CustNo], [CustName], [LastName], [FirstName], [MidName], [CompanyName], [DBA], [FederalTaxID], [AcctsRecID], [DistributedAR], [ProductionCycle], [BillCycle], [RateID], [SiteAddrID], [MailAddrId], [CorrAddrID], [MailToSiteAddress], [BillCustID], [MasterCustID], [Master], [CustStatus], [BilledThru], [CSRStatus], [CustType], [Services], [FEIN], [DOB], [Taxable], [LateFees], [NoOfAccts], [ConsolidatedInv], [SummaryInv], [MsgID], [TDSPTemplateID], [TDSPGroupID], [LifeSupportIndictor], [LifeSupportStatus], [LifeSupportDate], [SpecialBenefitsPlan], [BillFormat], [PrintLayoutID], [CreditScore], [HitIndicator], [RequiredDeposit], [AccountManager], [EnrollmentAlias], [ContractID], [ContractTerm], [ContractStartDate], [ContractEndDate], [UserDefined1], [CreateDate], [RateChangeDate], [ConversionAccountNo], [PermitContactName], [CustomerPrivacy], [UsagePrivacy], [CompanyRegistrationNumber], [VATNumber], [AccountStatus], [AutoCreditAfterInvoiceFlag], [LidaDiscount], [DoNotDisconnect], [DDPlus1], [CsrImportDate], [DeliveryTypeID], [SpecialNeedsAddrID], [PORFlag], [PaymentModelId], [PowerOutageAddrId])
+SELECT [CustID], [CSPID], [CSPCustID], [PropertyID], [PropertyCustID], [CustomerTypeID], [CustNo], [CustName], [LastName], [FirstName], [MidName], [CompanyName], [DBA], [FederalTaxID], [AcctsRecID], [DistributedAR], [ProductionCycle], [BillCycle], [RateID], [SiteAddrID], [MailAddrId], [CorrAddrID], [MailToSiteAddress], [BillCustID], [MasterCustID], [Master], [CustStatus], [BilledThru], [CSRStatus], [CustType], [Services], [FEIN], [DOB], [Taxable], [LateFees], [NoOfAccts], [ConsolidatedInv], [SummaryInv], [MsgID], [TDSPTemplateID], [TDSPGroupID], [LifeSupportIndictor], [LifeSupportStatus], [LifeSupportDate], [SpecialBenefitsPlan], [BillFormat], [PrintLayoutID], [CreditScore], [HitIndicator], [RequiredDeposit], [AccountManager], [EnrollmentAlias], [ContractID], [ContractTerm], [ContractStartDate], [ContractEndDate], [UserDefined1], [CreateDate], [RateChangeDate], [ConversionAccountNo], [PermitContactName], [CustomerPrivacy], [UsagePrivacy], [CompanyRegistrationNumber], [VATNumber], [AccountStatus], [AutoCreditAfterInvoiceFlag], [LidaDiscount], [DoNotDisconnect], [DDPlus1], [CsrImportDate], [DeliveryTypeID], [SpecialNeedsAddrID], [PORFlag], [PaymentModelId], [PowerOutageAddrId]
+FROM  saes_Texpo..Customer WHERE CustID = @CustID
+AND NOT EXISTS(SELECT 1 FROM daes_Texpo..Customer WHERE CustId = @CustID)
+SET IDENTITY_INSERT daes_Texpo..Customer OFF
+
+PRINT 'Copy Premise'
+ALTER TABLE daes_Texpo..Customer NOCHECK CONSTRAINT ALL
+ALTER TABLE daes_Texpo..Premise NOCHECK CONSTRAINT ALL
+SET IDENTITY_INSERT daes_Texpo..Premise ON
+
+INSERT INTO daes_Texpo..Premise ([PremID], [CustID], [CSPID], [AddrID], [TDSPTemplateID], [ServiceCycle], [TDSP], [TaxAssessment], [PremNo], [PremDesc], [PremStatus], [PremType], [LocationCode], [SpecialNeedsFlag], [SpecialNeedsStatus], [SpecialNeedsDate], [ReadingIncrement], [Metered], [Taxable], [BeginServiceDate], [EndServiceDate], [SourceLevel], [StatusID], [StatusDate], [CreateDate], [UnitID], [PropertyCommonID], [RateID], [DeleteFlag], [LBMPId], [PipelineId], [GasLossId], [GasPoolID], [LDCID], [DeliveryPoint], [ConsumptionBandIndex], [LastModifiedDate], [CreatedByID], [ModifiedByID], [BillingAccountNumber], [NameKey], [GasSupplyServiceOption], [IntervalUsageTypeId], [LDC_UnMeteredAcct], [OnSwitchHold], [SwitchHoldStartDate], [ConsumptionImportTypeId], [TDSPTemplateEffectiveDate], [AltPremNo], [ServiceDeliveryPoint], [UtilityContractID], [LidaDiscount], [GasCapacityAssignment], [CPAEnrollmentTypes], [SupplierPricingStructureNr], [SupplierGroupNumber], [IsTOU])
+SELECT [PremID], [CustID], [CSPID], [AddrID], [TDSPTemplateID], [ServiceCycle], [TDSP], [TaxAssessment], [PremNo], [PremDesc], [PremStatus], [PremType], [LocationCode], [SpecialNeedsFlag], [SpecialNeedsStatus], [SpecialNeedsDate], [ReadingIncrement], [Metered], [Taxable], [BeginServiceDate], [EndServiceDate], [SourceLevel], [StatusID], [StatusDate], [CreateDate], [UnitID], [PropertyCommonID], [RateID], [DeleteFlag], [LBMPId], [PipelineId], [GasLossId], [GasPoolID], [LDCID], [DeliveryPoint], [ConsumptionBandIndex], [LastModifiedDate], [CreatedByID], [ModifiedByID], [BillingAccountNumber], [NameKey], [GasSupplyServiceOption], [IntervalUsageTypeId], [LDC_UnMeteredAcct], [OnSwitchHold], [SwitchHoldStartDate], [ConsumptionImportTypeId], [TDSPTemplateEffectiveDate], [AltPremNo], [ServiceDeliveryPoint], [UtilityContractID], [LidaDiscount], [GasCapacityAssignment], [CPAEnrollmentTypes], [SupplierPricingStructureNr], [SupplierGroupNumber], [IsTOU]
+FROM  saes_Texpo..Premise WHERE CustID = @CustID
+AND NOT EXISTS(SELECT 1 FROM daes_Texpo..Premise WHERE CustId = @CustID)
+SET IDENTITY_INSERT daes_Texpo..Premise OFF
+ALTER TABLE daes_Texpo..Premise WITH CHECK CHECK CONSTRAINT ALL
+
+PRINT 'Copy Product'
+SET IDENTITY_INSERT daes_Texpo..Product ON
+
+INSERT INTO daes_Texpo..Product ([ProductID], [RateID], [LDCCode], [PlanType], [TDSPTemplateID], [Description], [BeginDate], [EndDate], [CustType], [Graduated], [RangeTier1], [RangeTier2], [SortOrder], [ActiveFlag], [Uplift], [CSATDSPTemplateID], [CAATDSPTemplateID], [PriceDescription], [MarketingCode], [RateTypeID], [Default], [ConsUnitID], [DivisionCode], [ServiceType], [CSPId], [TermsId], [RolloverProductId], [CommissionId], [CommissionAmt], [CancelFeeId], [MonthlyChargeId], [ProductCode], [RatePackageId], [ProductName], [TermDate], [DiscountTypeId], [DiscountAmount], [ProductZoneID], [IsGreen], [IsBestChoice], [ActiveEnrollmentFlag], [DepositAmount], [CreditScoreThreshold], [Incentives])
+SELECT  [ProductID], [RateID], [LDCCode], [PlanType], [TDSPTemplateID], [Description], [BeginDate], [EndDate], [CustType], [Graduated], [RangeTier1], [RangeTier2], [SortOrder], [ActiveFlag], [Uplift], [CSATDSPTemplateID], [CAATDSPTemplateID], [PriceDescription], [MarketingCode], [RateTypeID], [Default], [ConsUnitID], [DivisionCode], [ServiceType], [CSPId], [TermsId], [RolloverProductId], [CommissionId], [CommissionAmt], [CancelFeeId], [MonthlyChargeId], [ProductCode], [RatePackageId], [ProductName], [TermDate], [DiscountTypeId], [DiscountAmount], [ProductZoneID], [IsGreen], [IsBestChoice], [ActiveEnrollmentFlag], [DepositAmount], [CreditScoreThreshold], [Incentives]
+FROM  saes_Texpo..Product WHERE ProductId IN (SELECT ProductID FROM saes_Texpo..Contract WHERE CustID = @CustID)
+AND NOT EXISTS(SELECT 1 FROM daes_Texpo..Product WHERE ProductId IN (SELECT ProductID FROM saes_Texpo..Contract WHERE CustID = @CustID))
+SET IDENTITY_INSERT daes_Texpo..Product OFF
+
+PRINT 'Copy Contract'
+SET IDENTITY_INSERT daes_Texpo..Contract ON
+
+INSERT INTO daes_Texpo..Contract ([ContractID], [ContractName], [ContractLength], [SignedDate], [BeginDate], [EndDate], [TermDate], [TermLength], [AnnualUsage], [CurePeriod], [Terms], [ContractTypeID], [ContactName], [ContactPhone], [ContactFax], [AccountManagerID], [Bandwidth], [FinanceCharge], [ProductID], [MeterChargeCode], [AggregatorFee], [CreatedByID], [CreateDate], [ActiveFlag], [TDSPTemplateID], [RateCode], [RateID], [CustID], [AutoRenewFlag], [RenewalRate], [RenewalStartDate], [RenewalTerm], [ContractNumber], [ChangeReason], [ContractTerm])
+SELECT  [ContractID], [ContractName], [ContractLength], [SignedDate], [BeginDate], [EndDate], [TermDate], [TermLength], [AnnualUsage], [CurePeriod], [Terms], [ContractTypeID], [ContactName], [ContactPhone], [ContactFax], [AccountManagerID], [Bandwidth], [FinanceCharge], [ProductID], [MeterChargeCode], [AggregatorFee], [CreatedByID], [CreateDate], [ActiveFlag], [TDSPTemplateID], [RateCode], [RateID], [CustID], [AutoRenewFlag], [RenewalRate], [RenewalStartDate], [RenewalTerm], [ContractNumber], [ChangeReason], [ContractTerm]
+FROM  saes_Texpo..Contract WHERE CustID = @CustID
+AND NOT EXISTS(SELECT 1 FROM daes_Texpo..Contract WHERE CustID = @CustID)
+SET IDENTITY_INSERT daes_Texpo..Contract OFF
+
+PRINT 'Copy AccountsReceivable'
+SET IDENTITY_INSERT daes_Texpo..AccountsReceivable ON
+
+INSERT INTO daes_Texpo..AccountsReceivable ( [AcctsRecID], [ResetDate], [ARDate], [PrevBal], [CurrInvs], [CurrPmts], [CurrAdjs], [BalDue], [LateFee], [LateFeeRate], [LateFeeMaxAmount], [LateFeeTypeID], [AuthorizedPymt], [PastDue], [BalAge0], [BalAge1], [BalAge2], [BalAge3], [BalAge4], [BalAge5], [BalAge6], [Deposit], [DepositBeginDate], [PaymentPlanFlag], [PaymentPlanTrueUpFlag], [PaymentPlanAmount], [PaymentPlanTrueUpPeriod], [PaymentPlanTrueUpThresholdAmount], [PaymentPlanTrueUpType], [PaymentPlanEffectiveDate], [PrePaymentFlag], [PrePaymentDailyAmount], [CapitalCredit], [Terms], [StatusID], [GracePeriod], [Migr_acct_no], [Migr_div_code], [Migr_service_type], [PaymentPlanTotalVariance], [PaymentPlanVarianceUnit], [InvoiceMinimumAmount], [LateFeeThresholdAmt], [LastInvoiceAcctsRecHistID], [LastPaymentAcctsRecHistID], [LastAdjustmentAcctsRecHistID], [CancelFeeTypeId], [CancelFeeAmount], [DeferredBalance])
+SELECT   [AcctsRecID], [ResetDate], [ARDate], [PrevBal], [CurrInvs], [CurrPmts], [CurrAdjs], [BalDue], [LateFee], [LateFeeRate], [LateFeeMaxAmount], [LateFeeTypeID], [AuthorizedPymt], [PastDue], [BalAge0], [BalAge1], [BalAge2], [BalAge3], [BalAge4], [BalAge5], [BalAge6], [Deposit], [DepositBeginDate], [PaymentPlanFlag], [PaymentPlanTrueUpFlag], [PaymentPlanAmount], [PaymentPlanTrueUpPeriod], [PaymentPlanTrueUpThresholdAmount], [PaymentPlanTrueUpType], [PaymentPlanEffectiveDate], [PrePaymentFlag], [PrePaymentDailyAmount], [CapitalCredit], [Terms], [StatusID], [GracePeriod], [Migr_acct_no], [Migr_div_code], [Migr_service_type], [PaymentPlanTotalVariance], [PaymentPlanVarianceUnit], [InvoiceMinimumAmount], [LateFeeThresholdAmt], [LastInvoiceAcctsRecHistID], [LastPaymentAcctsRecHistID], [LastAdjustmentAcctsRecHistID], [CancelFeeTypeId], [CancelFeeAmount], [DeferredBalance]
+FROM  saes_Texpo..AccountsReceivable WHERE AcctsRecID IN (SELECT AcctsRecID FROM saes_Texpo..Customer WHERE CustID = @CustID)
+AND NOT EXISTS(SELECT 1 FROM daes_Texpo..AccountsReceivable WHERE AcctsRecID IN (SELECT AcctsRecID FROM saes_Texpo..Customer WHERE CustID = @CustID))
+SET IDENTITY_INSERT daes_Texpo..AccountsReceivable OFF
+
+PRINT 'Copy CustomerAdditionalInfo'
+--SET IDENTITY_INSERT daes_Texpo..CustomerAdditionalInfo ON
+
+INSERT INTO daes_Texpo..CustomerAdditionalInfo ([CustID], [CSPDUNSID], [BillingTypeID], [BillingDayOfMonth], [MasterCustID_2], [MasterCustID_3], [MasterCustID_4], [TaxAssessment], [ContractPeriod], [ContractDate], [AccessVerificationType], [AccessVerificationData], [ClientAccountNo], [InstitutionID], [TransitNum], [AccountNum], [MigrationAccountNo], [MigrationFirstServed], [MigrationKwh], [CollectionsStageID], [CollectionsStatus], [CollectionsDate], [KeyAccount], [DisconnectLtr], [AuthorizedReleaseName], [AuthorizedReleaseDOB], [AuthorizedReleaseFederalTaxID], [EFTFlag], [PromiseToPayFlag], [DisconnectFlag], [CreditHoldFlag], [RawConsumptionImportFlag], [CustomerProtectionStatus], [MCPEFlag], [HasLocationMasterFlag], [DivisionID], [DivisionCode], [DriverLicenseNo], [PromotionCodeID], [CustomerDUNS], [CustomerGroupID], [DeceasedFlag], [BankruptFlag], [CollectionsAgencyID], [DoNotCall], [CustomerSecretWord], [PrintGroupID], [IsDPP], [SubsequentDepositExempt], [AutoPayFlag], [SpecialNeedsFlag], [SpecialNeedsEndDate], [SpecialNeedsQualifierTypeID], [CurrentCustNo], [CsrImportDate], [EarlyTermFee], [EarlyTermFeeUpdateDate], [OnSwitchHold], [SwitchHoldStartDate], [DPPStatusID], [UpdateContactInfoFlag], [IsFriendlyLatePaymentReminderSent], [IsLowIncome], [ExtendedCustTypeId], [AutoPayLastUpdated], [UnitNumber], [CustomerCategoryID], [GreenEnergyOptIn], [SocialCauseID], [SocialCauseCode], [SecondaryContactFirstName], [SecondaryContactLastName], [SecondaryContactPhone], [SecondaryContactRelationId], [SSN], [ServiceAccount], [EncryptionPasswordTypeId], [EncryptionPasswordCustomValue], [CustInfo1], [CustInfo2], [CustInfo3], [CustInfo4], [CustInfo5], [SalesAgent], [Broker], [PromoCode], [CommissionType], [CommissionAmount], [ReferralID], [CampaignName], [AccessDBID], [SalesChannel], [IsPUCComplaint], [TCPAAuthorization], [CancellationFee], [MunicipalAggregation])
+SELECT  [CustID], [CSPDUNSID], [BillingTypeID], [BillingDayOfMonth], [MasterCustID_2], [MasterCustID_3], [MasterCustID_4], [TaxAssessment], [ContractPeriod], [ContractDate], [AccessVerificationType], [AccessVerificationData], [ClientAccountNo], [InstitutionID], [TransitNum], [AccountNum], [MigrationAccountNo], [MigrationFirstServed], [MigrationKwh], [CollectionsStageID], [CollectionsStatus], [CollectionsDate], [KeyAccount], [DisconnectLtr], [AuthorizedReleaseName], [AuthorizedReleaseDOB], [AuthorizedReleaseFederalTaxID], [EFTFlag], [PromiseToPayFlag], [DisconnectFlag], [CreditHoldFlag], [RawConsumptionImportFlag], [CustomerProtectionStatus], [MCPEFlag], [HasLocationMasterFlag], [DivisionID], [DivisionCode], [DriverLicenseNo], [PromotionCodeID], [CustomerDUNS], [CustomerGroupID], [DeceasedFlag], [BankruptFlag], [CollectionsAgencyID], [DoNotCall], [CustomerSecretWord], [PrintGroupID], [IsDPP], [SubsequentDepositExempt], [AutoPayFlag], [SpecialNeedsFlag], [SpecialNeedsEndDate], [SpecialNeedsQualifierTypeID], [CurrentCustNo], [CsrImportDate], [EarlyTermFee], [EarlyTermFeeUpdateDate], [OnSwitchHold], [SwitchHoldStartDate], [DPPStatusID], [UpdateContactInfoFlag], [IsFriendlyLatePaymentReminderSent], [IsLowIncome], [ExtendedCustTypeId], [AutoPayLastUpdated], [UnitNumber], [CustomerCategoryID], [GreenEnergyOptIn], [SocialCauseID], [SocialCauseCode], [SecondaryContactFirstName], [SecondaryContactLastName], [SecondaryContactPhone], [SecondaryContactRelationId], [SSN], [ServiceAccount], [EncryptionPasswordTypeId], [EncryptionPasswordCustomValue], [CustInfo1], [CustInfo2], [CustInfo3], [CustInfo4], [CustInfo5], [SalesAgent], [Broker], [PromoCode], [CommissionType], [CommissionAmount], [ReferralID], [CampaignName], [AccessDBID], [SalesChannel], [IsPUCComplaint], [TCPAAuthorization], [CancellationFee], [MunicipalAggregation]
+FROM  saes_Texpo..CustomerAdditionalInfo WHERE CustID = @CustID
+AND NOT EXISTS(SELECT 1 FROM daes_Texpo..CustomerAdditionalInfo WHERE CustID = @CustID)
+--SET IDENTITY_INSERT daes_Texpo..CustomerAdditionalInfo OFF
+
+PRINT 'END Copy Customer'
+";
+            DB.ExecuteQuery(sql);
+        }
+
+        private static void MakeCustomerEligibleForDisconnectLetter(string custNo)
+        {
+            string sql = $@"USE daes_Texpo
+DECLARE @CustNo AS VARCHAR(20) = '{custNo}'
+DECLARE @CustID AS INT = (SELECT CustID FROM saes_Texpo..Customer WHERE CustNo = {custNo})
+UPDATE AccountsReceivable SET BalAge1=25.45 WHERE AcctsRecID = (SELECT AcctsRecID FROM Customer WHERE CustId = @CustID)
+DELETE FROM Letter WHERE CustId = @CustID
+UPDATE Premise SET StatusID = 10, EndServiceDate = NULL WHERE CustId = @CustID
+DELETE FROM CustomerDisconnect WHERE CustId = @CustID
+DELETE FROM MethodLog WHERE MethodId IN (310, 311, 314, 339, 341, 340, 313, 348, 9000, 9010, 6000, 6001)";
+
+            DB.ExecuteQuery(sql);
+        }
+
+        private static void GenerateEvents()
+        {
+            var maintenance = new MyMaintenance(_appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _clientConfig.ConnectionBillingAdmin);
+            maintenance.GenerateEvents();
         }
 
         private static void ExecuteExport()
@@ -223,7 +530,6 @@ b1x3zeE1G4Q4
             */
         }
         
-
         private static void GenerateSimpleMarketTransactionEvaluationEvents()
         {
             var hashTable = new Hashtable();
@@ -253,6 +559,23 @@ b1x3zeE1G4Q4
         {
             var engine = new CIS.Engine.Event.Queue(_clientConfig.ConnectionBillingAdmin);
             engine.ProcessEventQueue(_appConfig.ClientID, _appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _appConfig.ClientAbbreviation);
+        }
+
+        public sealed class DB
+        {
+            public static void ExecuteQuery(string sql)
+            {
+                using (IDbConnection connection = new SqlConnection(_appConfig.ConnectionCsr))
+                {
+                    connection.Open();
+                    var cmd = connection.CreateCommand();
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = sql;
+                    cmd.CommandTimeout = 1000 * 60 * 5;
+                    cmd.ExecuteNonQuery();
+                    connection.Close();
+                }
+            }
         }
     }
 }

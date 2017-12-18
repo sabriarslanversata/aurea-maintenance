@@ -32,6 +32,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Aurea, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\Aurea.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.BusinessEntity">
       <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.BusinessEntity.dll</HintPath>
     </Reference>
@@ -43,16 +47,36 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Clients.Spark.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.Clients.Spark.Model, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Clients.Spark.Model.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.Components, Version=16.1.0.0, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="CIS.Components.Maintenance, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Components.Maintenance.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.Element, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Element.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.Element.Billing">
       <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Element.Billing.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.Element.Core, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Element.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Element.Transaction, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Element.Transaction.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.Engine.Event">
       <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Engine.Event.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Enum, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Enum.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Framework, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -80,6 +104,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -88,7 +113,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="InvoiceDebugger.cs" />
+    <Compile Include="Models\AccountsReceivable.cs" />
+    <Compile Include="Models\Address.cs" />
+    <Compile Include="Models\ClientCustomerContract.cs" />
+    <Compile Include="Models\ClientCustomerCustomerAdditionalInfo.cs" />
+    <Compile Include="Models\Contract.cs" />
+    <Compile Include="Models\Customer.cs" />
+    <Compile Include="Models\CustomerAdditionalInfo.cs" />
+    <Compile Include="Models\EdiLoadProfile.cs" />
+    <Compile Include="Models\Meter.cs" />
+    <Compile Include="Models\Premise.cs" />
+    <Compile Include="Models\Product.cs" />
+    <Compile Include="Models\Rate.cs" />
+    <Compile Include="Models\RateDetail.cs" />
+    <Compile Include="Models\RateTransition.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -100,6 +138,9 @@
       <Project>{5243BE0E-A73B-4A56-B992-143871C94BD2}</Project>
       <Name>Aurea.Maintenance.Debugger.Common</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Models\ConvertTableToEntity.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
