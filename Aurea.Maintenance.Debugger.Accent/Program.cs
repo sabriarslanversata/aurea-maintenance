@@ -33,10 +33,58 @@ namespace Aurea.Maintenance.Debugger.Accent
                 _logger.Info("Distributed Transaction Started");
             };
 
+            simulateEnrollmentViaWS();
+
             _logger.Info("Debug session has ended");
             Console.ReadLine();
         }
 
+        private static void simulateEnrollmentViaWS()
+        {
+            CopyProductAndRate();
+            CopyEnrollCustomer();
+            Execute814Import();
+            GenerateEvents();
+            ProcessEvents();
+            MakeCTRAccepted();
+            GenerateEvents();
+            ProcessEvents();
+        }
+
+        private static void CopyEnrollCustomer()
+        {
+            
+        }
+
+        private static void CopyProductAndRate()
+        {
+            
+        }
+
+        private static void Execute814Import()
+        {
+            ExecuteTaskToasterTask();
+        }
+
+        private static void MakeCTRAccepted()
+        {
+            
+        }
+
+        private static void GenerateEvents()
+        {
+            
+        }
+
+        private static void ProcessEvents()
+        {
+            
+        }
+
+        private static void ExecuteTaskToasterTask()
+        {
+            
+        }
 
 
     }
