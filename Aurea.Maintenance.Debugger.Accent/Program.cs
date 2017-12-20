@@ -1,16 +1,4 @@
-﻿
-
-using System.Data;
-using System.Data.SqlClient;
-using System.IO;
-using System.Reflection;
-using CIS.Clients.Accent.EnrollmentManager;
-using CIS.Clients.Accent.Import;
-using CIS.Framework.Common;
-using CIS.Framework.Data;
-using CIS.Web.Services.Clients.Accent.Helpers;
-
-namespace Aurea.Maintenance.Debugger.Accent
+﻿namespace Aurea.Maintenance.Debugger.Accent
 {
     using System;
     using System.Collections.Generic;
@@ -20,10 +8,19 @@ namespace Aurea.Maintenance.Debugger.Accent
     using Common;
     using Common.Models;
     using System.Security.Policy;
-    using Aurea.IO;
     using Aurea.Logging;
     using CIS.BusinessEntity;
     using System.Transactions;
+    using System.Collections;
+    using System.Data;
+    using System.Data.SqlClient;
+    using System.IO;
+    using System.Reflection;
+    using CIS.Clients.Accent.EnrollmentManager;
+    using CIS.Clients.Accent.Import;
+    using CIS.Framework.Common;
+    using CIS.Framework.Data;
+    using CIS.Web.Services.Clients.Accent.Helpers;
 
     public class Program
     {
@@ -70,8 +67,8 @@ namespace Aurea.Maintenance.Debugger.Accent
 
         public class MyExport : CIS.Clients.Accent.Export.MainProcess//CIS.Export.BaseExport
         {
-            private static readonly string _uaaDir = Assembly.GetExecutingAssembly().Location + "\\uua\\";
-            private static readonly string _uqcDir = Assembly.GetExecutingAssembly().Location + "\\uqc\\";
+            private static readonly string _uaaDir = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),  "uua\\");
+            private static readonly string _uqcDir = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) , "uqc\\");
 
             public MyExport(string connectionMarket, string connectionCsr, string connectionAdmin)
             {
@@ -218,7 +215,7 @@ b1x3zeE1G4Q4
             _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.Accent, Stages.Development, TransactionMode.Enlist);
             _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
 
-            TransactionManager.DistributedTransactionStarted += delegate
+            System.Transactions.TransactionManager.DistributedTransactionStarted += delegate
                 (object sender, TransactionEventArgs e)
             {
                 _logger.Info("Distributed Transaction Started");
@@ -237,15 +234,15 @@ b1x3zeE1G4Q4
 
             CopyProductAndRate(productCode: productCode, maxDepth: 5);
             (string message, int enrollCustId) = EnrollCustomerWithPaymentInfo(CreateEnrollmentDataWithPaymentInfoData(productCode, accountNo));
-            GenerateEvents();
+            GenerateEvents(new List<int> { 10, 18});
             ProcessEvents();
             Execute814Export();
-            GenerateEvents();
+            GenerateEvents(new List<int> { 10, 18 });
             ProcessEvents();
 
-            MakeCTRAccepted(enrollCustId);
+            //MakeCTRAccepted(enrollCustId);
             Execute814Import();
-            GenerateEvents();
+            GenerateEvents(new List<int> { 10, 18 });
             ProcessEvents();
         }
 
@@ -760,10 +757,20 @@ VALUES (
             SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
         }
 
-        private static void GenerateEvents()
+        private static void GenerateEvents(List<int> eventTypeIds)
         {
-            var maintenance = new MyMaintenance(_appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _clientConfig.ConnectionBillingAdmin);
-            maintenance.GenerateEvents();
+            var list = CIS.Element.Core.Event.EventTypeList.LoadDirectlyCallableEvents(_clientConfig.ClientId);
+
+            eventTypeIds.ForEach(id =>
+            {
+                var htParams = new Hashtable { { "EventTypeID", id } };
+                var _event = list.SingleOrDefault(x => x.EventTypeID == id);
+                new CIS.Engine.Event.EventGenerator().GenerateEvent(_clientConfig.ClientId, htParams, _clientConfig.Client, _appConfig.ConnectionCsr, _clientConfig.ConnectionBillingAdmin, _event.AssemblyName, _event.ClassName);
+            });
+            
+
+            //var maintenance = new MyMaintenance(_appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _clientConfig.ConnectionBillingAdmin);
+            //maintenance.GenerateEvents();
         }
 
         private static void ProcessEvents()
