@@ -2,8 +2,11 @@
 
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
+using System.Reflection;
 using CIS.Clients.Accent.EnrollmentManager;
 using CIS.Clients.Accent.Import;
+using CIS.Framework.Common;
 using CIS.Framework.Data;
 using CIS.Web.Services.Clients.Accent.Helpers;
 
@@ -43,6 +46,168 @@ namespace Aurea.Maintenance.Debugger.Accent
             }
         }
 
+        public class MyImport : CIS.Import.BaseImport
+        {
+            public MyImport() : base()
+            {
+                Client = ClientConfigurationFactory.ClientCode;
+                ServiceName = "Import";
+            }
+
+            public MyImport(string connectionMarket, string connectionCsr, string connectionTdsp,
+                string connectionAdmin) : base(connectionMarket, connectionCsr, connectionTdsp, connectionAdmin)
+            {
+                Client = ClientConfigurationFactory.ClientCode;
+                ServiceName = "Import";
+            }
+
+            public void myImportTransaction()
+            {
+                this.ImportTransaction();
+
+            }
+        }
+
+        public class MyExport : CIS.Clients.Accent.Export.MainProcess//CIS.Export.BaseExport
+        {
+            private static readonly string _uaaDir = Assembly.GetExecutingAssembly().Location + "\\uua\\";
+            private static readonly string _uqcDir = Assembly.GetExecutingAssembly().Location + "\\uqc\\";
+
+            public MyExport(string connectionMarket, string connectionCsr, string connectionAdmin)
+            {
+                _connectionMarket = connectionMarket;
+                _connectionCsr = connectionCsr;
+                _connectionAdmin = connectionAdmin;
+                _serviceExecuteDate = DateTime.Now;
+                LoadConfiguration(string.Empty);
+            }
+
+            public void MyExportTransactions()
+            {
+                ExportTransactions();
+            }
+
+            public void MyTransmitFiles()
+            {
+                TransmitFiles();
+            }
+
+            public void MyExportLoadForecasting()
+            {
+                //ExportLoadForecasting();//private and exists on Texpo only, so if we need to debug this we need to implement logic here again
+            }
+
+            public void MyProcessEFTPayments()
+            {
+                ProcessEFTPayments();//protected virtual
+            }
+
+            public void MyRunAutoDNPProcess()
+            {
+                //RunAutoDNPProcess();//private and exists on Texpo only, so if we need to debug this we need to implement logic here again
+            }
+
+            public void MyLogService()
+            {
+                LogService();//protected derived from BaseService
+            }
+
+            public override void InitializeVariables(string exportFunction)
+            {
+                _directoryFtpOut = Path.Combine(_uaaDir, @"Data\ClientData\ACC\Services\Transport\Ftp\Out\");
+                _directoryEncrypted = Path.Combine(_uaaDir, @"Data\Clientdata\ACC\Services\Transport\Ftp\Out\Market\Encrypted\");
+                _directoryDecrypted = Path.Combine(_uaaDir, @"Data\Clientdata\ACC\Services\Transport\Ftp\Out\Market\Decrypted\");
+                _directoryArchive = Path.Combine(_uaaDir, @"Data\Clientdata\ACC\Services\TransportArchive\Ftp\Out\");
+                _directoryException = Path.Combine(_uaaDir, @"Data\Clientdata\ACC\Services\Transport\Ftp\Out\Market\Exception\");
+                _pgpPassPhrase = "hokonxoyg";
+                _pgpEncryptionKey = Path.Combine(_uqcDir, @"Data\PGPKeys\ista-na.asc");
+                _pgpSignatureKey = Path.Combine(_uaaDir, @"Data\PGPKeys\ista-na.asc");
+                _ftpRemoteServer = "localhost";
+                _ftpRemoteDirectory = string.Empty;
+                _ftpUserName = string.Empty;
+                _ftpUserPassword = string.Empty;
+                _runHour = "6";
+                _runDay = "*";
+                _runDayOfWeek = "*";
+                _marketFileVersion = "3.0";
+                _serviceInterval = 5;
+                _historicalUsageRequestType = "HU";
+                _clientID = _clientConfig.ClientId;
+                if (!Directory.Exists(_directoryDecrypted))
+                    Directory.CreateDirectory(_directoryDecrypted);
+
+                if (!Directory.Exists(_directoryEncrypted))
+                    Directory.CreateDirectory(_directoryEncrypted);
+
+                if (!Directory.Exists(_directoryException))
+                    Directory.CreateDirectory(_directoryException);
+
+
+                if (!File.Exists(_pgpEncryptionKey))
+                {
+                    Directory.CreateDirectory(_pgpEncryptionKey.Replace(Path.GetFileName(_pgpEncryptionKey), ""));
+                    File.WriteAllText(_pgpEncryptionKey, @"-----BEGIN PGP PRIVATE KEY BLOCK-----
+Version: BCPG C# v1.6.1.0
+
+lQOsBFn53zQBCADMlxdkpJRay9J1lA2Xc6fsyM0A7CRzcY5TCuU31ZROV0s8Z+97
+hpwAdRzRXPfwh7465505tW2q3hqpOOyMmXXAbua8fVn/hklXxVnCB0WQFLHIL/Dm
+UyJnRy9vyKkt5QGzAhLMDWtRn/bejIJ8jzB8WFjf+luRpR/GdvPjy8Q7/0tY6By4
+Ua67nlHTFkHJ7iytE1ShbNHoe1BtsuEdwu5BmNHDkixpUAFvm5MoC0Xvib4yvAVj
+1+r/U9w5AFGMoNZrYO4Ckg3ZKCHwNMvI0sD0zHnW36jGV4yoNBQ+Uc3bBaxZKoy9
+DxLIWT+066UqD2V3pIcObQT8xVQybxIHzoxFABEBAAH/AwMCB5I8JHaajnJgZ10f
+dxEBzvlTmxBq2x4WGVvfhV6vks1CAu+KO6pGxaskJG/rNIXBrDv5g4dO3hIjaDQX
+tOuyAp3WB+b06EnCRuXsUBQcDPoRZ8SfNlUkyNCEh9M3sDHng9nfVbGd5jjpFHiU
+1Uw1OOGNd6TZLrmTzwqTpMoKs/cGw5GnT1LOsAy57oG0UuF9KVeknkOApN6K3Mez
+VX6LiheaS8izV4Vfgr4pZn+GrL97iV41CITxPDOqL0AJvXmzAzT95324Bjo6+WAW
+q3geDzMgd0udO4n/DQ1NSpBz1Wjvd9f60RDxfavpYKntEyy074ZbUAEGFE5CQhOy
+r4JQQcXGzkkRK65/lkVbDsUAe2ICH2WQ5KEHe1gNEJyBQZr/s1XK0xO7B3EwPzDT
+qdgN47H0DA7pXAbb3QxVxNTVx8HZkzxySJjmjrNvOC3VqKtDkQwY4dIDQ+R2ArrQ
+7h9F/XdUAAFcw8XdtISl5XHWH13l3ZQb5DxpMOtjazLnFu5P00Drf9NyftO6eAY8
+Xph+T1Oq24HXIO91zKsjpaV4Ru3U/5cxP8jp3rBLHkhWFnQrV6mVNuXeXPHYzMhj
+LVxeTIoY/ELuM17fouyOEMhNLtDX3JZ5AXLctP9BEr5mwnjIJMmmB2yOOXMKZYeL
+UO0pTBzgTI4BzlEpCcUQ2G8GAbpSN2f6R9trVgWNaX+hnC5GBv2yMIFfeKMIasS1
+soGP5C6NPCBJDfd5iztfz8YLYwoaIb9d6HsQ06Xeylb/5cwpjehC4iL9OFI4emaJ
+Ghrf/MeFfQVDdhM2MULaiJGMrWCvJNy+VMQfiX11/5iFtWgM6FK9D8yEdj2L7PEH
+t/WzujPxWTS/AtnI7xnNhc7sb82LRsV7R2US7XTLDbQYc2FicmkuYXJzbGFuQHZl
+cnNhdGEuY29tiQEcBBABAgAGBQJZ+d80AAoJEGHYYRGYWV281UkH/2wW6vqlqRzT
+G2WFGAJEf3SoqYiEb5rJvA0aI10izRla2hzWV45F8xafmQEQN6ncU8k3cFIVdXw8
+4Jq4NBlkIVngpbE7I1WqhiP5snFmJhdlpGjTdUvtKnSZNT/qMrdsyBwrOJ9SkmTO
+NMG76HYXOGYJV0wxMh9PyABx+IzIHR/jdZ/5wDxhv76O/cV5oLcX/TK6UAjuQchO
+drGAQFcbiwOlXv1wz8x4LrchcPgd2c5l9elozFLlDSKtukAnRIpgcNr71mv36/xF
+bIICDu7Y9DBejbH0JPwumR3M6L4tVPAvgH1jcVzW28yF/qHrtfIoY+o1H/e7PF1v
+XHfN4TUbhDg=
+=sYfZ
+-----END PGP PRIVATE KEY BLOCK-----
+", Encoding.UTF8);
+                }
+
+                if (!File.Exists(_pgpSignatureKey))
+                {
+                    Directory.CreateDirectory(_pgpSignatureKey.Replace(Path.GetFileName(_pgpSignatureKey), ""));
+                    File.WriteAllText(_pgpSignatureKey, @"-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: BCPG C# v1.6.1.0
+
+mQENBFn53zQBCADMlxdkpJRay9J1lA2Xc6fsyM0A7CRzcY5TCuU31ZROV0s8Z+97
+hpwAdRzRXPfwh7465505tW2q3hqpOOyMmXXAbua8fVn/hklXxVnCB0WQFLHIL/Dm
+UyJnRy9vyKkt5QGzAhLMDWtRn/bejIJ8jzB8WFjf+luRpR/GdvPjy8Q7/0tY6By4
+Ua67nlHTFkHJ7iytE1ShbNHoe1BtsuEdwu5BmNHDkixpUAFvm5MoC0Xvib4yvAVj
+1+r/U9w5AFGMoNZrYO4Ckg3ZKCHwNMvI0sD0zHnW36jGV4yoNBQ+Uc3bBaxZKoy9
+DxLIWT+066UqD2V3pIcObQT8xVQybxIHzoxFABEBAAG0GHNhYnJpLmFyc2xhbkB2
+ZXJzYXRhLmNvbYkBHAQQAQIABgUCWfnfNAAKCRBh2GERmFldvNVJB/9sFur6pakc
+0xtlhRgCRH90qKmIhG+aybwNGiNdIs0ZWtoc1leORfMWn5kBEDep3FPJN3BSFXV8
+POCauDQZZCFZ4KWxOyNVqoYj+bJxZiYXZaRo03VL7Sp0mTU/6jK3bMgcKzifUpJk
+zjTBu+h2FzhmCVdMMTIfT8gAcfiMyB0f43Wf+cA8Yb++jv3FeaC3F/0yulAI7kHI
+TnaxgEBXG4sDpV79cM/MeC63IXD4HdnOZfXpaMxS5Q0irbpAJ0SKYHDa+9Zr9+v8
+RWyCAg7u2PQwXo2x9CT8LpkdzOi+LVTwL4B9Y3Fc1tvMhf6h67XyKGPqNR/3uzxd
+b1x3zeE1G4Q4
+=Yf0P
+-----END PGP PUBLIC KEY BLOCK-----
+", Encoding.UTF8);
+                }
+
+            }
+        }
+
         private static ClientEnvironmentConfiguration _clientConfig;
         private static GlobalApplicationConfigurationDS.GlobalApplicationConfiguration _appConfig;
         private static ILogger _logger = new Logger();
@@ -72,11 +237,14 @@ namespace Aurea.Maintenance.Debugger.Accent
 
             CopyProductAndRate(productCode: productCode, maxDepth: 5);
             (string message, int enrollCustId) = EnrollCustomerWithPaymentInfo(CreateEnrollmentDataWithPaymentInfoData(productCode, accountNo));
-
-            Execute814Import();
             GenerateEvents();
             ProcessEvents();
-            MakeCTRAccepted();
+            Execute814Export();
+            GenerateEvents();
+            ProcessEvents();
+
+            MakeCTRAccepted(enrollCustId);
+            Execute814Import();
             GenerateEvents();
             ProcessEvents();
         }
@@ -465,14 +633,131 @@ SET IDENTITY_INSERT daes_Accent..PriceToLDC OFF
             SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
         }
 
-        private static void Execute814Import()
+        private static void Execute814Export()
         {
-            ExecuteTaskToasterTask();
+            //exec csp_GetServiceMethods 2 (Export = ExportTransactions, EncryptFiles, TransmitFiles, ExportLoadForecasting, ProcessEFTPayments, RunAutoDNPProcess, LogService)
+            var myExport = new MyExport(_appConfig.ConnectionMarket, _appConfig.ConnectionCsr, _clientConfig.ConnectionBillingAdmin);
+            myExport.MyExportTransactions();
+            //myExport.EncryptFiles();
+            //myExport.MyTransmitFiles();
+            //myExport.MyExportLoadForecasting();
+            //myExport.MyProcessEFTPayments();
+            //myExport.MyRunAutoDNPProcess();
+            //myExport.MyLogService();
+
+            /*
+            var exporter = new CIS.Export.Billing.Market814(_clientConfiguration.ConnectionMarket, _clientConfiguration.ConnectionCsr)
+            {
+                HistoricalUsageRequestType = _clientConfiguration.ExportHistoricalUsageRequestType,
+                ConnectionAdmin = Utility.BillingAdminDEV,
+                Client = _clientConfiguration.ConnectionCsr,
+                ClientID = Utility.Clients["TXP"]
+            };
+            exporter.Export();
+            */
         }
 
-        private static void MakeCTRAccepted()
+        private static void Execute814Import()
         {
-            
+            var baseImport = new MyImport()
+            {
+                ConnectionAdmin = _clientConfig.ConnectionBillingAdmin,
+                ConnectionMarket = _appConfig.ConnectionMarket,
+                ConnectionCsr = _appConfig.ConnectionCsr,
+                ClientID = _clientConfig.ClientId,
+                Client = _clientConfig.Client
+
+            };
+            baseImport.myImportTransaction();
+        }
+
+        private static void clearOldCtr(int enrollCustId)
+        {
+            var sql = $@"
+USE daes_Accent;
+DECLARE @EnrollCustId INT = {enrollCustId};
+DECLARE @CustId INT = (SELECT CsrCustId FROM daes_Accent..EnrollCustomer WHERE EnrollCustId = @EnrollCustId);
+DECLARE @SourceId INT = (SELECT RequestId FROM daes_Accent..CustomerTranscationRequest WHERE CustId = @CustId AND TransactionType = '814' AND ActionCode = '05' AND Direction = 1)
+DECLARE @EightFourteenKey = (SELECT SourceId FROM daes_Accent..CustomerTranscationRequest WHERE CustId = @CustId AND TransactionType = '814' AND ActionCode = '05' AND Direction = 1)
+DECLARE @ServiceKey 
+DECLARE @MarketFileId INT 
+DECLARE @ServiceKey INT
+DECLARE @MeterKey INT
+
+SELECT @ServiceKey = Service_Key, @MarketFileId = MarketFileId FROM daes_AccentMarket..tbl_814_Service WHERE [814_Key] = @EightFourteenKey
+SELECT @MeterKey = Meter_Key FROM daes_AccentMarket..tbl_814_Service_Meter WHERE Service_Key = @ServiceKey
+
+DELETE FROM daes_AccentMarket..tblMarketFile WHERE [MarketFileId] = @MarketFileId
+DELETE FROM daes_AccentMarket..tbl_814_Service_Meter_Type WHERE Meter_Key = @MeterKey
+DELETE FROM daes_AccentMarket..tbl_814_Service_Meter WHERE Service_Key = @ServiceKey
+DELETE FROM daes_AccentMarket..tbl_814_Name WHERE 814_Key = @EightFourteenKey
+DELETE FROM daes_AccentMarket..tbl_814_Service WHERE Service_Key = @ServiceKey
+DELETE FROM daes_AccentMarket..tbl_814_Header WHERE [814_Key] = @EightFourteenKey
+DELETE FROM daes_Accent..CustomerTransactionRequest WHERE RequestId = @SourceId
+
+";
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
+        }
+
+        private static void MakeCTRAccepted(int enrollCustId)
+        {
+            clearOldCtr(enrollCustId);
+            var sql = $@"
+USE daes_Accent;
+DECLARE @EnrollCustId INT = {enrollCustId};
+DECLARE @CustId INT = (SELECT CsrCustId FROM daes_Accent..EnrollCustomer WHERE EnrollCustId = @EnrollCustId);
+DECLARE @PremId INT = (SELECT PremId FROM daes_Accent..Premise WHERE CustId = @CustId )
+DECLARE @MarketFileId INT 
+DECLARE @SourceId INT
+DECLARE @RefSourceId INT
+DECLARE @RefNumber INT
+DECLARE @ServiceKey INT
+DECLARE @MeterKey INT
+SELECT @RefSourceId = SourceId, @RefNumber = TransactionNumber FROM daes_Accent..CustomerTranscationRequest WHERE CustId = @CustId AND TransactionType = '814' AND ActionCode = '16' AND Direction = 0
+SELECT @MarketFileId = MarketFileID FROM saes_AccentMarket..tbl_814_Header WHERE [814_key] = (SELECT SourceID FROM saes_Accent..CustomerTranscationRequest WHERE CustId = @CustId AND TransactionType = '814' AND ActionCode = '05' AND Direction = 1)
+
+SET IDENTITY_INSERT daes_AccentMarket..tblMarketFile ON
+INSERT INTO tblMarketFile ( [MarketFileId], [FileName], [FileType], [ProcessStatus], [ProcessDate], [ProcessError], [SenderTranNum], [DirectionFlag], [Status], [LDCID], [CSPDUNSID], [RefMarketFileId], [CreateDate], [CspDunsTradingPartnerID], [TransactionCount])
+VALUES (
+ @MarketFileId, 'ACT_TX_183529049_814.20170807094914.201843962.txt'/*[FileName]*/, NULL/*[FileType]*/, 'N'/*[ProcessStatus]*/, '2017-08-07 10:01:19.673'/*[ProcessDate]*/, NULL/*[ProcessError]*/, NULL/*[SenderTranNum]*/, 1/*[DirectionFlag]*/, 3/*[Status]*/, 0/*[LDCID]*/, 0/*[CSPDUNSID]*/, NULL/*[RefMarketFileId]*/, '2017-08-07 10:01:41.563'/*[CreateDate]*/, NULL/*[CspDunsTradingPartnerID]*/, NULL/*[TransactionCount]*/
+)
+SET IDENTITY_INSERT daes_AccentMarket..tblMarketFile OFF
+
+INSERT INTO tbl_814_Header ( [MarketFileId], [TransactionSetId], [TransactionSetControlNbr], [TransactionSetPurposeCode], [TransactionNbr], [TransactionDate], [ReferenceNbr], [ActionCode], [TdspDuns], [TdspName], [CrDuns], [CrName], [ProcessFlag], [ProcessDate], [Direction], [TransactionTypeID], [MarketID], [ProviderID], [POLRClass], [TransactionTime], [TransactionTimeCode], [TransactionQualifier], [TransactionQueueTypeID], [CreateDate])
+VALUES (
+ @MarketFileId, 5/*[TransactionSetId]*/, NULL/*[TransactionSetControlNbr]*/, '5'/*[TransactionSetPurposeCode]*/, '167528458620170807094645133305'/*[TransactionNbr]*/, '20170807'/*[TransactionDate]*/, @RefNumber/*[ReferenceNbr]*/, 'S'/*[ActionCode]*/, '1039940674000'/*[TdspDuns]*/, 'ONCOR'/*[TdspName]*/, '133305370'/*[CrDuns]*/, 'ACCENT ENERGY TEXAS LP DBA IGS ENERGY (LSE)'/*[CrName]*/, 0/*[ProcessFlag]*/, NULL/*[ProcessDate]*/, 1/*[Direction]*/, 28/*[TransactionTypeID]*/, 1/*[MarketID]*/, 1/*[ProviderID]*/, NULL/*[POLRClass]*/, NULL/*[TransactionTime]*/, NULL/*[TransactionTimeCode]*/, NULL/*[TransactionQualifier]*/, NULL/*[TransactionQueueTypeID]*/, GETDATE()/*[CreateDate]*/
+)
+SET @SourceId = SCOPE_IDENTITY()
+
+INSERT INTO tbl_814_Service(  [814_Key], [AssignId], [ServiceTypeCode1], [ServiceType1], [ServiceTypeCode2], [ServiceType2], [ServiceTypeCode3], [ServiceType3], [ServiceTypeCode4], [ServiceType4], [ActionCode], [MaintenanceTypeCode], [DistributionLossFactorCode], [PremiseType], [BillType], [BillCalculator], [EsiId], [StationId], [SpecialNeedsIndicator], [PowerRegion], [EnergizedFlag], [EsiIdStartDate], [EsiIdEndDate], [EsiIdEligibilityDate], [NotificationWaiver], [SpecialReadSwitchDate], [PriorityCode], [PermitIndicator], [RTODate], [RTOTime], [CSAFlag], [MembershipID], [ESPAccountNumber], [LDCBillingCycle], [LDCBudgetBillingCycle], [WaterHeaters], [LDCBudgetBillingStatus], [PaymentArrangement], [NextMeterReadDate], [ParticipatingInterest], [EligibleLoadPercentage], [TaxExemptionPercent], [CapacityObligation], [TransmissionObligation], [TotalKWHHistory], [NumberOfMonthsHistory], [PeakDemandHistory], [AirConditioners], [PreviousEsiId], [GasPoolId], [LBMPZone], [ResidentialTaxPortion], [ESPCommodityPrice], [ESPFixedCharge], [ESPChargesCommTaxRate], [ESPChargesResTaxRate], [GasSupplyServiceOption], [FundsAuthorization], [BudgetBillingStatus], [FixedMonthlyCharge], [TaxRate], [CommodityPrice], [MeterCycleCodeDesc], [BillCycleCodeDesc], [FeeApprovedApplied], [MarketerCustomerAccountNumber], [GasSupplyServiceOptionCode], [HumanNeeds], [ReinstatementDate], [MeterCycleCode], [SystemNumber], [StateLicenseNumber], [SupplementalAccountNumber], [NewCustomerIndicator], [PaymentCategory], [PreviousESPAccountNumber], [RenewableEnergyIndicator], [SICCode], [ApprovalCodeIndicator], [RenewableEnergyCertification], [NewPremiseIndicator], [SalesResponsibility], [CustomerReferenceNumber], [TransactionReferenceNumber], [ESPTransactionNumber], [OldESPAccountNumber], [DFIIdentificationNumber], [DFIAccountNumber], [DFIIndicator1], [DFIIndicator2], [DFIQualifier], [DFIRoutingNumber], [SpecialReadSwitchTime], [CustomerAuthorization], [LDCAccountBalance], [DisputedAmount], [CurrentBalance], [ArrearsBalance], [IntervalStatusType], [LDCSupplierBalance], [BudgetPlan], [BudgetInstallment], [Deposit], [RemainingUtilBalanceBucket1], [RemainingUtilBalanceBucket2], [RemainingUtilBalanceBucket3], [RemainingUtilBalanceBucket4], [RemainingUtilBalanceBucket5], [RemainingUtilBalanceBucket6], [UnmeteredAcct], [PaymentOption], [MaxDailyAmt], [MeterAccessNote], [SpecialNeedsExpirationDate], [SwitchHoldStatusIndicator], [SpecialMeterConfig], [MaximumGeneration], [IgnoreRescind], [ServiceDeliveryPoint], [GasCapacityAssignment], [CPAEnrollmentTypes], [DaysInArrears], [RU_Notes], [RD_SiteCharacterDate], [SupplierPricingStructureNr], [SupplierGroupNumber], [IndustrialClassificationCode], [UtilityTaxExemptStatus], [AccountSettlementIndicator], [NypaDiscountIndicator], [UtilityDiscount], [IcapEffectiveDate], [FutureIcapEffectiveDate], [FutureIcap], [ChangeCancellationFee], [CancellationFee], [MunicipalAggregation])
+VALUES (
+ @SourceId/*[814_Key]*/, 1/*[AssignId]*/, 'SH'/*[ServiceTypeCode1]*/, 'EL'/*[ServiceType1]*/, 'SH'/*[ServiceTypeCode2]*/, 'CE'/*[ServiceType2]*/, 'SH'/*[ServiceTypeCode3]*/, 'MVI'/*[ServiceType3]*/, 'SH'/*[ServiceTypeCode4]*/, 'HU'/*[ServiceType4]*/, 'A'/*[ActionCode]*/, NULL/*[MaintenanceTypeCode]*/, 'A'/*[DistributionLossFactorCode]*/, '01'/*[PremiseType]*/, NULL/*[BillType]*/, NULL/*[BillCalculator]*/, '10443720004064914'/*[EsiId]*/, 'WHTRK'/*[StationId]*/, NULL/*[SpecialNeedsIndicator]*/, NULL/*[PowerRegion]*/, NULL/*[EnergizedFlag]*/, NULL/*[EsiIdStartDate]*/, NULL/*[EsiIdEndDate]*/, NULL/*[EsiIdEligibilityDate]*/, NULL/*[NotificationWaiver]*/, '20170817'/*[SpecialReadSwitchDate]*/, NULL/*[PriorityCode]*/, NULL/*[PermitIndicator]*/, NULL/*[RTODate]*/, NULL/*[RTOTime]*/, NULL/*[CSAFlag]*/, NULL/*[MembershipID]*/, NULL/*[ESPAccountNumber]*/, NULL/*[LDCBillingCycle]*/, NULL/*[LDCBudgetBillingCycle]*/, NULL/*[WaterHeaters]*/, NULL/*[LDCBudgetBillingStatus]*/, NULL/*[PaymentArrangement]*/, NULL/*[NextMeterReadDate]*/, NULL/*[ParticipatingInterest]*/, NULL/*[EligibleLoadPercentage]*/, NULL/*[TaxExemptionPercent]*/, NULL/*[CapacityObligation]*/, NULL/*[TransmissionObligation]*/, NULL/*[TotalKWHHistory]*/, NULL/*[NumberOfMonthsHistory]*/, NULL/*[PeakDemandHistory]*/, NULL/*[AirConditioners]*/, NULL/*[PreviousEsiId]*/, NULL/*[GasPoolId]*/, NULL/*[LBMPZone]*/, NULL/*[ResidentialTaxPortion]*/, NULL/*[ESPCommodityPrice]*/, NULL/*[ESPFixedCharge]*/, NULL/*[ESPChargesCommTaxRate]*/, NULL/*[ESPChargesResTaxRate]*/, NULL/*[GasSupplyServiceOption]*/, NULL/*[FundsAuthorization]*/, NULL/*[BudgetBillingStatus]*/, NULL/*[FixedMonthlyCharge]*/, NULL/*[TaxRate]*/, NULL/*[CommodityPrice]*/, NULL/*[MeterCycleCodeDesc]*/, NULL/*[BillCycleCodeDesc]*/, NULL/*[FeeApprovedApplied]*/, NULL/*[MarketerCustomerAccountNumber]*/, NULL/*[GasSupplyServiceOptionCode]*/, 'N'/*[HumanNeeds]*/, NULL/*[ReinstatementDate]*/, NULL/*[MeterCycleCode]*/, NULL/*[SystemNumber]*/, NULL/*[StateLicenseNumber]*/, NULL/*[SupplementalAccountNumber]*/, NULL/*[NewCustomerIndicator]*/, NULL/*[PaymentCategory]*/, NULL/*[PreviousESPAccountNumber]*/, NULL/*[RenewableEnergyIndicator]*/, NULL/*[SICCode]*/, NULL/*[ApprovalCodeIndicator]*/, NULL/*[RenewableEnergyCertification]*/, NULL/*[NewPremiseIndicator]*/, NULL/*[SalesResponsibility]*/, NULL/*[CustomerReferenceNumber]*/, NULL/*[TransactionReferenceNumber]*/, NULL/*[ESPTransactionNumber]*/, NULL/*[OldESPAccountNumber]*/, NULL/*[DFIIdentificationNumber]*/, NULL/*[DFIAccountNumber]*/, NULL/*[DFIIndicator1]*/, NULL/*[DFIIndicator2]*/, NULL/*[DFIQualifier]*/, NULL/*[DFIRoutingNumber]*/, NULL/*[SpecialReadSwitchTime]*/, NULL/*[CustomerAuthorization]*/, NULL/*[LDCAccountBalance]*/, NULL/*[DisputedAmount]*/, NULL/*[CurrentBalance]*/, NULL/*[ArrearsBalance]*/, NULL/*[IntervalStatusType]*/, NULL/*[LDCSupplierBalance]*/, NULL/*[BudgetPlan]*/, NULL/*[BudgetInstallment]*/, NULL/*[Deposit]*/, NULL/*[RemainingUtilBalanceBucket1]*/, NULL/*[RemainingUtilBalanceBucket2]*/, NULL/*[RemainingUtilBalanceBucket3]*/, NULL/*[RemainingUtilBalanceBucket4]*/, NULL/*[RemainingUtilBalanceBucket5]*/, NULL/*[RemainingUtilBalanceBucket6]*/, ''/*[UnmeteredAcct]*/, 'N'/*[PaymentOption]*/, NULL/*[MaxDailyAmt]*/, NULL/*[MeterAccessNote]*/, NULL/*[SpecialNeedsExpirationDate]*/, NULL/*[SwitchHoldStatusIndicator]*/, NULL/*[SpecialMeterConfig]*/, NULL/*[MaximumGeneration]*/, NULL/*[IgnoreRescind]*/, NULL/*[ServiceDeliveryPoint]*/, NULL/*[GasCapacityAssignment]*/, NULL/*[CPAEnrollmentTypes]*/, NULL/*[DaysInArrears]*/, NULL/*[RU_Notes]*/, NULL/*[RD_SiteCharacterDate]*/, NULL/*[SupplierPricingStructureNr]*/, NULL/*[SupplierGroupNumber]*/, NULL/*[IndustrialClassificationCode]*/, NULL/*[UtilityTaxExemptStatus]*/, NULL/*[AccountSettlementIndicator]*/, NULL/*[NypaDiscountIndicator]*/, NULL/*[UtilityDiscount]*/, NULL/*[IcapEffectiveDate]*/, NULL/*[FutureIcapEffectiveDate]*/, NULL/*[FutureIcap]*/, NULL/*[ChangeCancellationFee]*/, NULL/*[CancellationFee]*/, NULL/*[MunicipalAggregation]*/
+)
+SET @ServiceKey = SCOPE_IDENTITY()
+
+INSERT INTO tbl_814_Name ( [814_Key], [EntityIdType], [EntityName], [EntityName2], [EntityName3], [EntityDuns], [EntityIdCode], [Address1], [Address2], [City], [State], [PostalCode], [CountryCode], [ContactCode], [ContactName], [ContactPhoneNbr1], [ContactPhoneNbr2], [ContactPhoneNbr3], [EntityFirstName], [EntityLastName], [CustType], [TaxingDistrict], [EntityMiddleName], [County], [EntityEmail])
+VALUES(
+ @SourceId/*[814_Key]*/, '8R'/*[EntityIdType]*/, 'OLIVIA T HARJADI'/*[EntityName]*/, NULL/*[EntityName2]*/, NULL/*[EntityName3]*/, NULL/*[EntityDuns]*/, NULL/*[EntityIdCode]*/, '7440 LA VISTA DR APT 269'/*[Address1]*/, NULL/*[Address2]*/, 'DALLAS'/*[City]*/, 'TX'/*[State]*/, '752145814'/*[PostalCode]*/, NULL/*[CountryCode]*/, NULL/*[ContactCode]*/, NULL/*[ContactName]*/, NULL/*[ContactPhoneNbr1]*/, NULL/*[ContactPhoneNbr2]*/, NULL/*[ContactPhoneNbr3]*/, NULL/*[EntityFirstName]*/, NULL/*[EntityLastName]*/, NULL/*[CustType]*/, NULL/*[TaxingDistrict]*/, NULL/*[EntityMiddleName]*/, NULL/*[County]*/, NULL/*[EntityEmail]*/
+)
+INSERT INTO tbl_814_Service_Meter ( [Service_Key], [EntityIdCode], [MeterNumber], [MeterCode], [MeterType], [LoadProfile], [RateClass], [RateSubClass], [MeterCycle], [MeterCycleDayOfMonth], [SpecialNeedsIndicator], [OldMeterNumber], [MeterOwnerIndicator], [EntityType], [TimeOFUse], [ESPRateCode], [OrganizationName], [FirstName], [MiddleName], [NamePrefix], [NameSuffix], [IdentificationCode], [EntityName2], [EntityName3], [Address1], [Address2], [City], [State], [Zip], [CountryCode], [County], [PlanNumber], [ServicesReferenceNumber], [AffiliationNumber], [CostElement], [CoverageCode], [LossReportNumber], [GeographicNumber], [ItemNumber], [LocationNumber], [PriceListNumber], [ProductType], [QualityInspectionArea], [ShipperCarOrderNumber], [StandardPointLocation], [ReportIdentification], [Supplier], [Area], [CollectorIdentification], [VendorAgentNumber], [VendorAbbreviation], [VendorIdNumber], [VendorOrderNumber], [PricingStructureCode], [MeterOwnerDUNS], [MeterOwner], [MeterInstallerDUNS], [MeterInstaller], [MeterReaderDUNS], [MeterReader], [MeterMaintenanceProviderDUNS], [MeterMaintenanceProvider], [MeterDataManagementAgentDUNS], [MeterDataManagementAgent], [SchedulingCoordinatorDUNS], [SchedulingCoordinator], [MeterInstallPending], [PackageOption], [UsageCode], [MeterServiceVoltage], [LossFactor], [AMSIndicator], [SummaryInterval], [NextCycleRate], [VariableRateIndicator], [RateTerm], [RateTermDateExpirationDate])
+VALUES(
+  @ServiceKey/*[Service_Key]*/, NULL/*[EntityIdCode]*/, '125892623LG'/*[MeterNumber]*/, NULL/*[MeterCode]*/, 'KHMON'/*[MeterType]*/, 'RESHIWR_NCENT_IDR_WS_NOTOU'/*[LoadProfile]*/, '00'/*[RateClass]*/, '0000'/*[RateSubClass]*/, '17'/*[MeterCycle]*/, NULL/*[MeterCycleDayOfMonth]*/, NULL/*[SpecialNeedsIndicator]*/, NULL/*[OldMeterNumber]*/, NULL/*[MeterOwnerIndicator]*/, NULL/*[EntityType]*/, NULL/*[TimeOFUse]*/, NULL/*[ESPRateCode]*/, NULL/*[OrganizationName]*/, NULL/*[FirstName]*/, NULL/*[MiddleName]*/, NULL/*[NamePrefix]*/, NULL/*[NameSuffix]*/, NULL/*[IdentificationCode]*/, NULL/*[EntityName2]*/, NULL/*[EntityName3]*/, NULL/*[Address1]*/, NULL/*[Address2]*/, NULL/*[City]*/, NULL/*[State]*/, NULL/*[Zip]*/, NULL/*[CountryCode]*/, NULL/*[County]*/, NULL/*[PlanNumber]*/, NULL/*[ServicesReferenceNumber]*/, NULL/*[AffiliationNumber]*/, NULL/*[CostElement]*/, NULL/*[CoverageCode]*/, NULL/*[LossReportNumber]*/, NULL/*[GeographicNumber]*/, NULL/*[ItemNumber]*/, NULL/*[LocationNumber]*/, NULL/*[PriceListNumber]*/, NULL/*[ProductType]*/, NULL/*[QualityInspectionArea]*/, NULL/*[ShipperCarOrderNumber]*/, NULL/*[StandardPointLocation]*/, NULL/*[ReportIdentification]*/, NULL/*[Supplier]*/, NULL/*[Area]*/, NULL/*[CollectorIdentification]*/, NULL/*[VendorAgentNumber]*/, NULL/*[VendorAbbreviation]*/, NULL/*[VendorIdNumber]*/, NULL/*[VendorOrderNumber]*/, NULL/*[PricingStructureCode]*/, NULL/*[MeterOwnerDUNS]*/, NULL/*[MeterOwner]*/, NULL/*[MeterInstallerDUNS]*/, NULL/*[MeterInstaller]*/, NULL/*[MeterReaderDUNS]*/, NULL/*[MeterReader]*/, NULL/*[MeterMaintenanceProviderDUNS]*/, NULL/*[MeterMaintenanceProvider]*/, NULL/*[MeterDataManagementAgentDUNS]*/, NULL/*[MeterDataManagementAgent]*/, NULL/*[SchedulingCoordinatorDUNS]*/, NULL/*[SchedulingCoordinator]*/, NULL/*[MeterInstallPending]*/, NULL/*[PackageOption]*/, NULL/*[UsageCode]*/, NULL/*[MeterServiceVoltage]*/, NULL/*[LossFactor]*/, 'AMSR'/*[AMSIndicator]*/, 'AMSR'/*[SummaryInterval]*/, NULL/*[NextCycleRate]*/, NULL/*[VariableRateIndicator]*/, NULL/*[RateTerm]*/, NULL/*[RateTermDateExpirationDate]*/
+)
+
+SET @MeterKey = SCOPE_IDENTITY()
+
+INSERT INTO tbl_814_Service_Meter_Type ([Meter_Key], [MeterMultiplier], [MeterType], [ProductType], [TimeOfUse], [NumberOfDials], [UnmeteredNumberOfDevices], [UnmeteredDescription], [StartMeterRead], [EndMeterRead], [ChangeReason], [TimeOfUse2])
+VALUES (
+  @MeterKey/*[Meter_Key]*/, 1/*[MeterMultiplier]*/, 'KHMON'/*[MeterType]*/, NULL/*[ProductType]*/, 51/*[TimeOfUse]*/, '5.0'/*[NumberOfDials]*/, NULL/*[UnmeteredNumberOfDevices]*/, NULL/*[UnmeteredDescription]*/, NULL/*[StartMeterRead]*/, NULL/*[EndMeterRead]*/, NULL/*[ChangeReason]*/, NULL/*[TimeOfUse2]*/
+)
+
+INSERT INTO daes_Accent..CustomerTransactionRequest 
+( [UserID], [CustID], [PremID], [TransactionType], [ActionCode], [TransactionDate], [Direction], [RequestDate], [ServiceActionCode], [ServiceAction], [StatusCode], [StatusReason], [SourceID], [TransactionNumber], [ReferenceSourceID], [ReferenceNumber], [OriginalSourceID], [ESIID], [ResponseKey], [AlertID], [ProcessFlag], [ProcessDate], [EventCleared], [EventValidated], [DelayedEventValidated], [ConditionalEventValidated], [TransactionTypeID], [CreateDate], [BulkInsertKey], [MeterAccessNote])
+VALUES (
+ NULL/*[UserID]*/, @CustId, @PremID, '814'/*[TransactionType]*/, '05'/*[ActionCode]*/, '2017-08-07'/*[TransactionDate]*/, 1/*[Direction]*/, '2017-08-17'/*[RequestDate]*/, 'A'/*[ServiceActionCode]*/, 'S'/*[ServiceAction]*/, NULL/*[StatusCode]*/, NULL/*[StatusReason]*/, @SourceID, '167528458620170807094645133305'/*[TransactionNumber]*/, @RefSourceId, @RefNumber, NULL/*[OriginalSourceID]*/, '10443720004064914'/*[ESIID]*/, NULL/*[ResponseKey]*/, NULL/*[AlertID]*/, 0/*[ProcessFlag]*/, NULL/*[ProcessDate]*/, 0/*[EventCleared]*/, 0/*[EventValidated]*/, 0/*[DelayedEventValidated]*/, 0/*[ConditionalEventValidated]*/, 28/*[TransactionTypeID]*/, GETDATE()/*[CreateDate]*/, NULL/*[BulkInsertKey]*/, NULL/*[MeterAccessNote]*/
+)
+";
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
         }
 
         private static void GenerateEvents()
@@ -487,10 +772,6 @@ SET IDENTITY_INSERT daes_Accent..PriceToLDC OFF
             engine.ProcessEventQueue(_appConfig.ClientID, _appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _appConfig.ClientAbbreviation);
         }
 
-        private static void ExecuteTaskToasterTask()
-        {
-            
-        }
 
         private sealed class DB
         {

@@ -50,6 +50,12 @@
     <Reference Include="CIS.Components.Maintenance">
       <HintPath>..\..\AureaCIS\Clients\Accent\Deployment\Debug\bin\CIS.Components.Maintenance.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.Engine.Event">
+      <HintPath>..\..\AureaCIS\Clients\Accent\Deployment\Debug\bin\CIS.Engine.Event.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Export">
+      <HintPath>..\..\AureaCIS\Clients\Accent\Deployment\Debug\bin\CIS.Export.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.Framework">
       <HintPath>..\..\AureaCIS\Clients\Accent\Deployment\Debug\bin\CIS.Framework.dll</HintPath>
     </Reference>
