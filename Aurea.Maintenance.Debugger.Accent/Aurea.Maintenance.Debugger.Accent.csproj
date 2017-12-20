@@ -38,6 +38,27 @@
     <Reference Include="CIS.BusinessEntity">
       <HintPath>..\..\AureaCIS\Clients\Accent\Deployment\Debug\bin\CIS.BusinessEntity.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.Clients">
+      <HintPath>..\..\AureaCIS\Clients\Accent\Deployment\Debug\bin\CIS.Clients.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Clients.Accent">
+      <HintPath>..\..\AureaCIS\Clients\Accent\Deployment\Debug\bin\CIS.Clients.Accent.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Components">
+      <HintPath>..\..\AureaCIS\Clients\Accent\Deployment\Debug\bin\CIS.Components.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Components.Maintenance">
+      <HintPath>..\..\AureaCIS\Clients\Accent\Deployment\Debug\bin\CIS.Components.Maintenance.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Framework">
+      <HintPath>..\..\AureaCIS\Clients\Accent\Deployment\Debug\bin\CIS.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Import">
+      <HintPath>..\..\AureaCIS\Clients\Accent\Deployment\Debug\bin\CIS.Import.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Web.Services.Clients.Accent">
+      <HintPath>..\..\AureaCIS\Clients\Accent\Deployment\Debug\Web\services.ista-billing.com\bin\CIS.Web.Services.Clients.Accent.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Transactions" />
@@ -47,6 +68,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="Viterra.Common">
+      <HintPath>..\..\AureaCIS\Clients\Accent\Deployment\Debug\bin\Viterra.Common.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
