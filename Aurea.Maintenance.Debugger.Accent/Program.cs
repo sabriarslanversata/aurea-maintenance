@@ -740,8 +740,10 @@ DECLARE @RefSourceId INT
 DECLARE @RefNumber INT
 DECLARE @ServiceKey INT
 DECLARE @MeterKey INT
-SELECT @RefSourceId = SourceId, @RefNumber = TransactionNumber FROM daes_Accent..CustomerTransactionRequest WHERE CustId = @CustId AND TransactionType = '814' AND ActionCode = '16' AND Direction = 0
-SELECT @MarketFileId = MarketFileID FROM saes_AccentMarket..tbl_814_Header WHERE [814_key] = (SELECT SourceID FROM saes_Accent..CustomerTransactionRequest WHERE CustId = @CustId AND TransactionType = '814' AND ActionCode = '05' AND Direction = 1)
+DECLARE @ESIID VARCHAR(50)
+SELECT @RefSourceId = SourceId, @RefNumber = TransactionNumber, @ESIID = ESIID FROM daes_Accent..CustomerTransactionRequest WHERE CustId = @CustId AND TransactionType = '814' AND ActionCode = '16' AND Direction = 0
+--fetch original marketFileId
+SELECT @MarketFileId = MarketFileID FROM saes_AccentMarket..tbl_814_Header WHERE [814_key] = (SELECT SourceID FROM saes_Accent..CustomerTransactionRequest WHERE CustId = 1260473 AND TransactionType = '814' AND ActionCode = '05' AND Direction = 1)
 
 SET IDENTITY_INSERT daes_AccentMarket..tblMarketFile ON
 INSERT INTO tblMarketFile ( [MarketFileId], [FileName], [FileType], [ProcessStatus], [ProcessDate], [ProcessError], [SenderTranNum], [DirectionFlag], [Status], [LDCID], [CSPDUNSID], [RefMarketFileId],
@@ -782,7 +784,7 @@ INSERT INTO daes_AccentMarket..tbl_814_Service(  [814_Key], [AssignId], [Service
 VALUES (
  @SourceId/*[814_Key]*/, 1/*[AssignId]*/, 'SH'/*[ServiceTypeCode1]*/, 'EL'/*[ServiceType1]*/, 'SH'/*[ServiceTypeCode2]*/, 'CE'/*[ServiceType2]*/, 'SH'/*[ServiceTypeCode3]*/, 'MVI'/*[ServiceType3]*/, 
  'SH'/*[ServiceTypeCode4]*/, 'HU'/*[ServiceType4]*/, 'A'/*[ActionCode]*/, NULL/*[MaintenanceTypeCode]*/, 'A'/*[DistributionLossFactorCode]*/, '01'/*[PremiseType]*/, NULL/*[BillType]*/, NULL/*[BillCalculator]*/, 
- '10443720004064914'/*[EsiId]*/, 'WHTRK'/*[StationId]*/, NULL/*[SpecialNeedsIndicator]*/, NULL/*[PowerRegion]*/, NULL/*[EnergizedFlag]*/, NULL/*[EsiIdStartDate]*/, NULL/*[EsiIdEndDate]*/, NULL/*[EsiIdEligibilityDate]*/, 
+ @ESIID/*[EsiId]*/, 'WHTRK'/*[StationId]*/, NULL/*[SpecialNeedsIndicator]*/, NULL/*[PowerRegion]*/, NULL/*[EnergizedFlag]*/, NULL/*[EsiIdStartDate]*/, NULL/*[EsiIdEndDate]*/, NULL/*[EsiIdEligibilityDate]*/, 
  NULL/*[NotificationWaiver]*/, '20170817'/*[SpecialReadSwitchDate]*/, NULL/*[PriorityCode]*/, NULL/*[PermitIndicator]*/, NULL/*[RTODate]*/, NULL/*[RTOTime]*/, NULL/*[CSAFlag]*/, NULL/*[MembershipID]*/, 
  NULL/*[ESPAccountNumber]*/, NULL/*[LDCBillingCycle]*/, NULL/*[LDCBudgetBillingCycle]*/, NULL/*[WaterHeaters]*/, NULL/*[LDCBudgetBillingStatus]*/, NULL/*[PaymentArrangement]*/, NULL/*[NextMeterReadDate]*/, 
  NULL/*[ParticipatingInterest]*/, NULL/*[EligibleLoadPercentage]*/, NULL/*[TaxExemptionPercent]*/, NULL/*[CapacityObligation]*/, NULL/*[TransmissionObligation]*/, NULL/*[TotalKWHHistory]*/, 
@@ -810,7 +812,7 @@ VALUES(
  NULL/*[ContactPhoneNbr3]*/, NULL/*[EntityFirstName]*/, NULL/*[EntityLastName]*/, NULL/*[CustType]*/, NULL/*[TaxingDistrict]*/, NULL/*[EntityMiddleName]*/, NULL/*[County]*/, NULL/*[EntityEmail]*/
 )
 
-INSERT INTO tbl_814_Service_Meter ( [Service_Key], [EntityIdCode], [MeterNumber], [MeterCode], [MeterType], [LoadProfile], [RateClass], [RateSubClass], [MeterCycle], [MeterCycleDayOfMonth], [SpecialNeedsIndicator], 
+INSERT INTO daes_AccentMarket..tbl_814_Service_Meter ( [Service_Key], [EntityIdCode], [MeterNumber], [MeterCode], [MeterType], [LoadProfile], [RateClass], [RateSubClass], [MeterCycle], [MeterCycleDayOfMonth], [SpecialNeedsIndicator], 
  [OldMeterNumber], [MeterOwnerIndicator], [EntityType], [TimeOFUse], [ESPRateCode], [OrganizationName], [FirstName], [MiddleName], [NamePrefix], [NameSuffix], [IdentificationCode], [EntityName2], [EntityName3], 
  [Address1], [Address2], [City], [State], [Zip], [CountryCode], [County], [PlanNumber], [ServicesReferenceNumber], [AffiliationNumber], [CostElement], [CoverageCode], [LossReportNumber], [GeographicNumber], 
  [ItemNumber], [LocationNumber], [PriceListNumber], [ProductType], [QualityInspectionArea], [ShipperCarOrderNumber], [StandardPointLocation], [ReportIdentification], [Supplier], [Area], [CollectorIdentification], 
@@ -845,7 +847,7 @@ INSERT INTO daes_Accent..CustomerTransactionRequest
  [TransactionTypeID], [CreateDate], [BulkInsertKey], [MeterAccessNote])
 VALUES (
  NULL/*[UserID]*/, @CustId, @PremID, '814'/*[TransactionType]*/, '05'/*[ActionCode]*/, '2017-08-07'/*[TransactionDate]*/, 1/*[Direction]*/, '2017-08-17'/*[RequestDate]*/, 'A'/*[ServiceActionCode]*/, 'S'/*[ServiceAction]*/, 
- NULL/*[StatusCode]*/, NULL/*[StatusReason]*/, @SourceID, '167528458620170807094645133305'/*[TransactionNumber]*/, @RefSourceId, @RefNumber, NULL/*[OriginalSourceID]*/, '10443720004064914'/*[ESIID]*/, NULL/*[ResponseKey]*/, 
+ NULL/*[StatusCode]*/, NULL/*[StatusReason]*/, @SourceID, '167528458620170807094645133305'/*[TransactionNumber]*/, @RefSourceId, @RefNumber, NULL/*[OriginalSourceID]*/, @ESIID/*[ESIID]*/, NULL/*[ResponseKey]*/, 
  NULL/*[AlertID]*/, 0/*[ProcessFlag]*/, NULL/*[ProcessDate]*/, 0/*[EventCleared]*/, 0/*[EventValidated]*/, 0/*[DelayedEventValidated]*/, 0/*[ConditionalEventValidated]*/, 28/*[TransactionTypeID]*/, GETDATE()/*[CreateDate]*/, 
  NULL/*[BulkInsertKey]*/, NULL/*[MeterAccessNote]*/
 )
