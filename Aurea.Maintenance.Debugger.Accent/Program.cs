@@ -746,15 +746,22 @@ SELECT @RefSourceId = SourceId, @RefNumber = TransactionNumber, @ESIID = ESIID F
 --fetch original marketFileId
 SELECT @MarketFileId = MarketFileID FROM saes_AccentMarket..tbl_814_Header WHERE [814_key] = (SELECT SourceID FROM saes_Accent..CustomerTransactionRequest WHERE CustId = 1260473 AND TransactionType = '814' AND ActionCode = '05' AND Direction = 1)
 
-SET IDENTITY_INSERT daes_AccentMarket..tblMarketFile ON
-INSERT INTO tblMarketFile ( [MarketFileId], [FileName], [FileType], [ProcessStatus], [ProcessDate], [ProcessError], [SenderTranNum], [DirectionFlag], [Status], [LDCID], [CSPDUNSID], [RefMarketFileId],
-  [CreateDate], [CspDunsTradingPartnerID], [TransactionCount])
-VALUES (
- @MarketFileId, 'ACT_TX_183529049_814.20170807094914.201843962.txt'/*[FileName]*/, NULL/*[FileType]*/, 'N'/*[ProcessStatus]*/, '2017-08-07 10:01:19.673'/*[ProcessDate]*/, NULL/*[ProcessError]*/,
- NULL/*[SenderTranNum]*/, 1/*[DirectionFlag]*/, 3/*[Status]*/, 0/*[LDCID]*/, 0/*[CSPDUNSID]*/, NULL/*[RefMarketFileId]*/, '2017-08-07 10:01:41.563'/*[CreateDate]*/, NULL/*[CspDunsTradingPartnerID]*/,
- NULL/*[TransactionCount]*/
-)
-SET IDENTITY_INSERT daes_AccentMarket..tblMarketFile OFF
+IF NOT EXISTS(SELECT 1 FROM daes_AccentMarket..tblMarketFile WHERE MarketFileId = @MarketFileId)
+BEGIN
+    SET IDENTITY_INSERT daes_AccentMarket..tblMarketFile ON
+    INSERT INTO tblMarketFile ( [MarketFileId], [FileName], [FileType], [ProcessStatus], [ProcessDate], [ProcessError], [SenderTranNum], [DirectionFlag], [Status], [LDCID], [CSPDUNSID], [RefMarketFileId],
+      [CreateDate], [CspDunsTradingPartnerID], [TransactionCount])
+    VALUES (
+     @MarketFileId, 'ACT_TX_183529049_814.20170807094914.201843962.txt'/*[FileName]*/, NULL/*[FileType]*/, 'N'/*[ProcessStatus]*/, '2017-08-07 10:01:19.673'/*[ProcessDate]*/, NULL/*[ProcessError]*/,
+     NULL/*[SenderTranNum]*/, 1/*[DirectionFlag]*/, 3/*[Status]*/, 0/*[LDCID]*/, 0/*[CSPDUNSID]*/, NULL/*[RefMarketFileId]*/, '2017-08-07 10:01:41.563'/*[CreateDate]*/, NULL/*[CspDunsTradingPartnerID]*/,
+     NULL/*[TransactionCount]*/
+    )
+    SET IDENTITY_INSERT daes_AccentMarket..tblMarketFile OFF
+END
+ELSE
+BEGIN
+    UPDATE daes_AccentMarket..tblMarketFile SET ProcessStatus = 'N', ProcessDate = NULL, ProcessError = NULL WHERE  MarketFileId = @MarketFileId
+END
 
 INSERT INTO daes_AccentMarket..tbl_814_Header ( [MarketFileId], [TransactionSetId], [TransactionSetControlNbr], [TransactionSetPurposeCode], [TransactionNbr], [TransactionDate], [ReferenceNbr], 
  [ActionCode], [TdspDuns], [TdspName], [CrDuns], [CrName], [ProcessFlag], [ProcessDate], [Direction], [TransactionTypeID], [MarketID], [ProviderID], [POLRClass], [TransactionTime], [TransactionTimeCode], 
