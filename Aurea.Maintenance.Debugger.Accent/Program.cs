@@ -701,7 +701,7 @@ SET IDENTITY_INSERT daes_Accent..PriceToLDC OFF
             baseImport.myImportTransaction();
         }
 
-        private static void clearOldCtr(int enrollCustId)
+        private static void ClearOldCtr(int enrollCustId)
         {
             var sql = $@"
 USE daes_Accent;
@@ -726,9 +726,10 @@ DELETE FROM daes_Accent..CustomerTransactionRequest WHERE RequestId = @SourceId
             SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
         }
 
+        // ReSharper disable once InconsistentNaming
         private static void MakeCTRAccepted(int enrollCustId)
         {
-            clearOldCtr(enrollCustId);
+            ClearOldCtr(enrollCustId);
             var sql = $@"
 USE daes_Accent;
 DECLARE @EnrollCustId INT = {enrollCustId};
