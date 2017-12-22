@@ -32,6 +32,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Aurea, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\Aurea.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.BusinessEntity">
       <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.BusinessEntity.dll</HintPath>
     </Reference>
@@ -102,6 +106,17 @@
       <Project>{5243be0e-a73b-4a56-b992-143871c94bd2}</Project>
       <Name>Aurea.Maintenance.Debugger.Common</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="MockData\2-AESCIS-16615-Products.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\1-AESCIS-16615-RateDetails.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\0-AESCIS-16615-Rates.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

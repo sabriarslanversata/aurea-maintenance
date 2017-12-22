@@ -14,7 +14,10 @@
     using System.Collections;
     using CIS.Framework.Common;
     using Aurea.Maintenance.Debugger.Common.Extensions;
-    
+    using CIS.Framework.Data;
+    using System.IO;
+    using System.Reflection;
+    using Aurea;
 
     public class MyImport : CIS.Import.BaseImport
     {
@@ -71,21 +74,23 @@
 
             //System.ServiceModel.ServiceSecurityContext.Current.PrimaryIdentity.Name = Clients.AEP.GetServiceGuid.ToString();
 
-            Simulate_AESCIS17193("4184386");
+            //Simulate_AESCIS17193("4184386");
+            Simulate_AESCIS16615(19981, 543, DateTime.Parse("2017-12-05T23:31:41-06:00"), "N", DateTime.Today.Date);
         }
 
         private static void Simulate_AESCIS16615(int customerId, int productId, DateTime soldDate, string municipalAggregation, DateTime? switchDate = null)
         {
-            //CopyCustomer, CopyProduct
-
+            //CopyProduct, CopyCustomer
+            CreateProducts("AESCIS-16615");
+            CopyCustomerWithID(customerId);
             CIS.Clients.AEPEnergy.RateType.RateUtility.ApplyRateTransition(customerId, productId, soldDate, municipalAggregation, switchDate);
         }
 
         private static void Simulate_AESCIS17193(string custNo)
         {
-            CopyCustomer(custNo);
+            CopyCustomerWithNumber(custNo);
             ClearOldRecords(custNo);
-            CopyRate(custNo);
+            CopyRateWithCustomerNumber(custNo);
             Create814EMarketMock(custNo, DateTime.Now);
             ImportTransaction();
             GenerateEventsFor814Market();
@@ -228,14 +233,14 @@ WHERE
 ";
             try
             {
-                DB.ExecuteQuery(sql);
+                DB.ExecuteQuery(sql, _appConfig.ConnectionCsr);
             }
             catch
             {
             }
             try
             {
-                DB.ExecuteQuery(sql);
+                DB.ExecuteQuery(sql, _appConfig.ConnectionCsr);
             }
             catch
             {
@@ -284,89 +289,153 @@ AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergyMarket..tbl_814_Service_Meter dss WHE
 SET IDENTITY_INSERT daes_AEPEnergyMarket..tbl_814_Service_Meter OFF
 
 ";
-            DB.ExecuteQuery(sql);
+            DB.ExecuteQuery(sql, _appConfig.ConnectionCsr);
         }
 
-        private static void CopyCustomer(string custNo)
+        private static void CreateProducts(string filter)
+        {
+            string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
+            Directory.EnumerateFiles(dirToProcess, $"*{filter}*.txt", SearchOption.AllDirectories).ForEach(
+                filename =>
+                {
+                    DB.Import2DatabaseFromTextFile(filename, _appConfig.ConnectionCsr);
+                }
+            );
+        }
+
+        private static void CopyProduct(int productId, int maxDepth = 30)
+        {
+            string sql = $@"
+USE daes_AEPEnergy
+DECLARE @MAX_DEPTH INT = {maxDepth};
+DECLARE @CURR_PRODUCT_ID INT = 0;
+DECLARE @PREV_PRODUCT_ID INT = {productId};
+DECLARE @RATE_ID INT = 0;
+DECLARE @CTR INT = 0;
+
+DECLARE @Products TABLE (cpProductId INT, cpRollOverProductID INT);
+DECLARE @Rates TABLE (RateId INT);
+
+WHILE @CTR < @MAX_DEPTH
+BEGIN
+	SELECT @RATE_ID = RateId, @CURR_PRODUCT_ID = RollOverProductId FROM saes_AEPEnergy..Product WHERE ProductId = @PREV_PRODUCT_ID;
+
+	INSERT INTO @Rates VALUES (@RATE_ID)
+	
+	IF ISNULL(@CURR_PRODUCT_ID, @PREV_PRODUCT_ID)  = @PREV_PRODUCT_ID --if there
+	BEGIN
+	 SET @CTR = @MAX_DEPTH;
+	 INSERT INTO @Products VALUES (@PREV_PRODUCT_ID, @CURR_PRODUCT_ID);
+	END
+	ELSE
+	IF @CTR = @MAX_DEPTH - 1
+	BEGIN
+	 SET @CTR = @CTR + 1;
+	 INSERT INTO @Products VALUES (@CURR_PRODUCT_ID, @CURR_PRODUCT_ID);
+	END
+	ELSE
+	BEGIN
+	 SET @CTR = @CTR + 1;
+	 INSERT INTO @Products VALUES (@PREV_PRODUCT_ID, @CURR_PRODUCT_ID);
+	 SET @PREV_PRODUCT_ID = @CURR_PRODUCT_ID;
+	END
+END
+
+PRINT 'Copy Rate'
+SET IDENTITY_INSERT daes_AEPEnergy..Rate ON
+INSERT INTO daes_AEPEnergy..Rate
+( RateID,CSPID,RateCode,RateDesc,EffectiveDate,ExpirationDate,RateType,PlanType,IsMajority,TemplateFlag,LDCCode,CreateDate,UserID,RatePackageName,CustType,ServiceType,DivisionCode,ConsUnitId,ActiveFlag,LDCRateCode,migr_plan_id,migr_custid)
+SELECT
+ RateID,CSPID,RateCode,RateDesc,EffectiveDate,ExpirationDate,RateType,PlanType,IsMajority,TemplateFlag,LDCCode,CreateDate,UserID,RatePackageName,CustType,ServiceType,DivisionCode,ConsUnitId,ActiveFlag,LDCRateCode,migr_plan_id,migr_custid
+FROM saes_AEPEnergy..Rate src
+WHERE
+  src.RateId IN (SELECT RateId FROM @Rates)
+  AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergy..Rate dst WHERE src.RateId = dst.RateId )
+SET IDENTITY_INSERT daes_AEPEnergy..Rate OFF
+
+
+PRINT 'Copy RateDetail'
+SET IDENTITY_INSERT daes_AEPEnergy..RateDetail ON
+INSERT INTO daes_AEPEnergy..RateDetail
+( RateDetID,RateID,CategoryID,RateTypeID,ConsUnitID,RateDescID,EffectiveDate,ExpirationDate,RateAmt,RateAmt2,RateAmt3,FixedAdder,MinDetAmt,MaxDetAmt,GLAcct,RangeLower,RangeUpper,CustType,Graduated,Progressive,AmountCap,MaxRateAmt,MinRateAmt,CategoryRollup,Taxable,ChargeType,MiscData1,FixedCapRate,ScaleFactor1,ScaleFactor2,TemplateRateDetID,Margin,HALRateDetailId,UsageClassId,LegacyRateDetailId,Building,ServiceTypeID,TaxCategoryID,UtilityID,UtilityInvoiceTemplateDetailID,Active,StatusID,RateVariableTypeId,MinDays,MaxDays,BlockPriceIndicator,RateTransitionId,CreateDate,MeterMultiplierFlag,BlendRatio,ContractVolumeID,CreatedByUserId,ModifiedByUserId,ModifiedDate,TOUTemplateID,TOUTemplateRegisterID,TOUTemplateRegisterName)
+SELECT
+ RateDetID,RateID,CategoryID,RateTypeID,ConsUnitID,RateDescID,EffectiveDate,ExpirationDate,RateAmt,RateAmt2,RateAmt3,FixedAdder,MinDetAmt,MaxDetAmt,GLAcct,RangeLower,RangeUpper,CustType,Graduated,Progressive,AmountCap,MaxRateAmt,MinRateAmt,CategoryRollup,Taxable,ChargeType,MiscData1,FixedCapRate,ScaleFactor1,ScaleFactor2,TemplateRateDetID,Margin,HALRateDetailId,UsageClassId,LegacyRateDetailId,Building,ServiceTypeID,TaxCategoryID,UtilityID,UtilityInvoiceTemplateDetailID,Active,StatusID,RateVariableTypeId,MinDays,MaxDays,BlockPriceIndicator,RateTransitionId,CreateDate,MeterMultiplierFlag,BlendRatio,ContractVolumeID,CreatedByUserId,ModifiedByUserId,ModifiedDate,TOUTemplateID,TOUTemplateRegisterID,TOUTemplateRegisterName
+FROM daes_AEPEnergy..RateDetail src
+WHERE
+  src.RateId IN (SELECT RateId FROM @Rates)
+  AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergy..RateDetail dst WHERE src.RateDetId = dst.RateDetId )
+SET IDENTITY_INSERT daes_AEPEnergy..RateDetail OFF
+
+
+PRINT 'Copy Product'
+SET IDENTITY_INSERT daes_AEPEnergy..Product ON
+INSERT INTO daes_AEPEnergy..Product
+( [ProductID], [RateID], [LDCCode], [PlanType], [TDSPTemplateID], [Description], [BeginDate], [EndDate], [CustType], [Graduated], [RangeTier1], [RangeTier2], [SortOrder], [ActiveFlag], [Uplift], [CSATDSPTemplateID], [CAATDSPTemplateID], [PriceDescription], [MarketingCode], [RateTypeID], [ConsUnitID], [Default], [DivisionCode], [RateDescription], [ServiceType], [CSPId], [TermsId], [RolloverProductId], [CommissionId], [CommissionAmt], [CancelFeeId], [MonthlyChargeId], [ProductCode], [RatePackageId], [ProductName], [TermDate], [DiscountTypeId], [DiscountAmount], [ProductZoneID], [IsGreen], [IsBestChoice], [ActiveEnrollmentFlag], [CreditScoreThreshold], [DepositAmount], [Incentives])
+SELECT
+ [ProductID], [RateID], [LDCCode], [PlanType], [TDSPTemplateID], [Description], [BeginDate], [EndDate], [CustType], [Graduated], [RangeTier1], [RangeTier2], [SortOrder], [ActiveFlag], [Uplift], [CSATDSPTemplateID], [CAATDSPTemplateID], [PriceDescription], [MarketingCode], [RateTypeID], [ConsUnitID], [Default], [DivisionCode], [RateDescription], [ServiceType], [CSPId], [TermsId], [cpRolloverProductId], [CommissionId], [CommissionAmt], [CancelFeeId], [MonthlyChargeId], [ProductCode], [RatePackageId], [ProductName], [TermDate], [DiscountTypeId], [DiscountAmount], [ProductZoneID], [IsGreen], [IsBestChoice], [ActiveEnrollmentFlag], [CreditScoreThreshold], [DepositAmount], [Incentives]
+FROM @Products cp
+INNER JOIN saes_AEPEnergy..Product src ON cp.cpProductId = src.ProductId
+WHERE
+  src.ProductID IN (SELECT ProductID FROM @Products)
+  AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergy..Product dst WHERE src.ProductId = dst.ProductId )
+SET IDENTITY_INSERT daes_AEPEnergy..Product OFF
+
+
+";
+            DB.ExecuteQuery(sql, _appConfig.ConnectionCsr);
+        }
+
+        private static void CopyCustomerWithNumber(string custNo)
+        {
+            string sql = $"SELECT CustID FROM saes_AEPEnergy..Customer WHERE CustNo = '{custNo}'";
+            int custId = DB.ReadSingleValue<int>(sql, _appConfig.ConnectionCsr);
+            
+            if (custId > 0)
+            {
+                CopyCustomerWithID(custId);
+            }
+        }
+
+        private static void CopyCustomerWithID(int custId)
         {
             string sql = $@"USE daes_AEPEnergy
 DECLARE @ClientID AS INT = (SELECT ClientID FROM daes_BillingAdmin..Client WHERE Client='AEP')
-DECLARE @CustNo AS VARCHAR(20) = '{custNo}'
-DECLARE @CustID AS INT = (SELECT CustID FROM saes_AEPEnergy..Customer WHERE CustNo = @CustNo)
+DECLARE @CustID AS INT = {custId}
+DECLARE @CustNo AS VARCHAR(20) = (SELECT CustNo FROM saes_AEPEnergy..Customer WHERE CustID = @CustID)
 
 PRINT 'BEGIN Copy Customer'
 
 PRINT 'Copy Addresses'
 SET IDENTITY_INSERT daes_AEPEnergy..Address ON
-
 INSERT INTO daes_AEPEnergy..Address ([AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [Migr_Enrollid], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [CchVersion])
 SELECT [AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [Migr_Enrollid], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [CchVersion] 
-FROM  saes_AEPEnergy..Address WHERE AddrID IN (
-	SELECT SiteAddrId FROM saes_AEPEnergy..Customer WHERE CustID = @CustID
+FROM  saes_AEPEnergy..Address src
+WHERE
+    AddrID IN (
+	    SELECT SiteAddrId FROM saes_AEPEnergy..Customer WHERE CustID = @CustID
+        UNION
+        SELECT MailAddrId FROM saes_AEPEnergy..Customer WHERE CustID = @CustID
+        UNION
+        SELECT CorrAddrId FROM saes_AEPEnergy..Customer WHERE CustID = @CustID
+        UNION
+        SELECT AddrId FROM saes_AEPEnergy..Premise WHERE CustID = @CustID
+    )
+    AND NOT EXISTS (SELECT 1 FROM daes_AEPEnergy..Address dst WHERE src.AddrID = dst.AddrId)
 )
-AND NOT EXISTS (
-SELECT 1 FROM daes_AEPEnergy..Address WHERE AddrID IN (
-	SELECT SiteAddrId FROM saes_AEPEnergy..Customer WHERE CustID = @CustID
-	)
-)
-
-INSERT INTO daes_AEPEnergy..Address ([AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [Migr_Enrollid], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [CchVersion])
-SELECT [AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [Migr_Enrollid], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [CchVersion] 
-FROM  saes_AEPEnergy..Address WHERE AddrID IN (
-	SELECT MailAddrId FROM saes_AEPEnergy..Customer WHERE CustID = @CustID
-)
-AND NOT EXISTS (
-SELECT 1 FROM daes_AEPEnergy..Address WHERE AddrID IN (
-	SELECT MailAddrId FROM saes_AEPEnergy..Customer WHERE CustID = @CustID
-	)
-)
-
-INSERT INTO daes_AEPEnergy..Address ([AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [Migr_Enrollid], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [CchVersion])
-SELECT [AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [Migr_Enrollid], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [CchVersion] 
-FROM  saes_AEPEnergy..Address WHERE AddrID IN (
-	SELECT CorrAddrId FROM saes_AEPEnergy..Customer WHERE CustID = @CustID
-)
-AND NOT EXISTS (
-SELECT 1 FROM daes_AEPEnergy..Address WHERE AddrID IN (
-	SELECT CorrAddrId FROM saes_AEPEnergy..Customer WHERE CustID = @CustID
-	)
-)
-
-INSERT INTO daes_AEPEnergy..Address ([AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [Migr_Enrollid], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [CchVersion])
-SELECT [AddrID], [ValidationStatusID], [AttnMS], [Addr1], [Addr2], [City], [State], [Zip], [Zip4], [DPBC], [CityID], [CountyID], [County], [HomePhone], [WorkPhone], [FaxPhone], [OtherPhone], [Email], [ESIID], [GeoCode], [Status], [DeliveryPointCode], [CreateDate], [Migr_Enrollid], [PhoneExtension], [OtherExtension], [FaxExtension], [TaxingDistrict], [TaxInCity], [CchVersion] 
-FROM  saes_AEPEnergy..Address WHERE AddrID IN (
-	SELECT AddrId FROM saes_AEPEnergy..Premise WHERE CustID = @CustID
-)
-AND NOT EXISTS (
-SELECT 1 FROM daes_AEPEnergy..Address WHERE AddrID IN (
-	SELECT AddrId FROM saes_AEPEnergy..Premise WHERE CustID = @CustID
-	)
-)
-
 SET IDENTITY_INSERT daes_AEPEnergy..Address OFF
 
 PRINT 'Copy Rate'
 SET IDENTITY_INSERT daes_AEPEnergy..Rate ON
-
 INSERT INTO daes_AEPEnergy..Rate ([RateID], [CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [LDCCode], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [ConsUnitId], [ActiveFlag], [LDCRateCode], [migr_plan_id], [migr_custid])
 SELECT  [RateID], [CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [LDCCode], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [ConsUnitId], [ActiveFlag], [LDCRateCode], [migr_plan_id], [migr_custid]
-FROM  saes_AEPEnergy..Rate WHERE RateID IN (
-	SELECT RateID FROM saes_AEPEnergy..Customer WHERE CustID = @CustID
-)
-AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergy..Rate WHERE RateID IN (
-	SELECT RateID FROM saes_AEPEnergy..Customer WHERE CustID = @CustID
-	)
-)
-
-INSERT INTO daes_AEPEnergy..Rate ([RateID], [CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [LDCCode], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [ConsUnitId], [ActiveFlag], [LDCRateCode], [migr_plan_id], [migr_custid])
-SELECT  [RateID], [CSPID], [RateCode], [RateDesc], [EffectiveDate], [ExpirationDate], [RateType], [PlanType], [IsMajority], [TemplateFlag], [LDCCode], [CreateDate], [UserID], [RatePackageName], [CustType], [ServiceType], [DivisionCode], [ConsUnitId], [ActiveFlag], [LDCRateCode], [migr_plan_id], [migr_custid]
-FROM  saes_AEPEnergy..Rate WHERE RateID IN (
-	SELECT RateID FROM saes_AEPEnergy..Product WHERE ProductId IN (SELECT ProductID FROM saes_AEPEnergy..Contract WHERE CustID = @CustID)
-)
-AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergy..Rate WHERE RateID IN (
-	SELECT RateID FROM saes_AEPEnergy..Product WHERE ProductId IN (SELECT ProductID FROM saes_AEPEnergy..Contract WHERE CustID = @CustID)
-	)
-)
+FROM  saes_AEPEnergy..Rate src
+WHERE
+    RateID IN (
+	    SELECT RateID FROM saes_AEPEnergy..Customer WHERE CustID = @CustID
+        UNION
+        SELECT RateID FROM saes_AEPEnergy..Product WHERE ProductId IN (SELECT ProductID FROM saes_AEPEnergy..Contract WHERE CustID = @CustID)
+    )
+    AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergy..Rate dst WHERE src.RateID = dst.RateID )
 SET IDENTITY_INSERT daes_AEPEnergy..Rate OFF
 
 PRINT 'Copy Customer'
@@ -385,8 +454,10 @@ SET IDENTITY_INSERT daes_AEPEnergy..Premise ON
 
 INSERT INTO daes_AEPEnergy..Premise ([PremID], [CustID], [CSPID], [AddrID], [TDSPTemplateID], [ServiceCycle], [TDSP], [TaxAssessment], [PremNo], [PremDesc], [PremStatus], [PremType], [LocationCode], [SpecialNeedsFlag], [SpecialNeedsStatus], [SpecialNeedsDate], [ReadingIncrement], [Metered], [Taxable], [BeginServiceDate], [EndServiceDate], [SourceLevel], [StatusID], [StatusDate], [CreateDate], [UnitID], [PropertyCommonID], [RateID], [DeleteFlag], [LBMPId], [PipelineId], [GasLossId], [LDCID], [GasPoolID], [DeliveryPoint], [ConsumptionBandIndex], [LastModifiedDate], [CreatedByID], [ModifiedByID], [BillingAccountNumber], [NameKey], [GasSupplyServiceOption], [IntervalUsageTypeId], [LDC_UnMeteredAcct], [AltPremNo], [OnSwitchHold], [SwitchHoldStartDate], [ConsumptionImportTypeId], [TDSPTemplateEffectiveDate], [ServiceDeliveryPoint], [UtilityContractID], [LidaDiscount], [GasCapacityAssignment], [CPAEnrollmentTypes], [IsTOU], [SupplierPricingStructureNr], [SupplierGroupNumber])
 SELECT [PremID], [CustID], [CSPID], [AddrID], [TDSPTemplateID], [ServiceCycle], [TDSP], [TaxAssessment], [PremNo], [PremDesc], [PremStatus], [PremType], [LocationCode], [SpecialNeedsFlag], [SpecialNeedsStatus], [SpecialNeedsDate], [ReadingIncrement], [Metered], [Taxable], NULL/*[BeginServiceDate]*/, [EndServiceDate], [SourceLevel], 0/*[StatusID]*/, [StatusDate], [CreateDate], [UnitID], [PropertyCommonID], [RateID], [DeleteFlag], [LBMPId], [PipelineId], [GasLossId], [LDCID], [GasPoolID], [DeliveryPoint], [ConsumptionBandIndex], [LastModifiedDate], [CreatedByID], [ModifiedByID], [BillingAccountNumber], [NameKey], [GasSupplyServiceOption], [IntervalUsageTypeId], [LDC_UnMeteredAcct], [AltPremNo], [OnSwitchHold], [SwitchHoldStartDate], [ConsumptionImportTypeId], [TDSPTemplateEffectiveDate], [ServiceDeliveryPoint], [UtilityContractID], [LidaDiscount], [GasCapacityAssignment], [CPAEnrollmentTypes], [IsTOU], [SupplierPricingStructureNr], [SupplierGroupNumber]
-FROM  saes_AEPEnergy..Premise WHERE CustID = @CustID
-AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergy..Premise WHERE CustId = @CustID)
+FROM  saes_AEPEnergy..Premise src
+WHERE
+    CustID = @CustID
+    AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergy..Premise dst WHERE src.PremId = dst.PremId)
 SET IDENTITY_INSERT daes_AEPEnergy..Premise OFF
 ALTER TABLE daes_AEPEnergy..Premise WITH CHECK CHECK CONSTRAINT ALL
 
@@ -395,8 +466,10 @@ SET IDENTITY_INSERT daes_AEPEnergy..Product ON
 
 INSERT INTO daes_AEPEnergy..Product ([ProductID], [RateID], [LDCCode], [PlanType], [TDSPTemplateID], [Description], [BeginDate], [EndDate], [CustType], [Graduated], [RangeTier1], [RangeTier2], [SortOrder], [ActiveFlag], [Uplift], [CSATDSPTemplateID], [CAATDSPTemplateID], [PriceDescription], [MarketingCode], [RateTypeID], [ConsUnitID], [Default], [DivisionCode], [RateDescription], [ServiceType], [CSPId], [TermsId], [RolloverProductId], [CommissionId], [CommissionAmt], [CancelFeeId], [MonthlyChargeId], [ProductCode], [RatePackageId], [ProductName], [TermDate], [DiscountTypeId], [DiscountAmount], [ProductZoneID], [IsGreen], [IsBestChoice], [ActiveEnrollmentFlag], [CreditScoreThreshold], [DepositAmount], [Incentives])
 SELECT  [ProductID], [RateID], [LDCCode], [PlanType], [TDSPTemplateID], [Description], [BeginDate], [EndDate], [CustType], [Graduated], [RangeTier1], [RangeTier2], [SortOrder], [ActiveFlag], [Uplift], [CSATDSPTemplateID], [CAATDSPTemplateID], [PriceDescription], [MarketingCode], -1 /*[RateTypeID]*/, [ConsUnitID], [Default], [DivisionCode], [RateDescription], [ServiceType], [CSPId], [TermsId], /*[RolloverProductId]*/NULL, [CommissionId], [CommissionAmt], [CancelFeeId], [MonthlyChargeId], [ProductCode], [RatePackageId], [ProductName], [TermDate], [DiscountTypeId], [DiscountAmount], [ProductZoneID], [IsGreen], [IsBestChoice], [ActiveEnrollmentFlag], [CreditScoreThreshold], [DepositAmount], [Incentives]
-FROM  saes_AEPEnergy..Product WHERE ProductId IN (SELECT ProductID FROM saes_AEPEnergy..Contract WHERE CustID = @CustID)
-AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergy..Product WHERE ProductId IN (SELECT ProductID FROM saes_AEPEnergy..Contract WHERE CustID = @CustID))
+FROM  saes_AEPEnergy..Product src
+WHERE 
+    ProductId IN (SELECT ProductID FROM saes_AEPEnergy..Contract WHERE CustID = @CustID)
+    AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergy..Product dst WHERE src.ProductId = dst.ProductId)
 SET IDENTITY_INSERT daes_AEPEnergy..Product OFF
 
 PRINT 'Copy Contract'
@@ -404,8 +477,10 @@ SET IDENTITY_INSERT daes_AEPEnergy..Contract ON
 
 INSERT INTO daes_AEPEnergy..Contract ([ContractID], [SignedDate], [BeginDate], [EndDate], [TermLength], [ContractTypeID], [ContactName], [ContactPhone], [ContactFax], [ProductID], [CreatedByID], [CreateDate], [CustID], [AutoRenewFlag], [Service], [ActiveFlag], [RateCode], [TDSPTemplateID], [ContractTerm], [RateDetID], [RateID], [Terms], [ContractName], [ContractLength], [AccountManagerID], [MeterChargeCode], [AggregatorFee], [TermDate], [Bandwidth], [FinanceCharge], [ContractNumber], [PremID], [AnnualUsage], [CurePeriod], [ContractStatusID], [RenewalRate], [RenewalStartDate], [RenewalTerm], [ChangeReason])
 SELECT  [ContractID], [SignedDate], [BeginDate], [EndDate], [TermLength], [ContractTypeID], [ContactName], [ContactPhone], [ContactFax], [ProductID], [CreatedByID], [CreateDate], [CustID], [AutoRenewFlag], [Service], [ActiveFlag], [RateCode], [TDSPTemplateID], [ContractTerm], [RateDetID], [RateID], [Terms], [ContractName], [ContractLength], [AccountManagerID], [MeterChargeCode], [AggregatorFee], [TermDate], [Bandwidth], [FinanceCharge], [ContractNumber], [PremID], [AnnualUsage], [CurePeriod], [ContractStatusID], [RenewalRate], [RenewalStartDate], [RenewalTerm], [ChangeReason]
-FROM  saes_AEPEnergy..Contract WHERE CustID = @CustID
-AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergy..Contract WHERE CustID = @CustID)
+FROM  saes_AEPEnergy..Contract src
+WHERE
+    CustID = @CustID
+    AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergy..Contract dst WHERE src.ContractID = dst.ContractID)
 SET IDENTITY_INSERT daes_AEPEnergy..Contract OFF
 
 PRINT 'Copy AccountsReceivable'
@@ -413,8 +488,10 @@ SET IDENTITY_INSERT daes_AEPEnergy..AccountsReceivable ON
 
 INSERT INTO daes_AEPEnergy..AccountsReceivable ([AcctsRecID], [ResetDate], [ARDate], [PrevBal], [CurrInvs], [CurrPmts], [CurrAdjs], [BalDue], [LateFee], [LateFeeRate], [LateFeeMaxAmount], [LateFeeTypeID], [AuthorizedPymt], [PastDue], [BalAge0], [BalAge1], [BalAge2], [BalAge3], [BalAge4], [BalAge5], [BalAge6], [Deposit], [DepositBeginDate], [PaymentPlanFlag], [PaymentPlanTrueUpFlag], [PaymentPlanAmount], [PaymentPlanTrueUpPeriod], [PaymentPlanTrueUpThresholdAmount], [PaymentPlanTrueUpType], [PaymentPlanEffectiveDate], [PrePaymentFlag], [PrePaymentDailyAmount], [CapitalCredit], [Terms], [StatusID], [GracePeriod], [PaymentPlanTotalVariance], [PaymentPlanVarianceUnit], [LateFeeGracePeriod], [CancelFeeTypeId], [CancelFeeAmount], [Migr_acct_no], [InvoiceMinimumAmount], [LateFeeThresholdAmt], [LastInvoiceAcctsRecHistID], [LastPaymentAcctsRecHistId], [LastAdjustmentAcctsRecHistId], [DeferredBalance])
 SELECT  [AcctsRecID], [ResetDate], [ARDate], [PrevBal], [CurrInvs], [CurrPmts], [CurrAdjs], [BalDue], [LateFee], [LateFeeRate], [LateFeeMaxAmount], [LateFeeTypeID], [AuthorizedPymt], [PastDue], [BalAge0], [BalAge1], [BalAge2], [BalAge3], [BalAge4], [BalAge5], [BalAge6], [Deposit], [DepositBeginDate], [PaymentPlanFlag], [PaymentPlanTrueUpFlag], [PaymentPlanAmount], [PaymentPlanTrueUpPeriod], [PaymentPlanTrueUpThresholdAmount], [PaymentPlanTrueUpType], [PaymentPlanEffectiveDate], [PrePaymentFlag], [PrePaymentDailyAmount], [CapitalCredit], [Terms], [StatusID], [GracePeriod], [PaymentPlanTotalVariance], [PaymentPlanVarianceUnit], [LateFeeGracePeriod], [CancelFeeTypeId], [CancelFeeAmount], [Migr_acct_no], [InvoiceMinimumAmount], [LateFeeThresholdAmt], [LastInvoiceAcctsRecHistID], [LastPaymentAcctsRecHistId], [LastAdjustmentAcctsRecHistId], [DeferredBalance]
-FROM  saes_AEPEnergy..AccountsReceivable WHERE AcctsRecID IN (SELECT AcctsRecID FROM saes_AEPEnergy..Customer WHERE CustID = @CustID)
-AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergy..AccountsReceivable WHERE AcctsRecID IN (SELECT AcctsRecID FROM saes_AEPEnergy..Customer WHERE CustID = @CustID))
+FROM  saes_AEPEnergy..AccountsReceivable src
+WHERE
+    AcctsRecID IN (SELECT AcctsRecID FROM saes_AEPEnergy..Customer WHERE CustID = @CustID)
+    AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergy..AccountsReceivable dst WHERE src.AcctsRecID = dst.AcctsRecID)
 SET IDENTITY_INSERT daes_AEPEnergy..AccountsReceivable OFF
 
 PRINT 'Copy CustomerAdditionalInfo'
@@ -427,16 +504,25 @@ AND NOT EXISTS(SELECT 1 FROM daes_AEPEnergy..CustomerAdditionalInfo WHERE CustID
 --SET IDENTITY_INSERT daes_AEPEnergy..CustomerAdditionalInfo OFF
 
 PRINT 'END Copy Customer'";
-            DB.ExecuteQuery(sql);
+            DB.ExecuteQuery(sql, _appConfig.ConnectionCsr);
         }
 
-        private static void CopyRate(string custNo)
+        private static void CopyRateWithCustomerNumber(string custNo)
+        {
+            var sql = $"SELECT CustID FROM saes_AEPEnergy..Customer WHERE CustNo = '{custNo}";
+            int custId = DB.ReadSingleValue<int>(sql, _appConfig.ConnectionCsr);
+            if (custId > 0)
+            {
+                CopyRateWithCustomerID(custId);
+            }
+        }
+
+        private static void CopyRateWithCustomerID(int custId)
         {
             string sql = $@"
 USE daes_AEPEnergy
-DECLARE @CustNo AS VARCHAR(20) = '{custNo}'
-DECLARE @CustID AS INT = (SELECT CustID FROM saes_AEPEnergy..Customer WHERE CustNo = @CustNo)
-SELECT @CustId
+DECLARE @CustID AS INT = {custId}
+DECLARE @CustNo AS VARCHAR(20) = (SELECT CustNo FROM saes_AEPEnergy..Customer WHERE CustId = @CustID)
 
 PRINT 'Copy Rate from saes to daes'
 ALTER TABLE daes_AEPEnergy..Rate NOCHECK CONSTRAINT ALL
@@ -540,24 +626,8 @@ PRINT 'Enabling constrains on EnrollCustomer'
 ALTER TABLE daes_AEPEnergy..EnrollCustomer WITH CHECK CHECK CONSTRAINT ALL
 
 ";
-            DB.ExecuteQuery(sql);
+            DB.ExecuteQuery(sql, _appConfig.ConnectionCsr);
         }
-
-        public sealed class DB
-        {
-            public static void ExecuteQuery(string sql)
-            {
-                using (IDbConnection connection = new SqlConnection(_appConfig.ConnectionCsr))
-                {
-                    connection.Open();
-                    var cmd = connection.CreateCommand();
-                    cmd.CommandType = CommandType.Text;
-                    cmd.CommandText = sql;
-                    cmd.CommandTimeout = 1000 * 60 * 5;
-                    cmd.ExecuteNonQuery();
-                    connection.Close();
-                }
-            }
-        }
+        
     }
 }
