@@ -1,4 +1,6 @@
 ﻿using System.Threading;
+using Aurea.TaskToaster;
+using Aurea.TaskToaster.Client.Spark.Tasks;
 using CIS.Clients.Spark.Model.Product;
 
 namespace Aurea.Maintenance.Debugger.Spark
@@ -91,8 +93,6 @@ namespace Aurea.Maintenance.Debugger.Spark
             PrepareMockDataForLetterGeneration();
             GenerateEventsForLetterGeneration();
             RestoreData2OriginalLetterGeneration();
-            */
-            #endregion
 
             //TestCopyCustomer();
             var myCustList = new List<int> {1782208, 101993, 500551};
@@ -115,8 +115,50 @@ namespace Aurea.Maintenance.Debugger.Spark
             ProcessEvents();
             //GenerateEventsFromEventEvaluationQueue();
             //ProcessEvents();
+
+            */
+            #endregion
+
+            Simulate_AESCIS18511();
             _logger.Info("Debug session end");
             Console.ReadLine();
+        }
+
+        private static void Simulate_AESCIS18511()
+        {
+            ExecuteEnrollCustomerPromotionTask();
+            GenerateEvents(new List<int> {18});//generate events EnrollCustomerEvaluation 18
+            ProcessEvents();
+        }
+
+        private static void ExecuteEnrollCustomerPromotionTask()
+        {
+            var promotionTask = new PromotionTask();
+            var taskContext = new TaskContext
+            {
+                Logger = _logger,
+                ClientId = Clients.Spark.Id(),
+                BillingAdminConnection = _clientConfig.ConnectionBillingAdmin,
+                ClientConnection = _appConfig.ConnectionCsr,
+            };
+
+            promotionTask.Execute();
+        }
+
+        private static void GenerateEvents(List<int> eventTypeIds)
+        {
+            var list = CIS.Element.Core.Event.EventTypeList.Load(_clientConfig.ClientId);
+
+            eventTypeIds.ForEach(id =>
+            {
+                var htParams = new Hashtable { { "EventTypeID", id } };
+                var _event = list.SingleOrDefault(x => x.EventTypeID == id);
+                new CIS.Engine.Event.EventGenerator().GenerateEvent(_clientConfig.ClientId, htParams, _clientConfig.Client, _appConfig.ConnectionCsr, _clientConfig.ConnectionBillingAdmin, _event.AssemblyName, _event.ClassName);
+            });
+
+
+            //var maintenance = new MyMaintenance(_appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _clientConfig.ConnectionBillingAdmin);
+            //maintenance.GenerateEvents();
         }
 
         private static void TestCopyCustomer()
