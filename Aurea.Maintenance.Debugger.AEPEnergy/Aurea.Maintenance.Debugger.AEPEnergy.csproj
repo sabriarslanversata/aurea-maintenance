@@ -58,6 +58,8 @@
     <Reference Include="CIS.Components.Maintenance">
       <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Components.Maintenance.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.Element.Billing, Version=16.1.0.0, Culture=neutral, PublicKeyToken=null" />
+    <Reference Include="CIS.Element.Core, Version=16.1.0.0, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="CIS.Engine.Event">
       <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Engine.Event.dll</HintPath>
     </Reference>

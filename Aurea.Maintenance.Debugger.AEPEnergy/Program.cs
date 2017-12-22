@@ -13,6 +13,8 @@
     using CIS.BusinessEntity;
     using System.Collections;
     using CIS.Framework.Common;
+    using Aurea.Maintenance.Debugger.Common.Extensions;
+    
 
     public class MyImport : CIS.Import.BaseImport
     {
@@ -62,11 +64,21 @@
 
         static void Main(string[] args)
         {
+            
             // Set client configuration and then the application configuration context.            
             _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.AEP, Stages.Development);
             _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
 
+            //System.ServiceModel.ServiceSecurityContext.Current.PrimaryIdentity.Name = Clients.AEP.GetServiceGuid.ToString();
+
             Simulate_AESCIS17193("4184386");
+        }
+
+        private static void Simulate_AESCIS16615(int customerId, int productId, DateTime soldDate, string municipalAggregation, DateTime? switchDate = null)
+        {
+            //CopyCustomer, CopyProduct
+
+            CIS.Clients.AEPEnergy.RateType.RateUtility.ApplyRateTransition(customerId, productId, soldDate, municipalAggregation, switchDate);
         }
 
         private static void Simulate_AESCIS17193(string custNo)
