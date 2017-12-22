@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Aurea.Maintenance.Debugger.Common
+﻿namespace Aurea.Maintenance.Debugger.Common
 {
+    using System;
+    using System.Runtime.InteropServices;
+
     public class Utility
     {
         [StructLayout(LayoutKind.Sequential)]

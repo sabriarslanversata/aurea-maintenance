@@ -40,7 +40,9 @@
                 {"BillingAdminDbConnection", config.ConnectionBillingAdmin},
                 {"conBillingAdminString", config.ConnectionBillingAdmin},
                 {"BillingAdmin", config.ConnectionBillingAdmin},
-                {"Connection.Tdsp", applicationConfiguration.ConnectionTdsp}
+                {"Connection.Tdsp", applicationConfiguration.ConnectionTdsp},
+                {"Connection.Csr", applicationConfiguration.ConnectionCsr },
+                {"ClientId", applicationConfiguration.ClientID.ToString() }
             };
 
             RewriteAppSettings(Assembly.GetExecutingAssembly(), settings);

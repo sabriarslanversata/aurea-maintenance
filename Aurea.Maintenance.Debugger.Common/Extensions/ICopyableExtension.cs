@@ -5,13 +5,9 @@
     using System.Data;
     using System.Linq;
     using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
     using Aurea.Logging;
-    using Aurea.Maintenance.Debugger.Common;
     using Aurea.Maintenance.Debugger.Common.Models;
     using CIS.Framework.Data;
-    using CIS.Framework.Security;
 
     public static class ICopyableExtension
     {

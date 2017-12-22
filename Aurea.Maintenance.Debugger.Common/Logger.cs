@@ -1,6 +1,4 @@
-﻿
-
-namespace Aurea.Maintenance.Debugger.Common
+﻿namespace Aurea.Maintenance.Debugger.Common
 {
     using System;
     using Aurea.Logging;
@@ -11,8 +9,7 @@ namespace Aurea.Maintenance.Debugger.Common
         public void Log(LogLevel type, string message, long? messageId = null)
         {
             Console.WriteLine($"{DateTime.Now.ToString("s")} {type} - {message}");
-            Debug.WriteLine($"{type} - {message}");
-            
+            Debug.WriteLine($"{type} - {message}");            
         }
 
         internal static void Error(Exception ex, string v)

@@ -7,21 +7,15 @@
     using System.IO;
     using System.Reflection;
     using System.Text;
-
-    
+    using System.Linq;
+    using System.Transactions;
     using Common;
     using Common.Models;
-
-    using CIS.BusinessEntity;
-    using System.Linq;
-
-    using System.Security.Policy;
-    using Aurea.IO;
     using Aurea.Logging;
-    using Aurea.Maintenance.Debugger.Texpo.TexpoWS;
+    using CIS.BusinessEntity;
     using CIS.Clients.Texpo.Import;
-
-    using System.Transactions;
+    using CIS.Enum.Enrollment;
+    using CIS.Web.Services.Clients.Texpo;
 
     public class Program
     {
@@ -212,16 +206,16 @@ b1x3zeE1G4Q4
         public static void Main(string[] args)
         {
             // Set client configuration and then the application configuration context.            
-            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.Texpo, Stages.Development, TransactionMode.Enlist);
+            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.Texpo, Stages.UserAcceptance, TransactionMode.Enlist);
             _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
 
-            TransactionManager.DistributedTransactionStarted += delegate
-                (object sender, TransactionEventArgs e)
-            {
-                _logger.Info("Distributed Transaction Started");
-            };
+
 
             #region old Cases
+            //TransactionManager.DistributedTransactionStarted += delegate (object sender, TransactionEventArgs e)
+            //{
+            //    _logger.Info("Distributed Transaction Started");
+            //};
 
             //ExecuteExport();
 
@@ -242,17 +236,83 @@ b1x3zeE1G4Q4
             ProcessEvents();
 			*/
 
+            //string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
+            //Directory.EnumerateFiles(dirToProcess, "*.xls", SearchOption.AllDirectories).ForEach(
+            //    filename =>
+            //    {
+            //        SimulateImportMassEnrollment(filename);
+            //    }
+            //);
+
             #endregion
-            
-            string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
-            Directory.EnumerateFiles(dirToProcess, "*.xls", SearchOption.AllDirectories).ForEach(
-                filename =>
-                {
-                    SimulateImportMassEnrollment(filename);
-                }
-            );
-            
+
+            SimulateWSEnrollment();
+
             Console.ReadLine();
+        }
+
+        private static void SimulateWSEnrollment()
+        {
+            var client = new CIS.Web.Services.Clients.Texpo.Enrollment();
+            var newCustomer = client.EnrollNonTexasCustomer(CustomerTypeOptions.RESIDENTIAL,
+                "Kadir",
+                "",
+                "McPhearson",
+                "Partridgespring St. 407",
+                "",
+                "Bellrock",
+                "CA",
+                "06450",
+                332397,
+                24,
+                "kadir@kadir.com",
+                DateTime.Parse("1982-7-19"),
+                "76357724",
+                "510-657-8682",
+                "",
+                "",
+                true,
+                DateTime.Parse("2017-12-18"),
+                "Aurea Commercials",
+                "f776a9ae-7b94-4bd8-9260-ffebe376cac6",
+                11,
+                0,
+                null,
+                null);
+
+            //var methodInfo = client.GetType().GetMethod("PerformEnrollCustomer", BindingFlags.Instance | BindingFlags.NonPublic);
+            //methodInfo.Invoke(client, new object[] {
+            //    CustomerTypeOptions.RESIDENTIAL,
+            //    "Kadir",
+            //    "",
+            //    "McPhearson",
+            //    "Partridgespring St. 407",
+            //    "",
+            //    "Bellrock",
+            //    "CA",
+            //    "06450",
+            //    332397,
+            //    24,
+            //    "kadir@kadir.com",
+            //    DateTime.Parse("1982-7-19"),
+            //    "76357724",
+            //    "510-657-8682",
+            //    "",
+            //    "",
+            //    true,
+            //    DateTime.Parse("2017-12-18"),
+            //    "Aurea Commercials",
+            //    "f776a9ae-7b94-4bd8-9260-ffebe376cac6",
+            //    11,
+            //    0,
+            //    null,
+            //    null});
+        }
+
+        private static void SimulateImportTransactionQueue()
+        {
+            var queue = new CIS.Import.Billing.Transaction.Queue(_clientConfig.Client, _appConfig.ConnectionMarket, _appConfig.ConnectionCsr, _appConfig.ConnectionTdsp, _clientConfig.ConnectionBillingAdmin);
+            queue.Import(_logger);
         }
 
         private static void SimulateImportMassEnrollment(string fileName)
