@@ -44,8 +44,8 @@
 
         public class MyExport : CIS.Clients.Texpo.Export.MainProcess//CIS.Export.BaseExport
         {
-            private static readonly string _uaaDir = Assembly.GetExecutingAssembly().Location + "\\uua\\";
-            private static readonly string _uqcDir = Assembly.GetExecutingAssembly().Location + "\\uqc\\";
+            private static readonly string _uaaDir = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "uua\\");
+            private static readonly string _uqcDir = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) , "uqc\\");
 
             public MyExport(string connectionMarket, string connectionCsr, string connectionAdmin)
             {
