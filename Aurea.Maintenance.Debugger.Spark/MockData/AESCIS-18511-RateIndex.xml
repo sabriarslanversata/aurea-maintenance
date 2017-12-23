@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<root>
+  <RateIndexType RateIndexTypeID="200061" RateIndexType="R_CPE_E_D2D_FIXED_THMSF_ETF_24_1" Active="1" />
+  <RateIndexType RateIndexTypeID="200213" RateIndexType="ONCOR_E_PriceProtect6_OTM" Active="1" />
+  <RateIndexRange RateIndexRangeID="801400" RateIndexTypeID="200061" DateFrom="2015-12-21T00:00:00" DateTo="2016-04-11T00:00:00" IndexRate="0.04800000" />
+  <RateIndexRange RateIndexRangeID="801562" RateIndexTypeID="200061" DateFrom="2016-04-11T00:00:00" DateTo="2016-04-12T00:00:00" IndexRate="0.03750000" />
+  <RateIndexRange RateIndexRangeID="801577" RateIndexTypeID="200061" DateFrom="2016-04-12T00:00:00" DateTo="2016-05-10T00:00:00" IndexRate="0.04800000" />
+  <RateIndexRange RateIndexRangeID="801604" RateIndexTypeID="200061" DateFrom="2016-05-10T00:00:00" DateTo="2016-06-14T00:00:00" IndexRate="0.04550000" />
+  <RateIndexRange RateIndexRangeID="801663" RateIndexTypeID="200061" DateFrom="2016-06-14T00:00:00" DateTo="2016-11-14T00:00:00" IndexRate="0.04800000" />
+  <RateIndexRange RateIndexRangeID="801936" RateIndexTypeID="200061" DateFrom="2016-11-14T00:00:00" DateTo="2017-02-13T00:00:00" IndexRate="0.05700000" />
+  <RateIndexRange RateIndexRangeID="802072" RateIndexTypeID="200061" DateFrom="2017-02-13T00:00:00" DateTo="2017-06-05T00:00:00" IndexRate="0.05840000" />
+  <RateIndexRange RateIndexRangeID="802293" RateIndexTypeID="200061" DateFrom="2017-06-05T00:00:00" DateTo="2017-08-07T00:00:00" IndexRate="0.05990000" />
+  <RateIndexRange RateIndexRangeID="802426" RateIndexTypeID="200061" DateFrom="2017-08-07T00:00:00" DateTo="2017-10-20T00:00:00" IndexRate="0.06250000" />
+  <RateIndexRange RateIndexRangeID="802566" RateIndexTypeID="200061" DateFrom="2017-10-20T00:00:00" DateTo="9999-12-31T00:00:00" IndexRate="0.06850000" />
+  <RateIndexRange RateIndexRangeID="802020" RateIndexTypeID="200213" DateFrom="2017-01-17T00:00:00" DateTo="2017-10-02T00:00:00" IndexRate="0.04990000" />
+  <RateIndexRange RateIndexRangeID="802503" RateIndexTypeID="200213" DateFrom="2017-10-02T00:00:00" DateTo="2017-11-08T00:00:00" IndexRate="0.04200000" />
+  <RateIndexRange RateIndexRangeID="802668" RateIndexTypeID="200213" DateFrom="2017-11-08T00:00:00" DateTo="2017-12-08T00:00:00" IndexRate="0.05350000" />
+  <RateIndexRange RateIndexRangeID="802808" RateIndexTypeID="200213" DateFrom="2017-12-08T00:00:00" DateTo="9999-12-31T00:00:00" IndexRate="0.04990000" />
+  <!--
+    query used for fetching
+    select * from product where productid IN (100634, 100489) /*products on enrollment*/
+    select * from rateDetail where rateid IN (2953274, 3083094)
+    select * from RateIndexType WHERE RateIndexTypeId IN (200061, 200213) FOR XML AUTO
+    select * from RateIndexRange WHERE RateIndexTypeId IN (200061, 200213) FOR XML AUTO
+  -->
+</root>

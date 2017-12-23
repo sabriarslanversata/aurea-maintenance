@@ -1,4 +1,6 @@
-﻿using System.Threading;
+﻿using System.IO;
+using System.Reflection;
+using System.Threading;
 using Aurea.TaskToaster;
 using Aurea.TaskToaster.Client.Spark.Tasks;
 using CIS.Clients.Spark.Model.Product;
@@ -126,6 +128,9 @@ namespace Aurea.Maintenance.Debugger.Spark
 
         private static void Simulate_AESCIS18511()
         {
+            string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
+            DB.ImportFiles(dirToProcess, "AESCIS-18511", _appConfig.ConnectionCsr);
+
             ExecuteEnrollCustomerPromotionTask();
             GenerateEvents(new List<int> {18});//generate events EnrollCustomerEvaluation 18
             ProcessEvents();
@@ -141,7 +146,7 @@ namespace Aurea.Maintenance.Debugger.Spark
                 BillingAdminConnection = _clientConfig.ConnectionBillingAdmin,
                 ClientConnection = _appConfig.ConnectionCsr,
             };
-
+            promotionTask.Context = taskContext;
             promotionTask.Execute();
         }
 
