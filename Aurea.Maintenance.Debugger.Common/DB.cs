@@ -267,8 +267,6 @@ namespace Aurea.Maintenance.Debugger.Common
                                 ds = metaDataCache.SingleOrDefault(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)).Value;
                             }
 
-                            var hasPrimaryKey = ds.Tables[0].PrimaryKey.Any();
-
                             DataColumn primaryKeyColumn;
 
                             if (ds.Tables[0].PrimaryKey.Any())
@@ -283,8 +281,7 @@ namespace Aurea.Maintenance.Debugger.Common
                                     where c.ColumnName.Equals(primaryKeyName, StringComparison.InvariantCultureIgnoreCase)
                                     select c;
                             }
-
-                            var isPrimaryKeysHasValue = hasPrimaryKey && dataHeaders.Any(x => x.Equals(primaryKeyColumn.ColumnName, StringComparison.InvariantCultureIgnoreCase));
+                            
                             var primaryKeyIndex = dataHeaders.FindIndex(x => x.Equals(primaryKeyColumn.ColumnName, StringComparison.InvariantCultureIgnoreCase));
                             var primaryKeyValue = CreateFieldValueSql(primaryKeyColumn, dataValues[primaryKeyIndex]);
                             sqlBatch.AppendLine($"INSERT INTO @RecordStatus (TableName, RecordID, Status) SELECT '{tableName}', {primaryKeyValue}, CASE WHEN EXISTS(SELECT 1 FROM {tableName} WHERE [{primaryKeyColumn.ColumnName}] = {primaryKeyValue} ) THEN 1 ELSE  0 END");
