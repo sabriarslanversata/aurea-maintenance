@@ -422,7 +422,7 @@ WHERE
         SELECT AddrId FROM saes_AEPEnergy..Premise WHERE CustID = @CustID
     )
     AND NOT EXISTS (SELECT 1 FROM daes_AEPEnergy..Address dst WHERE src.AddrID = dst.AddrId)
-)
+
 SET IDENTITY_INSERT daes_AEPEnergy..Address OFF
 
 PRINT 'Copy Rate'
