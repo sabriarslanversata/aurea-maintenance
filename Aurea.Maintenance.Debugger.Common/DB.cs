@@ -132,7 +132,8 @@ namespace Aurea.Maintenance.Debugger.Common
                 if(!records.Any())
                     return;
 
-                if (!metaDataCache.TryGetValue(tableName, out var ds)) 
+                DataSet ds;
+                if (!metaDataCache.Any(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase))) 
                 {
                     var sql = $"SELECT * FROM {tableName} WHERE 1 = 0";//used for getting meta data only
 
@@ -141,6 +142,10 @@ namespace Aurea.Maintenance.Debugger.Common
                     dataAdapter.FillSchema(ds, SchemaType.Source, tableName);
                     dataAdapter.Fill(ds, tableName);
                     metaDataCache.Add(tableName, ds);
+                }
+                else
+                {
+                    ds = metaDataCache.SingleOrDefault(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)).Value;
                 }
 
                 var hasPrimaryKey = ds.Tables[0].PrimaryKey.Any();
@@ -156,18 +161,18 @@ namespace Aurea.Maintenance.Debugger.Common
                     string primaryKeyName = headers.First();
                     primaryKeyColumn = (DataColumn)
                         from DataColumn c in ds.Tables[0].Columns
-                        where c.ColumnName == primaryKeyName
+                        where c.ColumnName.Equals(primaryKeyName, StringComparison.InvariantCultureIgnoreCase)
                         select c;
                 }
                         
-                var isPrimaryKeysHasValue = hasPrimaryKey && headers.IndexOf(primaryKeyColumn.ColumnName) >= 0;
+                var isPrimaryKeysHasValue = hasPrimaryKey && headers.Any(x => x.Equals(primaryKeyColumn.ColumnName, StringComparison.InvariantCultureIgnoreCase));
 
                 foreach (var record in records)
                 {
 
                     var values = record.Split('\t').ToArray();
-
-                    var primaryKeyValue = CreateFieldValueSql(primaryKeyColumn, values[headers.IndexOf(primaryKeyColumn.ColumnName)]);
+                    int primaryKeyIndex = headers.FindIndex(x => x.Equals(primaryKeyColumn.ColumnName, StringComparison.InvariantCultureIgnoreCase));
+                    var primaryKeyValue = CreateFieldValueSql(primaryKeyColumn, values[primaryKeyIndex]);
 
                     //searching from firstColumn to check if record already present in DB
                     var checkSql = $"IF EXISTS(SELECT 1 FROM {tableName} WHERE {primaryKeyColumn.ColumnName} = {primaryKeyValue}) SELECT 1 ELSE SELECT 0";
@@ -182,10 +187,10 @@ namespace Aurea.Maintenance.Debugger.Common
                     }
                 }
 
-                if (identityInsertCheckClosedTables.IndexOf(tableName) >= 0)
+                if (identityInsertCheckClosedTables.Any(x => x.Equals(tableName, StringComparison.InvariantCultureIgnoreCase))) 
                 {
                     sqlBatch.AppendLine($"SET IDENTITY_INSERT {tableName} OFF ");
-                    identityInsertCheckClosedTables.Remove(tableName);
+                    identityInsertCheckClosedTables.RemoveAll(x => x.Equals(tableName, StringComparison.InvariantCultureIgnoreCase));
                 }
 
                 SqlHelper.ExecuteNonQuery(connectionString, CommandType.Text, sqlBatch.ToString());
@@ -199,8 +204,10 @@ namespace Aurea.Maintenance.Debugger.Common
                 return;
             }
             var reader = XmlReader.Create(fileName);
-            var headers = new List<string>();
-            var values = new List<string>();
+            var dataHeaders = new List<string>();
+            var dataValues = new List<string>();
+            var dbHeaders = new List<string>();
+            var dbValues = new List<string>();
             var sqlBatch = new StringBuilder();
             while (reader.Read())
             {
@@ -212,7 +219,7 @@ namespace Aurea.Maintenance.Debugger.Common
                         continue;
                     }
 
-                    if (constrainCheckDisabledTables.IndexOf(tableName) < 0)
+                    if (!constrainCheckDisabledTables.Any(x => x.Equals(tableName, StringComparison.InvariantCultureIgnoreCase))) 
                     {
                         sqlBatch.AppendLine($"ALTER TABLE {tableName} NOCHECK CONSTRAINT ALL");
                         constrainCheckDisabledTables.Add(tableName);
@@ -224,11 +231,12 @@ namespace Aurea.Maintenance.Debugger.Common
                         {
                             foreach (var xAttribute in el.Attributes())
                             {
-                                headers.Add(xAttribute.Name.LocalName);
-                                values.Add(xAttribute.Value);
+                                dataHeaders.Add(xAttribute.Name.LocalName);
+                                dataValues.Add(xAttribute.Value);
                             }
 
-                            if (!metaDataCache.TryGetValue(tableName, out var ds))
+                            DataSet ds;
+                            if (!metaDataCache.Any(x=>x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)))
                             {
                                 var sql = $"SELECT * FROM {tableName} WHERE 1 = 0";//used for getting meta data only
 
@@ -237,6 +245,10 @@ namespace Aurea.Maintenance.Debugger.Common
                                 dataAdapter.FillSchema(ds, SchemaType.Source, tableName);
                                 dataAdapter.Fill(ds, tableName);
                                 metaDataCache.Add(tableName, ds);
+                            }
+                            else
+                            {
+                                ds = metaDataCache.SingleOrDefault(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)).Value;
                             }
 
                             var hasPrimaryKey = ds.Tables[0].PrimaryKey.Any();
@@ -249,38 +261,56 @@ namespace Aurea.Maintenance.Debugger.Common
                             }
                             else
                             {
-                                string primaryKeyName = headers.First();
+                                string primaryKeyName = dataHeaders.First();
                                 primaryKeyColumn = (DataColumn)
                                     from DataColumn c in ds.Tables[0].Columns
-                                    where c.ColumnName == primaryKeyName
+                                    where c.ColumnName.Equals(primaryKeyName, StringComparison.InvariantCultureIgnoreCase)
                                     select c;
                             }
 
-                            var isPrimaryKeysHasValue = hasPrimaryKey && headers.IndexOf(primaryKeyColumn.ColumnName) >= 0;
-                            var primaryKeyValue = CreateFieldValueSql(primaryKeyColumn, values[headers.IndexOf(primaryKeyColumn.ColumnName)]);
+                            var isPrimaryKeysHasValue = hasPrimaryKey && dataHeaders.Any(x => x.Equals(primaryKeyColumn.ColumnName, StringComparison.InvariantCultureIgnoreCase));
+                            var primaryKeyIndex = dataHeaders.FindIndex(x =>x.Equals(primaryKeyColumn.ColumnName, StringComparison.InvariantCultureIgnoreCase));
+                            var primaryKeyValue = CreateFieldValueSql(primaryKeyColumn, dataValues[primaryKeyIndex]);
+
+                            foreach (DataColumn column in ds.Tables[0].Columns)
+                            {
+                                dbHeaders.Add(column.ColumnName);
+                                if (dataHeaders.Any(x => x.Equals(column.ColumnName, StringComparison.InvariantCultureIgnoreCase))) 
+                                {
+                                    var dataColumnIndex = dataHeaders.FindIndex(x => x.Equals(column.ColumnName, StringComparison.InvariantCultureIgnoreCase));
+                                    dbValues.Add(dataValues[dataColumnIndex]);
+                                }
+                                else
+                                {
+                                    dbValues.Add("NULL");
+                                }
+                            }
+
 
                             //searching from firstColumn to check if record already present in DB
                             var checkSql = $"IF EXISTS(SELECT 1 FROM {tableName} WHERE {primaryKeyColumn.ColumnName} = {primaryKeyValue}) SELECT 1 ELSE SELECT 0";
                             var isExists = ReadSingleValue<int>(checkSql, connectionString) == 1;
                             if (!isExists)
                             {
-                                sqlBatch.AppendLine(CreateInsertSql(tableName, ds.Tables[0].Columns, headers, values.ToArray(), isPrimaryKeysHasValue, hasPrimaryKey));
+                                sqlBatch.AppendLine(CreateInsertSql(tableName, ds.Tables[0].Columns, dbHeaders, dbValues.ToArray(), isPrimaryKeysHasValue, hasPrimaryKey));
                             }
                             else
                             {
-                                sqlBatch.AppendLine(CreateUpdateSql(tableName, ds.Tables[0].Columns, headers, values.ToArray(), primaryKeyColumn.ColumnName, primaryKeyValue));
+                                sqlBatch.AppendLine(CreateUpdateSql(tableName, ds.Tables[0].Columns, dbHeaders, dbValues.ToArray(), primaryKeyColumn.ColumnName, primaryKeyValue));
                             }
 
-                            if (identityInsertCheckClosedTables.IndexOf(tableName) >= 0)
+                            if (identityInsertCheckClosedTables.Any(x=>x.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)))
                             {
                                 sqlBatch.AppendLine($"SET IDENTITY_INSERT {tableName} OFF ");
-                                identityInsertCheckClosedTables.Remove(tableName);
+                                identityInsertCheckClosedTables.RemoveAll(x => x.Equals(tableName, StringComparison.InvariantCultureIgnoreCase));
                             }
                         }
                         finally
                         {
-                            headers.Clear();
-                            values.Clear();
+                            dataHeaders.Clear();
+                            dataValues.Clear();
+                            dbHeaders.Clear();
+                            dbValues.Clear();
                         }
                     }
                 }
@@ -318,31 +348,66 @@ namespace Aurea.Maintenance.Debugger.Common
                         break;
                 }
             }
+
+            if (toReturn == "NULL" && !field.AllowDBNull)
+            {
+                switch (Type.GetTypeCode(field.DataType))
+                {
+                    case TypeCode.Char:
+                    case TypeCode.String:
+                        toReturn = "''";
+                        break;
+                    case TypeCode.Single:
+                    case TypeCode.Int16:
+                    case TypeCode.Int32:
+                    case TypeCode.Int64:
+                    case TypeCode.UInt16:
+                    case TypeCode.UInt32:
+                    case TypeCode.UInt64:
+                    case TypeCode.Decimal:
+                    case TypeCode.Double:
+                    case TypeCode.Boolean:
+                        toReturn = "0";
+                        break;
+                    case TypeCode.DateTime:
+                        toReturn = $"'{DateTime.MinValue}'";
+                        break;
+                    case TypeCode.Byte:
+                    case TypeCode.SByte:
+                        toReturn = "0x";
+                        break;
+                }
+            }
             return toReturn;
         }
         
         private static string CreateInsertSql(string tableName, DataColumnCollection columns, List<string> columnNames, string[] values, bool isPrimaryKeysHasValue, bool hasPrimaryKey)
         {
             var sql = new StringBuilder();
-            if (hasPrimaryKey && isPrimaryKeysHasValue && identityInsertCheckClosedTables.IndexOf(tableName) < 0)
+            if (hasPrimaryKey && isPrimaryKeysHasValue && !identityInsertCheckClosedTables.Any(x => x.Equals(tableName, StringComparison.InvariantCultureIgnoreCase))) 
             {
                 sql.AppendLine($"SET IDENTITY_INSERT {tableName} ON ");
                 identityInsertCheckClosedTables.Add(tableName);
             }
 
-
-            if (!insertSqlCache.TryGetValue(tableName, out string insertSqlHeader))
+            string insertSqlHeader;
+            if (!insertSqlCache.Any(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)))
             {
                 insertSqlHeader = $"INSERT INTO [{tableName}] ( [{string.Join("],[", columnNames)}] ) SELECT ";
                 insertSqlCache.Add(tableName, insertSqlHeader);
             }
+            else
+            {
+                insertSqlHeader = insertSqlCache.SingleOrDefault(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)).Value;
+            }
+
             sql.AppendLine(insertSqlHeader);
             var valuesLine = new StringBuilder();
             foreach (DataColumn column in columns)
             {
-                var colIndex = columnNames.IndexOf(column.ColumnName);
-                if (colIndex >= 0)//copy values which only present in file
+                if (columnNames.Any(x => x.Equals(column.ColumnName, StringComparison.InvariantCultureIgnoreCase)))
                 {
+                    var colIndex = columnNames.FindIndex(x => x.Equals(column.ColumnName, StringComparison.InvariantCultureIgnoreCase));
                     valuesLine.Append($"{CreateFieldValueSql(column, values[colIndex])}, ");
                 }
                 else
@@ -359,20 +424,24 @@ namespace Aurea.Maintenance.Debugger.Common
         private static string CreateUpdateSql(string tableName, DataColumnCollection columns, List<string> columnNames, string[] values, string primaryKeyName, string primaryKeyValue)
         {
             var sql = new StringBuilder();
-            if (!updateSqlCache.TryGetValue(tableName, out string updateSqlHeader))
+            string updateSqlHeader;
+            if (!updateSqlCache.Any(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)))
             {
                 updateSqlHeader = $"UPDATE [{tableName}] SET ";
                 updateSqlCache.Add(tableName, updateSqlHeader);
+            }
+            else
+            {
+                updateSqlHeader = updateSqlCache.SingleOrDefault(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)).Value;
             }
             sql.AppendLine(updateSqlHeader);
 
             var updateSentence = new StringBuilder();
             foreach (DataColumn column in columns)
             {
-                var colIndex = columnNames.IndexOf(column.ColumnName);
-                if (colIndex >= 0 && column.ColumnName != primaryKeyName) //copy values which only present in file
+                if (column.ColumnName != primaryKeyName && columnNames.Any(x => x.Equals(column.ColumnName, StringComparison.InvariantCultureIgnoreCase))) 
                 {
-
+                    var colIndex = columnNames.FindIndex(x => x.Equals(column.ColumnName, StringComparison.InvariantCultureIgnoreCase));
                     updateSentence.Append($"[{column.ColumnName}] = {CreateFieldValueSql(column, values[colIndex])}, ");
                 }
                 else if (column.ColumnName != primaryKeyName)
