@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 using CIS.Framework.Data;
 
 namespace Aurea.Maintenance.Debugger.Common
@@ -60,20 +61,27 @@ namespace Aurea.Maintenance.Debugger.Common
         private static readonly List<string> identityInsertCheckClosedTables = new List<string>();
 
         /// <summary>
-        /// Imports Texts files found with given filter to DB
-        /// <para>File content should be: first line TableName, second line ColumnNames, then data</para>
+        /// Imports Text and XML files found with given filter to DB
         /// <para>Supports updates only if there is primary key exists on Destination Table, otherwise it would update row via first column's value</para>
+        /// <para>For Text Files, file content should be: first line TableName, second line ColumnNames, then data</para>
         /// </summary>
-        /// <param name="path">root path of the start searching for text files</param>
+        /// <param name="path">root path of the start searching for files</param>
         /// <param name="filter">file name filter, ie. Ticket Number</param>
         /// <param name="connectionString">destination DB connection string</param>
-        public static void ImportTextFiles(string path, string filter, string connectionString)
+        public static void ImportFiles(string path, string filter, string connectionString)
         {
-
+            
             Directory.EnumerateFiles(path, $"*{filter}*.txt", SearchOption.AllDirectories).ForEach(
                 filename =>
                 {
                     DB.Import2DatabaseFromTextFile(filename, connectionString);
+                }
+            );
+
+            Directory.EnumerateFiles(path, $"*{filter}*.xml", SearchOption.AllDirectories).ForEach(
+                filename =>
+                {
+                    DB.Import2DatabaseFromXMLFile(filename, connectionString);
                 }
             );
 
@@ -90,98 +98,186 @@ namespace Aurea.Maintenance.Debugger.Common
             }
         }
 
-        /// <summary>
-        /// Imports data from File
-        /// <para>File content should be: first line TableName, second line ColumnNames, then data</para>
-        /// <para>Supports updates only if there is primary key exists on Destination Table, otherwise it would update row via first column's value</para>
-        /// </summary>
-        /// <param name="fileName">file name to import</param>
-        /// <param name="connectionString">destination DB connection string</param>
-        public static void Import2DatabaseFromTextFile(string fileName, string connectionString)
+        private static void Import2DatabaseFromTextFile(string fileName, string connectionString)
         {
-            //TODO: create insert or update sql regarding datatype and existence
-            if (File.Exists(fileName))
+            if (!File.Exists(fileName))
             {
-                bool isPrimaryKeysHasValue = false;
-                bool hasPrimaryKey = false;
-                var reader = ReadAsLines(fileName);
-                if (reader.Count() > 2)//first line table name, second line headers
+                return;
+            }
+
+            var reader = ReadAsLines(fileName);
+            if (reader.Count() > 2)//first line table name, second line headers
+            {
+                var sqlBatch = new StringBuilder();
+
+                var tableName = reader.First();
+                if (constrainCheckDisabledTables.IndexOf(tableName) < 0)
                 {
-                    var sqlBatch = new StringBuilder();
+                    sqlBatch.AppendLine($"ALTER TABLE {tableName} NOCHECK CONSTRAINT ALL");
+                    constrainCheckDisabledTables.Add(tableName);
+                }
 
-                    var tableName = reader.First();
-                    if (constrainCheckDisabledTables.IndexOf(tableName) < 0)
+                var headers = reader
+                    .Skip(1)
+                    .Take(1)
+                    .SingleOrDefault()
+                    .Split('\t')
+                    .ToList();
+
+                var records = reader.Skip(2).Where(line => !line.StartsWith("#"));
+
+                //var primaryKeys = string.Join(",", records.Select((row) => row.Split('\t')[0]).ToArray());
+                var sql = $"SELECT * FROM {tableName} WHERE 1 = 0";//used for getting meta data only
+
+                SqlDataAdapter dataAdapter = new SqlDataAdapter(sql, connectionString);
+                var ds = new DataSet(tableName);
+                dataAdapter.FillSchema(ds, SchemaType.Source, tableName);
+                dataAdapter.Fill(ds, tableName);
+
+                var hasPrimaryKey = ds.Tables[0].PrimaryKey.Any();
+
+                DataColumn primaryKeyColumn;
+
+                if (ds.Tables[0].PrimaryKey.Any())
+                {
+                    primaryKeyColumn = ds.Tables[0].PrimaryKey[0];
+                }
+                else
+                {
+                    string primaryKeyName = headers.First();
+                    primaryKeyColumn = (DataColumn)
+                        from DataColumn c in ds.Tables[0].Columns
+                        where c.ColumnName == primaryKeyName
+                        select c;
+                }
+                        
+                var isPrimaryKeysHasValue = hasPrimaryKey && headers.IndexOf(primaryKeyColumn.ColumnName) >= 0;
+
+                foreach (var record in records)
+                {
+
+                    var values = record.Split('\t').ToArray();
+
+                    var primaryKeyValue = CreateFieldValueSql(primaryKeyColumn, values[headers.IndexOf(primaryKeyColumn.ColumnName)]);
+
+                    //searching from firstColumn to check if record already present in DB
+                    var checkSql = $"IF EXISTS(SELECT 1 FROM {tableName} WHERE {primaryKeyColumn.ColumnName} = {primaryKeyValue}) select 1 else select 0";
+                    var isExists = ReadSingleValue<int>(checkSql, connectionString) == 1;
+                    if (!isExists)
                     {
-                        sqlBatch.AppendLine($"ALTER TABLE {tableName} NOCHECK CONSTRAINT ALL");
-                        constrainCheckDisabledTables.Add(tableName);
-                    }
-
-                    var headers = reader
-                        .Skip(1)
-                        .Take(1)
-                        .SingleOrDefault()
-                        .Split('\t')
-                        .ToList();
-
-                    var records = reader.Skip(2);
-
-                    //var primaryKeys = string.Join(",", records.Select((row) => row.Split('\t')[0]).ToArray());
-                    var sql = $"SELECT * FROM {tableName} WHERE 1 = 0";//used for getting meta data only
-
-                    SqlDataAdapter dataAdapter = new SqlDataAdapter(sql, connectionString);
-                    var ds = new DataSet(tableName);
-                    dataAdapter.FillSchema(ds, SchemaType.Source, tableName);
-                    dataAdapter.Fill(ds, tableName);
-
-                    hasPrimaryKey = ds.Tables[0].PrimaryKey.Count() > 0;
-
-                    DataColumn primaryKeyColumn;
-
-                    if (ds.Tables[0].PrimaryKey.Count() > 0)
-                    {
-                        primaryKeyColumn = ds.Tables[0].PrimaryKey[0];
+                        sqlBatch.AppendLine(CreateInsertSql(tableName, ds.Tables[0].Columns, headers, values, isPrimaryKeysHasValue, hasPrimaryKey));
                     }
                     else
                     {
-                        string primaryKeyName = headers.First();
-                        primaryKeyColumn = (DataColumn)
-                            from DataColumn c in ds.Tables[0].Columns
-                            where c.ColumnName == primaryKeyName
-                            select c;
+                        string whereClause = string.Empty;
+                        sqlBatch.AppendLine(CreateUpdateSql(tableName, ds.Tables[0].Columns, headers, values, primaryKeyColumn.ColumnName, primaryKeyValue));
                     }
-                        
-                    isPrimaryKeysHasValue = hasPrimaryKey && headers.IndexOf(primaryKeyColumn.ColumnName) >= 0;
-
-                    foreach (var record in records)
-                    {
-
-                        var values = record.Split('\t').ToArray();
-
-                        var primaryKeyValue = CreateFieldValueSql(primaryKeyColumn, values[headers.IndexOf(primaryKeyColumn.ColumnName)]);
-
-                        //searching from firstColumn to check if record already present in DB
-                        var checkSql = $"IF EXISTS(SELECT 1 FROM {tableName} WHERE {primaryKeyColumn.ColumnName} = {primaryKeyValue}) select 1 else select 0";
-                        var isExists = ReadSingleValue<int>(checkSql, connectionString) == 1;
-                        if (!isExists)
-                        {
-                            sqlBatch.AppendLine(CreateInsertSql(tableName, ds.Tables[0].Columns, headers, values, isPrimaryKeysHasValue, hasPrimaryKey));
-                        }
-                        else
-                        {
-                            string whereClause = string.Empty;
-                            sqlBatch.AppendLine(CreateUpdateSql(tableName, ds.Tables[0].Columns, headers, values, primaryKeyColumn.ColumnName, primaryKeyValue));
-                        }
-                    }
-
-                    if (identityInsertCheckClosedTables.IndexOf(tableName) >= 0)
-                    {
-                        sqlBatch.AppendLine($"SET IDENTITY_INSERT {tableName} OFF ");
-                        identityInsertCheckClosedTables.Remove(tableName);
-                    }
-
-                    SqlHelper.ExecuteNonQuery(connectionString, CommandType.Text, sqlBatch.ToString());
                 }
+
+                if (identityInsertCheckClosedTables.IndexOf(tableName) >= 0)
+                {
+                    sqlBatch.AppendLine($"SET IDENTITY_INSERT {tableName} OFF ");
+                    identityInsertCheckClosedTables.Remove(tableName);
+                }
+
+                SqlHelper.ExecuteNonQuery(connectionString, CommandType.Text, sqlBatch.ToString());
             }
+        }
+
+        private static void Import2DatabaseFromXMLFile(string fileName, string connectionString)
+        {
+            if (!File.Exists(fileName))
+            {
+                return;
+            }
+            XmlDocument document = new XmlDocument();
+            var reader = XmlReader.Create(fileName);
+            string tableName = string.Empty;
+            while (reader.Read())
+            {
+                
+            }
+            document.Load(reader);
+
+            //bool isPrimaryKeysHasValue = false;
+            //bool hasPrimaryKey = false;
+            //var reader = ReadAsLines(fileName);
+            //if (reader.Count() > 2)//first line table name, second line headers
+            //{
+            //    var sqlBatch = new StringBuilder();
+
+            //    var tableName = reader.First();
+            //    if (constrainCheckDisabledTables.IndexOf(tableName) < 0)
+            //    {
+            //        sqlBatch.AppendLine($"ALTER TABLE {tableName} NOCHECK CONSTRAINT ALL");
+            //        constrainCheckDisabledTables.Add(tableName);
+            //    }
+
+            //    var headers = reader
+            //        .Skip(1)
+            //        .Take(1)
+            //        .SingleOrDefault()
+            //        .Split('\t')
+            //        .ToList();
+
+            //    var records = reader.Skip(2);
+
+            //    //var primaryKeys = string.Join(",", records.Select((row) => row.Split('\t')[0]).ToArray());
+            //    var sql = $"SELECT * FROM {tableName} WHERE 1 = 0";//used for getting meta data only
+
+            //    SqlDataAdapter dataAdapter = new SqlDataAdapter(sql, connectionString);
+            //    var ds = new DataSet(tableName);
+            //    dataAdapter.FillSchema(ds, SchemaType.Source, tableName);
+            //    dataAdapter.Fill(ds, tableName);
+
+            //    hasPrimaryKey = ds.Tables[0].PrimaryKey.Count() > 0;
+
+            //    DataColumn primaryKeyColumn;
+
+            //    if (ds.Tables[0].PrimaryKey.Count() > 0)
+            //    {
+            //        primaryKeyColumn = ds.Tables[0].PrimaryKey[0];
+            //    }
+            //    else
+            //    {
+            //        string primaryKeyName = headers.First();
+            //        primaryKeyColumn = (DataColumn)
+            //            from DataColumn c in ds.Tables[0].Columns
+            //            where c.ColumnName == primaryKeyName
+            //            select c;
+            //    }
+
+            //    isPrimaryKeysHasValue = hasPrimaryKey && headers.IndexOf(primaryKeyColumn.ColumnName) >= 0;
+
+            //    foreach (var record in records)
+            //    {
+
+            //        var values = record.Split('\t').ToArray();
+
+            //        var primaryKeyValue = CreateFieldValueSql(primaryKeyColumn, values[headers.IndexOf(primaryKeyColumn.ColumnName)]);
+
+            //        //searching from firstColumn to check if record already present in DB
+            //        var checkSql = $"IF EXISTS(SELECT 1 FROM {tableName} WHERE {primaryKeyColumn.ColumnName} = {primaryKeyValue}) select 1 else select 0";
+            //        var isExists = ReadSingleValue<int>(checkSql, connectionString) == 1;
+            //        if (!isExists)
+            //        {
+            //            sqlBatch.AppendLine(CreateInsertSql(tableName, ds.Tables[0].Columns, headers, values, isPrimaryKeysHasValue, hasPrimaryKey));
+            //        }
+            //        else
+            //        {
+            //            string whereClause = string.Empty;
+            //            sqlBatch.AppendLine(CreateUpdateSql(tableName, ds.Tables[0].Columns, headers, values, primaryKeyColumn.ColumnName, primaryKeyValue));
+            //        }
+            //    }
+
+            //    if (identityInsertCheckClosedTables.IndexOf(tableName) >= 0)
+            //    {
+            //        sqlBatch.AppendLine($"SET IDENTITY_INSERT {tableName} OFF ");
+            //        identityInsertCheckClosedTables.Remove(tableName);
+            //    }
+
+            //    SqlHelper.ExecuteNonQuery(connectionString, CommandType.Text, sqlBatch.ToString());
+            //}
         }
 
         private static string CreateFieldValueSql(DataColumn field, string value)

@@ -82,7 +82,7 @@
         {
             //CopyProduct, CopyCustomer
             string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
-            DB.ImportTextFiles(dirToProcess, "AESCIS-16615", _appConfig.ConnectionCsr);
+            DB.ImportFiles(dirToProcess, "AESCIS-16615", _appConfig.ConnectionCsr);
 
             CIS.Clients.AEPEnergy.RateType.RateUtility.ApplyRateTransition(customerId, productId, soldDate, municipalAggregation, switchDate);
         }
