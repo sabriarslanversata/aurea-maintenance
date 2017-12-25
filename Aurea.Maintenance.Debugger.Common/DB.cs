@@ -366,7 +366,7 @@ namespace Aurea.Maintenance.Debugger.Common
             foreach (DataColumn column in columns)
             {
                 var colIndex = columnNames.IndexOf(column.ColumnName);
-                if (column.ColumnName != primaryKeyName)
+                if (colIndex >= 0 && column.ColumnName != primaryKeyName)//copy values which only present in file
                 {
 
                     updateSentence.Append($"[{column.ColumnName}] = {CreateFieldValueSql(column, values[colIndex])}, ");
