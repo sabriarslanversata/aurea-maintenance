@@ -150,7 +150,13 @@
     <Content Include="MockData\14-AESCIS-16615-InvoiceLog.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="MockData\15-AESCIS-16615-AcountReceivaleHist.txt">
+    <Content Include="MockData\15-AESCIS-16615-AccountsReceivableHistory.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\AESCIS-16615-InvoiceData.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\AESCIS-16615-CustomerData.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

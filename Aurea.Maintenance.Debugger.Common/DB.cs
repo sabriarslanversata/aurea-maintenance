@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.Linq;
 using CIS.Framework.Data;
 
 namespace Aurea.Maintenance.Debugger.Common
@@ -57,6 +58,7 @@ namespace Aurea.Maintenance.Debugger.Common
 
         private static readonly Dictionary<string, string> insertSqlCache = new Dictionary<string, string>();
         private static readonly Dictionary<string, string> updateSqlCache = new Dictionary<string, string>();
+        private static readonly Dictionary<string, DataSet> metaDataCache = new Dictionary<string, DataSet>();
         private static readonly List<string> constrainCheckDisabledTables = new List<string>();
         private static readonly List<string> identityInsertCheckClosedTables = new List<string>();
 
@@ -70,18 +72,20 @@ namespace Aurea.Maintenance.Debugger.Common
         /// <param name="connectionString">destination DB connection string</param>
         public static void ImportFiles(string path, string filter, string connectionString)
         {
-            
-            Directory.EnumerateFiles(path, $"*{filter}*.txt", SearchOption.AllDirectories).ForEach(
-                filename =>
-                {
-                    DB.Import2DatabaseFromTextFile(filename, connectionString);
-                }
-            );
-
+            //import xml files, one xml file can contain multiple datasets, all dataset must be child of root element,
+            // a xml result of a query can be obtained by adding 'FOR XML AUTO' end of select query
             Directory.EnumerateFiles(path, $"*{filter}*.xml", SearchOption.AllDirectories).ForEach(
                 filename =>
                 {
-                    DB.Import2DatabaseFromXMLFile(filename, connectionString);
+                    Import2DatabaseFromXMLFile(filename, connectionString);
+                }
+            );
+
+            //import text files, one text file can contain only one dataset which written at first line of file
+            Directory.EnumerateFiles(path, $"*{filter}*.txt", SearchOption.AllDirectories).ForEach(
+                filename =>
+                {
+                    Import2DatabaseFromTextFile(filename, connectionString);
                 }
             );
 
@@ -125,14 +129,19 @@ namespace Aurea.Maintenance.Debugger.Common
                     .ToList();
 
                 var records = reader.Skip(2).Where(line => !line.StartsWith("#"));
+                if(!records.Any())
+                    return;
 
-                //var primaryKeys = string.Join(",", records.Select((row) => row.Split('\t')[0]).ToArray());
-                var sql = $"SELECT * FROM {tableName} WHERE 1 = 0";//used for getting meta data only
+                if (!metaDataCache.TryGetValue(tableName, out var ds)) 
+                {
+                    var sql = $"SELECT * FROM {tableName} WHERE 1 = 0";//used for getting meta data only
 
-                SqlDataAdapter dataAdapter = new SqlDataAdapter(sql, connectionString);
-                var ds = new DataSet(tableName);
-                dataAdapter.FillSchema(ds, SchemaType.Source, tableName);
-                dataAdapter.Fill(ds, tableName);
+                    SqlDataAdapter dataAdapter = new SqlDataAdapter(sql, connectionString);
+                    ds = new DataSet(tableName);
+                    dataAdapter.FillSchema(ds, SchemaType.Source, tableName);
+                    dataAdapter.Fill(ds, tableName);
+                    metaDataCache.Add(tableName, ds);
+                }
 
                 var hasPrimaryKey = ds.Tables[0].PrimaryKey.Any();
 
@@ -161,7 +170,7 @@ namespace Aurea.Maintenance.Debugger.Common
                     var primaryKeyValue = CreateFieldValueSql(primaryKeyColumn, values[headers.IndexOf(primaryKeyColumn.ColumnName)]);
 
                     //searching from firstColumn to check if record already present in DB
-                    var checkSql = $"IF EXISTS(SELECT 1 FROM {tableName} WHERE {primaryKeyColumn.ColumnName} = {primaryKeyValue}) select 1 else select 0";
+                    var checkSql = $"IF EXISTS(SELECT 1 FROM {tableName} WHERE {primaryKeyColumn.ColumnName} = {primaryKeyValue}) SELECT 1 ELSE SELECT 0";
                     var isExists = ReadSingleValue<int>(checkSql, connectionString) == 1;
                     if (!isExists)
                     {
@@ -169,7 +178,6 @@ namespace Aurea.Maintenance.Debugger.Common
                     }
                     else
                     {
-                        string whereClause = string.Empty;
                         sqlBatch.AppendLine(CreateUpdateSql(tableName, ds.Tables[0].Columns, headers, values, primaryKeyColumn.ColumnName, primaryKeyValue));
                     }
                 }
@@ -190,94 +198,98 @@ namespace Aurea.Maintenance.Debugger.Common
             {
                 return;
             }
-            XmlDocument document = new XmlDocument();
             var reader = XmlReader.Create(fileName);
-            string tableName = string.Empty;
+            var headers = new List<string>();
+            var values = new List<string>();
+            var sqlBatch = new StringBuilder();
             while (reader.Read())
             {
-                
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    var tableName = reader.Name;
+                    if (tableName == "root")
+                    {
+                        continue;
+                    }
+
+                    if (constrainCheckDisabledTables.IndexOf(tableName) < 0)
+                    {
+                        sqlBatch.AppendLine($"ALTER TABLE {tableName} NOCHECK CONSTRAINT ALL");
+                        constrainCheckDisabledTables.Add(tableName);
+                    }
+
+                    if (XNode.ReadFrom(reader) is XElement el)
+                    {
+                        try
+                        {
+                            foreach (var xAttribute in el.Attributes())
+                            {
+                                headers.Add(xAttribute.Name.LocalName);
+                                values.Add(xAttribute.Value);
+                            }
+
+                            if (!metaDataCache.TryGetValue(tableName, out var ds))
+                            {
+                                var sql = $"SELECT * FROM {tableName} WHERE 1 = 0";//used for getting meta data only
+
+                                SqlDataAdapter dataAdapter = new SqlDataAdapter(sql, connectionString);
+                                ds = new DataSet(tableName);
+                                dataAdapter.FillSchema(ds, SchemaType.Source, tableName);
+                                dataAdapter.Fill(ds, tableName);
+                                metaDataCache.Add(tableName, ds);
+                            }
+
+                            var hasPrimaryKey = ds.Tables[0].PrimaryKey.Any();
+
+                            DataColumn primaryKeyColumn;
+
+                            if (ds.Tables[0].PrimaryKey.Any())
+                            {
+                                primaryKeyColumn = ds.Tables[0].PrimaryKey[0];
+                            }
+                            else
+                            {
+                                string primaryKeyName = headers.First();
+                                primaryKeyColumn = (DataColumn)
+                                    from DataColumn c in ds.Tables[0].Columns
+                                    where c.ColumnName == primaryKeyName
+                                    select c;
+                            }
+
+                            var isPrimaryKeysHasValue = hasPrimaryKey && headers.IndexOf(primaryKeyColumn.ColumnName) >= 0;
+                            var primaryKeyValue = CreateFieldValueSql(primaryKeyColumn, values[headers.IndexOf(primaryKeyColumn.ColumnName)]);
+
+                            //searching from firstColumn to check if record already present in DB
+                            var checkSql = $"IF EXISTS(SELECT 1 FROM {tableName} WHERE {primaryKeyColumn.ColumnName} = {primaryKeyValue}) SELECT 1 ELSE SELECT 0";
+                            var isExists = ReadSingleValue<int>(checkSql, connectionString) == 1;
+                            if (!isExists)
+                            {
+                                sqlBatch.AppendLine(CreateInsertSql(tableName, ds.Tables[0].Columns, headers, values.ToArray(), isPrimaryKeysHasValue, hasPrimaryKey));
+                            }
+                            else
+                            {
+                                sqlBatch.AppendLine(CreateUpdateSql(tableName, ds.Tables[0].Columns, headers, values.ToArray(), primaryKeyColumn.ColumnName, primaryKeyValue));
+                            }
+
+                            if (identityInsertCheckClosedTables.IndexOf(tableName) >= 0)
+                            {
+                                sqlBatch.AppendLine($"SET IDENTITY_INSERT {tableName} OFF ");
+                                identityInsertCheckClosedTables.Remove(tableName);
+                            }
+                        }
+                        finally
+                        {
+                            headers.Clear();
+                            values.Clear();
+                        }
+                    }
+                }
             }
-            document.Load(reader);
 
-            //bool isPrimaryKeysHasValue = false;
-            //bool hasPrimaryKey = false;
-            //var reader = ReadAsLines(fileName);
-            //if (reader.Count() > 2)//first line table name, second line headers
-            //{
-            //    var sqlBatch = new StringBuilder();
-
-            //    var tableName = reader.First();
-            //    if (constrainCheckDisabledTables.IndexOf(tableName) < 0)
-            //    {
-            //        sqlBatch.AppendLine($"ALTER TABLE {tableName} NOCHECK CONSTRAINT ALL");
-            //        constrainCheckDisabledTables.Add(tableName);
-            //    }
-
-            //    var headers = reader
-            //        .Skip(1)
-            //        .Take(1)
-            //        .SingleOrDefault()
-            //        .Split('\t')
-            //        .ToList();
-
-            //    var records = reader.Skip(2);
-
-            //    //var primaryKeys = string.Join(",", records.Select((row) => row.Split('\t')[0]).ToArray());
-            //    var sql = $"SELECT * FROM {tableName} WHERE 1 = 0";//used for getting meta data only
-
-            //    SqlDataAdapter dataAdapter = new SqlDataAdapter(sql, connectionString);
-            //    var ds = new DataSet(tableName);
-            //    dataAdapter.FillSchema(ds, SchemaType.Source, tableName);
-            //    dataAdapter.Fill(ds, tableName);
-
-            //    hasPrimaryKey = ds.Tables[0].PrimaryKey.Count() > 0;
-
-            //    DataColumn primaryKeyColumn;
-
-            //    if (ds.Tables[0].PrimaryKey.Count() > 0)
-            //    {
-            //        primaryKeyColumn = ds.Tables[0].PrimaryKey[0];
-            //    }
-            //    else
-            //    {
-            //        string primaryKeyName = headers.First();
-            //        primaryKeyColumn = (DataColumn)
-            //            from DataColumn c in ds.Tables[0].Columns
-            //            where c.ColumnName == primaryKeyName
-            //            select c;
-            //    }
-
-            //    isPrimaryKeysHasValue = hasPrimaryKey && headers.IndexOf(primaryKeyColumn.ColumnName) >= 0;
-
-            //    foreach (var record in records)
-            //    {
-
-            //        var values = record.Split('\t').ToArray();
-
-            //        var primaryKeyValue = CreateFieldValueSql(primaryKeyColumn, values[headers.IndexOf(primaryKeyColumn.ColumnName)]);
-
-            //        //searching from firstColumn to check if record already present in DB
-            //        var checkSql = $"IF EXISTS(SELECT 1 FROM {tableName} WHERE {primaryKeyColumn.ColumnName} = {primaryKeyValue}) select 1 else select 0";
-            //        var isExists = ReadSingleValue<int>(checkSql, connectionString) == 1;
-            //        if (!isExists)
-            //        {
-            //            sqlBatch.AppendLine(CreateInsertSql(tableName, ds.Tables[0].Columns, headers, values, isPrimaryKeysHasValue, hasPrimaryKey));
-            //        }
-            //        else
-            //        {
-            //            string whereClause = string.Empty;
-            //            sqlBatch.AppendLine(CreateUpdateSql(tableName, ds.Tables[0].Columns, headers, values, primaryKeyColumn.ColumnName, primaryKeyValue));
-            //        }
-            //    }
-
-            //    if (identityInsertCheckClosedTables.IndexOf(tableName) >= 0)
-            //    {
-            //        sqlBatch.AppendLine($"SET IDENTITY_INSERT {tableName} OFF ");
-            //        identityInsertCheckClosedTables.Remove(tableName);
-            //    }
-
-            //    SqlHelper.ExecuteNonQuery(connectionString, CommandType.Text, sqlBatch.ToString());
-            //}
+            if (sqlBatch.Length > 0)
+            {
+                SqlHelper.ExecuteNonQuery(connectionString, CommandType.Text, sqlBatch.ToString());
+            }
         }
 
         private static string CreateFieldValueSql(DataColumn field, string value)
@@ -329,7 +341,10 @@ namespace Aurea.Maintenance.Debugger.Common
             foreach (DataColumn column in columns)
             {
                 var colIndex = columnNames.IndexOf(column.ColumnName);
-                valuesLine.Append($"{CreateFieldValueSql(column, values[colIndex])}, ");
+                if (colIndex >= 0)//copy values which only present in file
+                {
+                    valuesLine.Append($"{CreateFieldValueSql(column, values[colIndex])}, ");
+                }
             }
             sql.AppendLine(valuesLine.ToString().Remove(valuesLine.Length - 2, 2));
 
