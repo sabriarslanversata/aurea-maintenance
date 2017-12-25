@@ -345,6 +345,10 @@ namespace Aurea.Maintenance.Debugger.Common
                 {
                     valuesLine.Append($"{CreateFieldValueSql(column, values[colIndex])}, ");
                 }
+                else
+                {
+                    valuesLine.Append($"{CreateFieldValueSql(column, "NULL")}, ");
+                }
             }
             sql.AppendLine(valuesLine.ToString().Remove(valuesLine.Length - 2, 2));
 
@@ -366,10 +370,14 @@ namespace Aurea.Maintenance.Debugger.Common
             foreach (DataColumn column in columns)
             {
                 var colIndex = columnNames.IndexOf(column.ColumnName);
-                if (colIndex >= 0 && column.ColumnName != primaryKeyName)//copy values which only present in file
+                if (colIndex >= 0 && column.ColumnName != primaryKeyName) //copy values which only present in file
                 {
 
                     updateSentence.Append($"[{column.ColumnName}] = {CreateFieldValueSql(column, values[colIndex])}, ");
+                }
+                else if (column.ColumnName != primaryKeyName)
+                {
+                    updateSentence.Append($"[{column.ColumnName}] = {CreateFieldValueSql(column, "NULL")}, ");
                 }
             }
             sql.AppendLine(updateSentence.ToString().Remove(updateSentence.Length - 2, 2));
