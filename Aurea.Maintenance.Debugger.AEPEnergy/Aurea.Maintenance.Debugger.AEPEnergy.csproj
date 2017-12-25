@@ -108,16 +108,49 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="MockData\2-AESCIS-16615-Products.txt">
+    <Content Include="MockData\03-AESCIS-16615-Products.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="MockData\1-AESCIS-16615-RateDetails.txt">
+    <Content Include="MockData\02-AESCIS-16615-RateDetails.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="MockData\0-AESCIS-16615-Rates.txt">
+    <Content Include="MockData\01-AESCIS-16615-Rates.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="MockData\3-AESCIS-16615-RateTransition.txt">
+    <Content Include="MockData\04-AESCIS-16615-RateTransition.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\05-AESCIS-16615-Premise.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\06-AESCIS-16615-Customer.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\07-AESCIS-16615-Address.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\08-AESCIS-16615-AccountsReceivable.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\09-AESCIS-16615-CustomerAdditionalInfo.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\10-AESCIS-16615-Meter.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\11-AESCIS-16615-Consumption.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\12-AESCIS-16615-Invoice.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\13-AESCIS-16615-InvoiceXml.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\14-AESCIS-16615-InvoiceLog.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\15-AESCIS-16615-AcountReceivaleHist.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
