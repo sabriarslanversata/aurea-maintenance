@@ -54,248 +54,217 @@ namespace Aurea.Maintenance.Debugger.Common
                     yield return reader.ReadLine();
         }
 
+        private static readonly Dictionary<string, string> insertSqlCache = new Dictionary<string, string>();
+        private static readonly Dictionary<string, string> updateSqlCache = new Dictionary<string, string>();
+        private static readonly List<string> constrainCheckDisabledTables = new List<string>();
+        private static readonly List<string> identityInsertCheckClosedTables = new List<string>();
+
+        /// <summary>
+        /// Imports Texts files found with given filter to DB
+        /// <para>File content should be: first line TableName, second line ColumnNames, then data</para>
+        /// <para>Supports updates only if there is primary key exists on Destination Table, otherwise it would update row via first column's value</para>
+        /// </summary>
+        /// <param name="path">root path of the start searching for text files</param>
+        /// <param name="filter">file name filter, ie. Ticket Number</param>
+        /// <param name="connectionString">destination DB connection string</param>
+        public static void ImportTextFiles(string path, string filter, string connectionString)
+        {
+
+            Directory.EnumerateFiles(path, $"*{filter}*.txt", SearchOption.AllDirectories).ForEach(
+                filename =>
+                {
+                    DB.Import2DatabaseFromTextFile(filename, connectionString);
+                }
+            );
+
+            if (constrainCheckDisabledTables.Count > 0)
+            {
+                var sqlBatch = new StringBuilder();
+                constrainCheckDisabledTables.ForEach(tableName =>
+                {
+                    sqlBatch.AppendLine($"ALTER TABLE {tableName} WITH CHECK CHECK CONSTRAINT ALL");
+                });
+
+                SqlHelper.ExecuteNonQuery(connectionString, CommandType.Text, sqlBatch.ToString());
+                constrainCheckDisabledTables.Clear();
+            }
+        }
+
         /// <summary>
         /// Imports data from File
+        /// <para>File content should be: first line TableName, second line ColumnNames, then data</para>
+        /// <para>Supports updates only if there is primary key exists on Destination Table, otherwise it would update row via first column's value</para>
         /// </summary>
-        /// <param name="fileName"></param>
-        /// <param name="connectionString"></param>
-        public static void Import2DatabaseFromTextFile(string fileName, string connectionString, bool hasPrimaryKey = true, bool primaryKeysHasValue = true)
+        /// <param name="fileName">file name to import</param>
+        /// <param name="connectionString">destination DB connection string</param>
+        public static void Import2DatabaseFromTextFile(string fileName, string connectionString)
         {
             //TODO: create insert or update sql regarding datatype and existence
             if (File.Exists(fileName))
             {
+                bool isPrimaryKeysHasValue = false;
+                bool hasPrimaryKey = false;
                 var reader = ReadAsLines(fileName);
                 if (reader.Count() > 2)//first line table name, second line headers
                 {
+                    var sqlBatch = new StringBuilder();
+
                     var tableName = reader.First();
-                    var headerRow = reader
+                    if (constrainCheckDisabledTables.IndexOf(tableName) < 0)
+                    {
+                        sqlBatch.AppendLine($"ALTER TABLE {tableName} NOCHECK CONSTRAINT ALL");
+                        constrainCheckDisabledTables.Add(tableName);
+                    }
+
+                    var headers = reader
                         .Skip(1)
-                        .Take(1);
-                    var headers = new List<string>();
-                    foreach (string r in headerRow)
+                        .Take(1)
+                        .SingleOrDefault()
+                        .Split('\t')
+                        .ToList();
+
+                    var records = reader.Skip(2);
+
+                    //var primaryKeys = string.Join(",", records.Select((row) => row.Split('\t')[0]).ToArray());
+                    var sql = $"SELECT * FROM {tableName} WHERE 1 = 0";//used for getting meta data only
+
+                    SqlDataAdapter dataAdapter = new SqlDataAdapter(sql, connectionString);
+                    var ds = new DataSet(tableName);
+                    dataAdapter.FillSchema(ds, SchemaType.Source, tableName);
+                    dataAdapter.Fill(ds, tableName);
+
+                    hasPrimaryKey = ds.Tables[0].PrimaryKey.Count() > 0;
+
+                    DataColumn primaryKeyColumn;
+
+                    if (ds.Tables[0].PrimaryKey.Count() > 0)
                     {
-                        headers = r.Split('\t').ToList();
+                        primaryKeyColumn = ds.Tables[0].PrimaryKey[0];
                     }
-
-                    var data = reader.Skip(2);
-                    var primaryKeys = string.Join(",", data.Select((row) => row.Split('\t')[0]).ToArray());
-                    var sql = $"SELECT * FROM {tableName} WHERE {headers.First().ToString()} IN ({primaryKeys})";
-
-                    using (var dbConnection = new SqlConnection(connectionString))
+                    else
                     {
-                        dbConnection.Open();
-                        //using (var dbTransaction = dbConnection.BeginTransaction())
+                        string primaryKeyName = headers.First();
+                        primaryKeyColumn = (DataColumn)
+                            from DataColumn c in ds.Tables[0].Columns
+                            where c.ColumnName == primaryKeyName
+                            select c;
+                    }
+                        
+                    isPrimaryKeysHasValue = hasPrimaryKey && headers.IndexOf(primaryKeyColumn.ColumnName) >= 0;
+
+                    foreach (var record in records)
+                    {
+
+                        var values = record.Split('\t').ToArray();
+
+                        var primaryKeyValue = CreateFieldValueSql(primaryKeyColumn, values[headers.IndexOf(primaryKeyColumn.ColumnName)]);
+
+                        //searching from firstColumn to check if record already present in DB
+                        var checkSql = $"IF EXISTS(SELECT 1 FROM {tableName} WHERE {primaryKeyColumn.ColumnName} = {primaryKeyValue}) select 1 else select 0";
+                        var isExists = ReadSingleValue<int>(checkSql, connectionString) == 1;
+                        if (!isExists)
                         {
-                            try
-                            {
-                                SqlDataAdapter dataAdapter = new SqlDataAdapter(sql, connectionString);   
-                                var ds = new DataSet(tableName);
-                                dataAdapter.FillSchema(ds, SchemaType.Source, tableName);
-                                dataAdapter.Fill(ds, tableName);
-                                foreach (var record in data)
-                                {
-                                    var values = record.Split('\t').ToArray();
-
-                                    //var checkSql = $"IF EXISTS(SELECT 1 FROM {tableName} WHERE {headers.First().ToString()}={values[0]}) select 1 else select 0";
-                                    //var isExists = ReadSingleValue<int>(checkSql, connectionString) == 1;
-                                    //if (!isExists)
-                                    {
-                                        var row = ds.Tables[0].Rows.Find(int.Parse(values[0]));
-                                        var isNewRow = false;
-                                        if (row == null)
-                                        {
-                                            row = ds.Tables[0].NewRow();
-                                            isNewRow = true;
-                                        }
-                                        foreach (DataColumn col in ds.Tables[0].Columns)
-                                        {
-                                            var colIndex = headers.IndexOf(col.ColumnName);
-                                            if ((isNewRow && colIndex >= 0) || (!isNewRow && colIndex >= 1)) 
-                                            {
-                                                var value = values[colIndex];
-                                                if (value != "NULL")
-                                                {
-                                                    switch (Type.GetTypeCode(col.DataType))
-                                                    {
-                                                        case TypeCode.Boolean:
-                                                            if (Boolean.TryParse(value, out var boolres))
-                                                                row.SetField<Boolean>(col, boolres);
-                                                            else row.SetField<Boolean>(col, false);
-                                                            break;
-                                                        case TypeCode.Char:
-                                                        case TypeCode.String:
-                                                            row.SetField<string>(col, value);
-                                                            break;
-                                                        case TypeCode.Single:
-                                                            if (Single.TryParse(value, out var singleres))
-                                                                row.SetField(col, singleres);
-                                                            else row.SetField<Single>(col, 0);
-                                                            break;
-                                                        case TypeCode.Int16:
-                                                            if (Int16.TryParse(value, out var int16res))
-                                                                row.SetField(col, int16res);
-                                                            else row.SetField<Int16>(col, 0);
-                                                            break;
-                                                        case TypeCode.Int32:
-                                                            if (Int32.TryParse(value, out var int32res))
-                                                                row.SetField(col, int32res);
-                                                            else row.SetField<Int32>(col, 0);
-                                                            break;
-                                                        case TypeCode.Int64:
-                                                            if (Int64.TryParse(value, out var int64res))
-                                                                row.SetField(col, int64res);
-                                                            else row.SetField<Int64>(col, 0);
-                                                            break;
-                                                        case TypeCode.UInt16:
-                                                            if (Int16.TryParse(value, out var uint16res))
-                                                                row.SetField(col, uint16res);
-                                                            else row.SetField<UInt16>(col, 0);
-                                                            break;
-                                                        case TypeCode.UInt32:
-                                                            if (Int32.TryParse(value, out var uint32res))
-                                                                row.SetField(col, uint32res);
-                                                            else row.SetField<UInt32>(col, 0);
-                                                            break;
-                                                        case TypeCode.UInt64:
-                                                            if (Int64.TryParse(value, out var uint64res))
-                                                                row.SetField(col, uint64res);
-                                                            else row.SetField<UInt64>(col, 0);
-                                                            break;
-                                                        case TypeCode.Decimal:
-                                                            if (Decimal.TryParse(value, out var decimalres))
-                                                                row.SetField(col, decimalres);
-                                                            else row.SetField<Decimal>(col, 0);
-                                                            break;
-                                                        case TypeCode.Double:
-                                                            if (Double.TryParse(value, out var doubleres))
-                                                                row.SetField(col, doubleres);
-                                                            else row.SetField<Double>(col, 0);
-                                                            break;
-                                                        case TypeCode.DateTime:
-                                                            if (DateTime.TryParse(value, out var dateTimeres))
-                                                                row.SetField(col, dateTimeres);
-                                                            else row.SetField<DateTime>(col, DateTime.MinValue);
-                                                            break;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        if (isNewRow)
-                                            ds.Tables[0].Rows.Add(row);
-                                    }
-                                }
-                                //if (ds.HasChanges())
-                                //{
-                                //    ds.AcceptChanges();
-                                //}
-
-                                var cmdBuilder = new SqlCommandBuilder(dataAdapter);
-                                cmdBuilder.GetInsertCommand();
-                                cmdBuilder.GetUpdateCommand();
-                                
-                                dataAdapter.InsertCommand = GenerateInsertCommand(tableName, ds.Tables[0].Columns, headers.ToArray(), primaryKeysHasValue);
-                                dataAdapter.Update(ds, ds.Tables[0].TableName);
-                            }
-                            catch
-                            {
-                                //dbTransaction.Rollback();
-                                throw;
-                            }
-                            //dbTransaction.Commit();
+                            sqlBatch.AppendLine(CreateInsertSql(tableName, ds.Tables[0].Columns, headers, values, isPrimaryKeysHasValue, hasPrimaryKey));
                         }
-                        dbConnection.Close();
+                        else
+                        {
+                            string whereClause = string.Empty;
+                            sqlBatch.AppendLine(CreateUpdateSql(tableName, ds.Tables[0].Columns, headers, values, primaryKeyColumn.ColumnName, primaryKeyValue));
+                        }
                     }
+
+                    if (identityInsertCheckClosedTables.IndexOf(tableName) >= 0)
+                    {
+                        sqlBatch.AppendLine($"SET IDENTITY_INSERT {tableName} OFF ");
+                        identityInsertCheckClosedTables.Remove(tableName);
+                    }
+
+                    SqlHelper.ExecuteNonQuery(connectionString, CommandType.Text, sqlBatch.ToString());
                 }
             }
-            //string[] lines = dataWithColHeaders.Replace("\r\n","\n").Replace("\r","\n").Split('\n');
-
         }
 
-        private static SqlCommand CreateTextCommandWithParameters(DataColumnCollection columns)
+        private static string CreateFieldValueSql(DataColumn field, string value)
         {
-            var cmd = new SqlCommand
+            string toReturn = "NULL";
+            if (value != "NULL")
             {
-                CommandType = CommandType.Text
-            };
+                switch (Type.GetTypeCode(field.DataType))
+                {
+                    case TypeCode.Char:
+                    case TypeCode.String:
+                    case TypeCode.DateTime:
+                        toReturn = $"'{value}'";
+                        break;
+                    case TypeCode.Single:
+                    case TypeCode.Int16:
+                    case TypeCode.Int32:
+                    case TypeCode.Int64:
+                    case TypeCode.UInt16:
+                    case TypeCode.UInt32:
+                    case TypeCode.UInt64:
+                    case TypeCode.Decimal:
+                    case TypeCode.Double:
+                    case TypeCode.Boolean:
+                        toReturn = value;
+                        break;
+                }
+            }
+            return toReturn;
+        }
+        
+        private static string CreateInsertSql(string tableName, DataColumnCollection columns, List<string> columnNames, string[] values, bool isPrimaryKeysHasValue, bool hasPrimaryKey)
+        {
+            var sql = new StringBuilder();
+            if (hasPrimaryKey && isPrimaryKeysHasValue && identityInsertCheckClosedTables.IndexOf(tableName) < 0)
+            {
+                sql.AppendLine($"SET IDENTITY_INSERT {tableName} ON ");
+                identityInsertCheckClosedTables.Add(tableName);
+            }
+
+
+            if (!insertSqlCache.TryGetValue(tableName, out string insertSqlHeader))
+            {
+                insertSqlHeader = $"INSERT INTO [{tableName}] ( [{string.Join("],[", columnNames)}] ) SELECT ";
+                insertSqlCache.Add(tableName, insertSqlHeader);
+            }
+            sql.AppendLine(insertSqlHeader);
+            var valuesLine = new StringBuilder();
             foreach (DataColumn column in columns)
             {
-                var parameter = cmd.CreateParameter();
-                parameter.Direction = ParameterDirection.Input;
-                parameter.DbType = GetDBType(column.DataType);
-                parameter.ParameterName = $"@p{column.Ordinal}";
+                var colIndex = columnNames.IndexOf(column.ColumnName);
+                valuesLine.Append($"{CreateFieldValueSql(column, values[colIndex])}, ");
             }
-            return cmd;
+            sql.AppendLine(valuesLine.ToString().Remove(valuesLine.Length - 2, 2));
+
+
+            return sql.ToString();
         }
 
-        private static SqlCommand GenerateUpdateCommandSql(string tableName, DataColumnCollection columns, string[] columnNames, bool hasPrimaryKey)
+        private static string CreateUpdateSql(string tableName, DataColumnCollection columns, List<string> columnNames, string[] values, string primaryKeyName, string primaryKeyValue)
         {
-            var cmd = CreateTextCommandWithParameters(columns);
-
-
-            int[] columnIndexes = columnNames.Select((v, i) => i).ToArray();
-            string[] columnUpdateValues = columnNames.Select((v, i) => $"{i}").ToArray();
-
             var sql = new StringBuilder();
-            
-            sql.AppendLine($"UPDATE [{tableName}] SET ( [{string.Join("],[", columnNames)}] ) ");
-
-            sql.AppendLine($"UPDATE [{tableName}] SET ( [{string.Join("],[", columnNames)}] ) ");
-
-            sql.AppendLine($"SELECT @p{string.Join(",@p", columnIndexes)} ");
-
-            if (primaryKeysHasValue)
-                sql.AppendLine($"SET IDENTITY_INSERT {tableName} OFF ");
-
-            cmd.CommandText = sql.ToString();
-            return cmd;
-        }
-
-        private static SqlCommand GenerateInsertCommand(string tableName, DataColumnCollection columns, string[] columnNames, bool primaryKeysHasValue)
-        {
-            var cmd = CreateTextCommandWithParameters(columns);
-
-
-            int[] columnIndexes;
-            if(primaryKeysHasValue)
-                columnIndexes = columnNames.Select((v, i) => i).ToArray();
-            else
-                columnIndexes = columnNames.Select((v, i) => i).Skip(1).ToArray();
-
-            var sql = new StringBuilder();
-            if (primaryKeysHasValue)
-                sql.AppendLine($"SET IDENTITY_INSERT {tableName} ON ");
-
-            sql.AppendLine($"INSERT INTO [{tableName}] ( [{string.Join("],[", columnNames)}] ) ");
-            sql.AppendLine($"SELECT @p{string.Join(",@p", columnIndexes)} ");
-
-            if (primaryKeysHasValue)
-                sql.AppendLine($"SET IDENTITY_INSERT {tableName} OFF ");
-
-            cmd.CommandText = sql.ToString();
-            return cmd;
-        }
-
-        private static DbType GetDBType(System.Type theType)
-        {
-            var p1 = new SqlParameter();
-            var tc = System.ComponentModel.TypeDescriptor.GetConverter(p1.DbType);
-            if (tc.CanConvertFrom(theType))
+            if (!updateSqlCache.TryGetValue(tableName, out string updateSqlHeader))
             {
-                p1.DbType = (DbType)tc.ConvertFrom(theType.Name);
+                updateSqlHeader = $"UPDATE [{tableName}] SET ";
+                updateSqlCache.Add(tableName, updateSqlHeader);
             }
-            else
+            sql.AppendLine(updateSqlHeader);
+
+            var updateSentence = new StringBuilder();
+            foreach (DataColumn column in columns)
             {
-                //Try brute force
-                try
+                var colIndex = columnNames.IndexOf(column.ColumnName);
+                if (column.ColumnName != primaryKeyName)
                 {
-                    p1.DbType = (DbType)tc.ConvertFrom(theType.Name);
-                }
-                catch (Exception)
-                {
-                    //Do Nothing; will return NVarChar as default
+
+                    updateSentence.Append($"[{column.ColumnName}] = {CreateFieldValueSql(column, values[colIndex])}, ");
                 }
             }
-            return p1.DbType;
+            sql.AppendLine(updateSentence.ToString().Remove(updateSentence.Length - 2, 2));
+
+            sql.AppendLine($"WHERE {primaryKeyName} = {primaryKeyValue} ");
+            return sql.ToString();
         }
 
     }

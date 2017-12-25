@@ -295,12 +295,13 @@ SET IDENTITY_INSERT daes_AEPEnergyMarket..tbl_814_Service_Meter OFF
         private static void CreateProducts(string filter)
         {
             string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
-            Directory.EnumerateFiles(dirToProcess, $"*{filter}*.txt", SearchOption.AllDirectories).ForEach(
-                filename =>
-                {
-                    DB.Import2DatabaseFromTextFile(filename, _appConfig.ConnectionCsr);
-                }
-            );
+            DB.ImportTextFiles(dirToProcess, filter, _appConfig.ConnectionCsr);
+            //Directory.EnumerateFiles(dirToProcess, $"*{filter}*.txt", SearchOption.AllDirectories).ForEach(
+            //    filename =>
+            //    {
+            //        DB.Import2DatabaseFromTextFile(filename, _appConfig.ConnectionCsr);
+            //    }
+            //);
         }
 
         private static void CopyProduct(int productId, int maxDepth = 30)
