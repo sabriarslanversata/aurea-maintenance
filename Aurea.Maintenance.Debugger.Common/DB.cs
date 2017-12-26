@@ -571,7 +571,7 @@ namespace Aurea.Maintenance.Debugger.Common
             }
             sql.AppendLine(updateSentence.ToString().Remove(updateSentence.Length - 2, 2));
 
-            sql.AppendLine($"WHERE {primaryKeyName} = {primaryKeyValue} ");
+            sql.AppendLine($"WHERE [{primaryKeyName}] = {primaryKeyValue} ");
             return sql.ToString();
         }
 

@@ -141,7 +141,7 @@ DECLARE @EventingQueues TABLE (EventingQueueId INT)
 DECLARE @EventActionQueues TABLE (EventActionQueueId INT)
 
 INSERT INTO @EventingQueues (EventingQueueId)
-SELECT DISTINCT eq.EventinQueueId
+SELECT DISTINCT eq.EventingQueueId
 FROM daes_BillingAdmin..EventActionQueue eaq
 INNER JOIN daes_BillingAdmin..EventingQueue eq on eq.EventingQueueId = eaq.EventingQueueId
 WHERE eaq.CustId = 19981 and eq.ClientId = 52 AND eaq.Source = 'ChangeRequest' AND eaq.SourceId = 75117
@@ -153,8 +153,8 @@ INNER JOIN daes_BillingAdmin..EventingQueue eq on eq.EventingQueueId = eaq.Event
 WHERE eaq.CustId = 19981 and eq.ClientId = 52 AND eaq.Source = 'ChangeRequest' AND eaq.SourceId = 75117
 
 DELETE FROM daes_BillingAdmin..EventActionQueueParameter WHERE EventActionQueueId IN (SELECT EventActionQueueId FROM @EventActionQueues)
-DEETE FROM daes_BillingAdmin..EventActionQueue WHERE EventActionQueueId IN (SELECT EventActionQueueId FROM @EventActionQueues)
-DEETE FROM daes_BillingAdmin..EventingQueue WHERE EventingQueueId IN (SELECT EventingQueueId FROM @EventingQueues)
+DELETE FROM daes_BillingAdmin..EventActionQueue WHERE EventActionQueueId IN (SELECT EventActionQueueId FROM @EventActionQueues)
+DELETE FROM daes_BillingAdmin..EventingQueue WHERE EventingQueueId IN (SELECT EventingQueueId FROM @EventingQueues)
 
 UPDATE CustomerTransactionRequest SET EventCleared = 0 WHERE RequestID IN (4727194, 4727195)
 UPDATE ChangeRequest SET StatusID = 1 WHERE ChangeRequestID = 75117
@@ -239,7 +239,7 @@ UPDATE ChangeRequest SET StatusID = 1 WHERE ChangeRequestID = 75117
 
         private static void GenerateEvents(List<int> eventTypeIds)
         {
-            var list = CIS.Element.Core.Event.EventTypeList.LoadDirectlyCallableEvents(_clientConfig.ClientId);
+            var list = CIS.Element.Core.Event.EventTypeList.Load(_clientConfig.ClientId);
 
             eventTypeIds.ForEach(id =>
             {
