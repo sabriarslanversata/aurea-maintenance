@@ -117,26 +117,22 @@
             var sql = string.Empty;
             string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
             DB.ImportFiles(dirToProcess, "AESCIS-16615-Basic", _appConfig.ConnectionCsr);
-            
+
+
+            // mark old EventEvaluationQueue entries as processed and delete old EventEvaluationQueue for ChangeRequest
+            sql = @"
+UPDATE EventEvaluationQueue SET Status = 1, ProcessDate = GETDATE()
+DELETE FROM EventEvaluationQueue WHERE TypeId = 7 AND SourceID = 75117"
+;
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
+
             //import RateTransition and ChangeRequest
             DB.ImportFiles(dirToProcess, "AESCIS-16615-RateTransition", _appConfig.ConnectionCsr);
             
             // mark RateTransition as pending and ChangeRequest as new
             sql = @"
-UPDATE RateTransition SET StatusID = 1 WHERE RateTransitionID = 974480
-UPDATE ChangeRequest SET StatusID = 1 WHERE ChangeRequestID = 75117
-";
-            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
-            
-            // execute ChangeRequestEvaluation
-            GenerateEvents(new List<int> { 16 });//Change Request Evaluation - ChangeRequestEvaluation
-            ProcessEvents();
-            
-            // import 814_C Accept Records to DB
-            DB.ImportFiles(dirToProcess, "AESCIS-16615-814Accept", _appConfig.ConnectionCsr);
-            
-            // delete old Events if exists and mark CTR as unprocessed
-            sql = @"
+
+
 DECLARE @EventingQueues TABLE (EventingQueueId INT)
 DECLARE @EventActionQueues TABLE (EventActionQueueId INT)
 
@@ -156,9 +152,21 @@ DELETE FROM daes_BillingAdmin..EventActionQueueParameter WHERE EventActionQueueI
 DELETE FROM daes_BillingAdmin..EventActionQueue WHERE EventActionQueueId IN (SELECT EventActionQueueId FROM @EventActionQueues)
 DELETE FROM daes_BillingAdmin..EventingQueue WHERE EventingQueueId IN (SELECT EventingQueueId FROM @EventingQueues)
 
-UPDATE CustomerTransactionRequest SET EventCleared = 0 WHERE RequestID IN (4727194, 4727195)
 UPDATE ChangeRequest SET StatusID = 1 WHERE ChangeRequestID = 75117
+UPDATE RateTransition SET StatusID = 1 WHERE RateTransitionID = 974480
+";
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
 
+            // execute EventQueueEvaluation, when change request created or updated the EventQueueEvaluation entry would created automatically via SQL Trigger t_ChangeRequest_EventEvaluationQueue
+            GenerateEvents(new List<int> { 27 }); // EventQueueEvaluation
+            ProcessEvents();
+            
+            // import 814_C Accept Records to DB
+            DB.ImportFiles(dirToProcess, "AESCIS -16615-814Accept", _appConfig.ConnectionCsr);
+            
+            // delete old Events if exists and mark CTR as unprocessed
+            sql = @"
+UPDATE CustomerTransactionRequest SET EventCleared = 0 WHERE RequestID IN (4727194, 4727195)
 ";
             SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
 

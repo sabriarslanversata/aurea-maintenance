@@ -228,8 +228,6 @@ namespace Aurea.Maintenance.Debugger.Common
             var reader = XmlReader.Create(fileName);
             var dataHeaders = new List<string>();
             var dataValues = new List<string>();
-            var dbHeaders = new List<string>();
-            var dbValues = new List<string>();
             var sqlBatch = new StringBuilder();
 
             sqlBatch.AppendLine($"DECLARE @RecordStatus TABLE (TableName VARCHAR(255), RecordID INT, Status INT)");
@@ -296,8 +294,6 @@ namespace Aurea.Maintenance.Debugger.Common
                         {
                             dataHeaders.Clear();
                             dataValues.Clear();
-                            dbHeaders.Clear();
-                            dbValues.Clear();
                         }
                     }
                 }
