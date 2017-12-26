@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Common.Models" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Common.Models" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation="https://ua-svc.aepenergybilling.com/EnrollmentService.svc/Metadata?xsd=xsd2" namespace="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Enrollments.Models" />
+  <xs:import schemaLocation="https://ua-svc.aepenergybilling.com/EnrollmentService.svc/Metadata?xsd=xsd4" namespace="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Models.Legacy" />
+  <xs:complexType name="ResponseOfArrayOfProcessingStatusE9yAdE_S5">
+    <xs:annotation>
+      <xs:appinfo>
+        <GenericType Name="ResponseOf{0}{#}" Namespace="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Common.Models" xmlns="http://schemas.microsoft.com/2003/10/Serialization/">
+          <GenericParameter Name="ArrayOfProcessingStatus" Namespace="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Enrollments.Models" />
+        </GenericType>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" name="Code" type="tns:QueryResponseCodeEnum" />
+      <xs:element minOccurs="0" name="Message" nillable="true" type="xs:string" />
+      <xs:element xmlns:q1="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Enrollments.Models" minOccurs="0" name="Model" nillable="true" type="q1:ArrayOfProcessingStatus" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ResponseOfArrayOfProcessingStatusE9yAdE_S5" nillable="true" type="tns:ResponseOfArrayOfProcessingStatusE9yAdE_S5" />
+  <xs:simpleType name="QueryResponseCodeEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Ok" />
+      <xs:enumeration value="PackageError" />
+      <xs:enumeration value="ValidationError" />
+      <xs:enumeration value="UnexpectedResultError" />
+      <xs:enumeration value="InternalError" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="QueryResponseCodeEnum" nillable="true" type="tns:QueryResponseCodeEnum" />
+  <xs:complexType name="ResponseOfArrayOfProductE9yAdE_S5">
+    <xs:annotation>
+      <xs:appinfo>
+        <GenericType Name="ResponseOf{0}{#}" Namespace="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Common.Models" xmlns="http://schemas.microsoft.com/2003/10/Serialization/">
+          <GenericParameter Name="ArrayOfProduct" Namespace="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Enrollments.Models" />
+        </GenericType>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" name="Code" type="tns:QueryResponseCodeEnum" />
+      <xs:element minOccurs="0" name="Message" nillable="true" type="xs:string" />
+      <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Enrollments.Models" minOccurs="0" name="Model" nillable="true" type="q2:ArrayOfProduct" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ResponseOfArrayOfProductE9yAdE_S5" nillable="true" type="tns:ResponseOfArrayOfProductE9yAdE_S5" />
+  <xs:complexType name="ResponseOfProductE9yAdE_S5">
+    <xs:annotation>
+      <xs:appinfo>
+        <GenericType Name="ResponseOf{0}{#}" Namespace="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Common.Models" xmlns="http://schemas.microsoft.com/2003/10/Serialization/">
+          <GenericParameter Name="Product" Namespace="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Enrollments.Models" />
+        </GenericType>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" name="Code" type="tns:QueryResponseCodeEnum" />
+      <xs:element minOccurs="0" name="Message" nillable="true" type="xs:string" />
+      <xs:element xmlns:q3="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Enrollments.Models" minOccurs="0" name="Model" nillable="true" type="q3:Product" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ResponseOfProductE9yAdE_S5" nillable="true" type="tns:ResponseOfProductE9yAdE_S5" />
+  <xs:complexType name="ResponseOfRateTransitionMessagesGWI6rpc">
+    <xs:annotation>
+      <xs:appinfo>
+        <GenericType Name="ResponseOf{0}{#}" Namespace="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Common.Models" xmlns="http://schemas.microsoft.com/2003/10/Serialization/">
+          <GenericParameter Name="RateTransitionMessage" Namespace="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Models.Legacy" />
+        </GenericType>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" name="Code" type="tns:QueryResponseCodeEnum" />
+      <xs:element minOccurs="0" name="Message" nillable="true" type="xs:string" />
+      <xs:element xmlns:q4="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Models.Legacy" minOccurs="0" name="Model" nillable="true" type="q4:RateTransitionMessage" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ResponseOfRateTransitionMessagesGWI6rpc" nillable="true" type="tns:ResponseOfRateTransitionMessagesGWI6rpc" />
+</xs:schema>

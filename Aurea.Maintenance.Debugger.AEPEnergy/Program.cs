@@ -18,6 +18,7 @@
     using System.IO;
     using System.Reflection;
     using Aurea;
+    using Aurea.Logging;
 
     public class MyImport : CIS.Import.BaseImport
     {
@@ -64,7 +65,7 @@
     {
         private static ClientEnvironmentConfiguration _clientConfig;
         private static GlobalApplicationConfigurationDS.GlobalApplicationConfiguration _appConfig;
-
+        private static readonly ILogger _logger = new Logger();
         static void Main(string[] args)
         {
             
@@ -73,16 +74,31 @@
             _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
 
             //System.ServiceModel.ServiceSecurityContext.Current.PrimaryIdentity.Name = Clients.AEP.GetServiceGuid.ToString();
-
+            // simulate_AESCIS16615_WS();
             //Simulate_AESCIS17193("4184386");
             Simulate_AESCIS16615(19981, 543, DateTime.Parse("2017-12-05T23:31:41-06:00"), "N", DateTime.Today.Date);
+
+            _logger.Info("Debug Session has ended");
+            Console.ReadKey();
+        }
+
+        private static void simulate_AESCIS16615_WS()
+        {
+            AEPEnroll.EnrollmentServiceClient client = new AEPEnroll.EnrollmentServiceClient();
+            client.ClientCredentials.UserName.UserName = "21F65535-F437-4167-8251-393F1753581E";
+            client.ClientCredentials.UserName.Password = "Password1";
+            var rspnse = client.RetainCustomer(19981, 543, DateTime.Parse("2017-12-05T23:31:41-06:00"), "N");
+            _logger.Info($"Got Response {rspnse.Message.ToString()}");
+            
+            
         }
 
         private static void Simulate_AESCIS16615(int customerId, int productId, DateTime soldDate, string municipalAggregation, DateTime? switchDate = null)
         {
             //CopyProduct, CopyCustomer
-            string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
-            DB.ImportFiles(dirToProcess, "AESCIS-16615", _appConfig.ConnectionCsr);
+            
+            //string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
+            //DB.ImportFiles(dirToProcess, "AESCIS-16615", _appConfig.ConnectionCsr);
 
             CIS.Clients.AEPEnergy.RateType.RateUtility.ApplyRateTransition(customerId, productId, soldDate, municipalAggregation, switchDate);
         }
