@@ -19,6 +19,8 @@
     using System.Reflection;
     using Aurea;
     using Aurea.Logging;
+    using System.Security.Cryptography.X509Certificates;
+    using System.Net.Security;
 
     public class MyImport : CIS.Import.BaseImport
     {
@@ -74,16 +76,23 @@
             _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
 
             //System.ServiceModel.ServiceSecurityContext.Current.PrimaryIdentity.Name = Clients.AEP.GetServiceGuid.ToString();
-            // simulate_AESCIS16615_WS();
-            //Simulate_AESCIS17193("4184386");
-            Simulate_AESCIS16615(19981, 543, DateTime.Parse("2017-12-05T23:31:41-06:00"), "N", DateTime.Today.Date);
 
+            //Simulate_AESCIS17193("4184386");
+            //simulate_AESCIS16615_WS();
+            //Simulate_AESCIS16615(19981, 543, DateTime.Parse("2017-12-05T23:31:41-06:00"), "N", DateTime.Today.Date);
+            Simulate_AESCIS16615_AfterRateTransition();
             _logger.Info("Debug Session has ended");
             Console.ReadKey();
         }
 
         private static void simulate_AESCIS16615_WS()
         {
+            System.Net.ServicePointManager.ServerCertificateValidationCallback =
+                delegate (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+                {
+                    return true;
+                };
+
             AEPEnroll.EnrollmentServiceClient client = new AEPEnroll.EnrollmentServiceClient();
             client.ClientCredentials.UserName.UserName = "21F65535-F437-4167-8251-393F1753581E";
             client.ClientCredentials.UserName.Password = "Password1";
@@ -96,11 +105,24 @@
         private static void Simulate_AESCIS16615(int customerId, int productId, DateTime soldDate, string municipalAggregation, DateTime? switchDate = null)
         {
             //CopyProduct, CopyCustomer
-            
-            //string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
-            //DB.ImportFiles(dirToProcess, "AESCIS-16615", _appConfig.ConnectionCsr);
+
+            string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
+            DB.ImportFiles(dirToProcess, "AESCIS-16615-Basic", _appConfig.ConnectionCsr);
 
             CIS.Clients.AEPEnergy.RateType.RateUtility.ApplyRateTransition(customerId, productId, soldDate, municipalAggregation, switchDate);
+        }
+
+        private static void Simulate_AESCIS16615_AfterRateTransition()
+        {
+            string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
+            //DB.ImportFiles(dirToProcess, "AESCIS-16615-Basic", _appConfig.ConnectionCsr);
+            //DB.ImportFiles(dirToProcess, "AESCIS-16615-RateTransition", _appConfig.ConnectionCsr);
+            //GenerateEvents(new List<int> { 16 });//Change Request Evaluation - ChangeRequestEvaluation
+            //ProcessEvents();
+            DB.ImportFiles(dirToProcess, "AESCIS-16615-814Accept", _appConfig.ConnectionCsr);
+            var sql = $"UPDATE ";
+            GenerateEvents(new List<int> { 10 });//Simple Market Transaction Evaluation - SimpleMarketTransactionEvaluation
+            ProcessEvents();
         }
 
         private static void Simulate_AESCIS17193(string custNo)
@@ -172,6 +194,22 @@
             //will create event queue for CTR
             //maintenance.Sim();
             */
+        }
+
+        private static void GenerateEvents(List<int> eventTypeIds)
+        {
+            var list = CIS.Element.Core.Event.EventTypeList.LoadDirectlyCallableEvents(_clientConfig.ClientId);
+
+            eventTypeIds.ForEach(id =>
+            {
+                var htParams = new Hashtable { { "EventTypeID", id } };
+                var _event = list.SingleOrDefault(x => x.EventTypeID == id);
+                new CIS.Engine.Event.EventGenerator().GenerateEvent(_clientConfig.ClientId, htParams, _clientConfig.Client, _appConfig.ConnectionCsr, _clientConfig.ConnectionBillingAdmin, _event.AssemblyName, _event.ClassName);
+            });
+
+
+            //var maintenance = new MyMaintenance(_appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _clientConfig.ConnectionBillingAdmin);
+            //maintenance.GenerateEvents();
         }
 
         private static void ProcessEvents()

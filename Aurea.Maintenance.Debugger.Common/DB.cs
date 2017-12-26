@@ -197,6 +197,26 @@ namespace Aurea.Maintenance.Debugger.Common
             }
         }
 
+        private static string parseXmlEncodedString(string xmlTableName)
+        {
+            if (string.IsNullOrEmpty(xmlTableName))
+            {
+                return string.Empty;
+            }
+
+            if (!xmlTableName.StartsWith("_"))
+            {
+                return xmlTableName;
+            }
+
+            string plainString = xmlTableName.Remove(0, 1).GetAfter("_");
+            string encodedString = xmlTableName.Split('_')[1].Remove(0, 1);//xml encoded strings starts with _ and end with _
+            
+            string decodedChar = ((char)int.Parse(encodedString, System.Globalization.NumberStyles.HexNumber)).ToString();
+
+            return $"{decodedChar}{plainString}";
+        }
+
         private static void Import2DatabaseFromXMLFile(string fileName, string connectionString)
         {
             if (!File.Exists(fileName))
@@ -213,7 +233,7 @@ namespace Aurea.Maintenance.Debugger.Common
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
-                    var tableName = reader.Name;
+                    var tableName = parseXmlEncodedString(reader.Name);
                     if (tableName == "root")
                     {
                         continue;
@@ -231,7 +251,7 @@ namespace Aurea.Maintenance.Debugger.Common
                         {
                             foreach (var xAttribute in el.Attributes())
                             {
-                                dataHeaders.Add(xAttribute.Name.LocalName);
+                                dataHeaders.Add(parseXmlEncodedString(xAttribute.Name.LocalName));
                                 dataValues.Add(xAttribute.Value);
                             }
 
@@ -288,7 +308,7 @@ namespace Aurea.Maintenance.Debugger.Common
 
 
                             //searching from firstColumn to check if record already present in DB
-                            var checkSql = $"IF EXISTS(SELECT 1 FROM {tableName} WHERE {primaryKeyColumn.ColumnName} = {primaryKeyValue}) SELECT 1 ELSE SELECT 0";
+                            var checkSql = $"IF EXISTS(SELECT 1 FROM {tableName} WHERE [{primaryKeyColumn.ColumnName}] = {primaryKeyValue} ) SELECT 1 ELSE SELECT 0";
                             var isExists = ReadSingleValue<int>(checkSql, connectionString) == 1;
                             if (!isExists)
                             {
@@ -393,7 +413,7 @@ namespace Aurea.Maintenance.Debugger.Common
             string insertSqlHeader;
             if (!insertSqlCache.Any(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)))
             {
-                insertSqlHeader = $"INSERT INTO [{tableName}] ( [{string.Join("],[", columnNames)}] ) SELECT ";
+                insertSqlHeader = $"INSERT INTO {tableName} ( [{string.Join("],[", columnNames)}] ) SELECT ";
                 insertSqlCache.Add(tableName, insertSqlHeader);
             }
             else
@@ -427,7 +447,7 @@ namespace Aurea.Maintenance.Debugger.Common
             string updateSqlHeader;
             if (!updateSqlCache.Any(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)))
             {
-                updateSqlHeader = $"UPDATE [{tableName}] SET ";
+                updateSqlHeader = $"UPDATE {tableName} SET ";
                 updateSqlCache.Add(tableName, updateSqlHeader);
             }
             else

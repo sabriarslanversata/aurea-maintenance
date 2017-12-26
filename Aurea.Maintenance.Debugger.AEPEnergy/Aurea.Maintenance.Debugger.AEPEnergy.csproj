@@ -92,6 +92,7 @@
     <Reference Include="CIS.Import.Billing.Transaction">
       <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Import.Billing.Transaction.dll</HintPath>
     </Reference>
+    <Reference Include="Csla, Version=3.6.2.0, Culture=neutral, PublicKeyToken=93be5fdc093e4c30" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
@@ -157,6 +158,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="MockData\AESCIS-16615-814Accept.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\AESCIS-16615-RateTransitionOK.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="Connected Services\AEPEnroll\Metadata.disco" />
     <None Include="Connected Services\AEPEnroll\configuration91.svcinfo" />
     <None Include="Connected Services\AEPEnroll\configuration.svcinfo" />
@@ -209,10 +216,10 @@
     <Content Include="MockData\15-AESCIS-16615-AccountsReceivableHistory.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="MockData\AESCIS-16615-InvoiceData.xml">
+    <Content Include="MockData\AESCIS-16615-Basic-InvoiceData.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="MockData\AESCIS-16615-CustomerData.xml">
+    <Content Include="MockData\AESCIS-16615-Basic-CustomerData.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
