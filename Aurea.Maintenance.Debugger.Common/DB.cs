@@ -217,12 +217,110 @@ namespace Aurea.Maintenance.Debugger.Common
             return $"{decodedChar}{plainString}";
         }
 
+        private static readonly List<string> recordsExistsOnDatabase= new List<string>();
+
+        private static void fetchRecordsFromDB(string fileName, string connectionString)
+        {
+            if (!File.Exists(fileName))
+            {
+                return;
+            }
+            var reader = XmlReader.Create(fileName);
+            var dataHeaders = new List<string>();
+            var dataValues = new List<string>();
+            var dbHeaders = new List<string>();
+            var dbValues = new List<string>();
+            var sqlBatch = new StringBuilder();
+
+            sqlBatch.AppendLine($"DECLARE @RecordStatus TABLE (TableName VARCHAR(255), RecordID INT, Status INT)");
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    var tableName = parseXmlEncodedString(reader.Name);
+                    if (tableName == "root")
+                    {
+                        continue;
+                    }
+                    if (XNode.ReadFrom(reader) is XElement el)
+                    {
+                        try
+                        {
+                            foreach (var xAttribute in el.Attributes())
+                            {
+                                dataHeaders.Add(parseXmlEncodedString(xAttribute.Name.LocalName));
+                                dataValues.Add(xAttribute.Value);
+                            }
+
+                            DataSet ds;
+                            if (!metaDataCache.Any(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)))
+                            {
+                                var sql = $"SELECT * FROM {tableName} WHERE 1 = 0";//used for getting meta data only
+
+                                SqlDataAdapter dataAdapter = new SqlDataAdapter(sql, connectionString);
+                                ds = new DataSet(tableName);
+                                dataAdapter.FillSchema(ds, SchemaType.Source, tableName);
+                                dataAdapter.Fill(ds, tableName);
+                                metaDataCache.Add(tableName, ds);
+                            }
+                            else
+                            {
+                                ds = metaDataCache.SingleOrDefault(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)).Value;
+                            }
+
+                            var hasPrimaryKey = ds.Tables[0].PrimaryKey.Any();
+
+                            DataColumn primaryKeyColumn;
+
+                            if (ds.Tables[0].PrimaryKey.Any())
+                            {
+                                primaryKeyColumn = ds.Tables[0].PrimaryKey[0];
+                            }
+                            else
+                            {
+                                string primaryKeyName = dataHeaders.First();
+                                primaryKeyColumn = (DataColumn)
+                                    from DataColumn c in ds.Tables[0].Columns
+                                    where c.ColumnName.Equals(primaryKeyName, StringComparison.InvariantCultureIgnoreCase)
+                                    select c;
+                            }
+
+                            var isPrimaryKeysHasValue = hasPrimaryKey && dataHeaders.Any(x => x.Equals(primaryKeyColumn.ColumnName, StringComparison.InvariantCultureIgnoreCase));
+                            var primaryKeyIndex = dataHeaders.FindIndex(x => x.Equals(primaryKeyColumn.ColumnName, StringComparison.InvariantCultureIgnoreCase));
+                            var primaryKeyValue = CreateFieldValueSql(primaryKeyColumn, dataValues[primaryKeyIndex]);
+                            sqlBatch.AppendLine($"INSERT INTO @RecordStatus (TableName, RecordID, Status) SELECT '{tableName}', {primaryKeyValue}, CASE WHEN EXISTS(SELECT 1 FROM {tableName} WHERE [{primaryKeyColumn.ColumnName}] = {primaryKeyValue} ) THEN 1 ELSE  0 END");
+
+                        }
+                        finally
+                        {
+                            dataHeaders.Clear();
+                            dataValues.Clear();
+                            dbHeaders.Clear();
+                            dbValues.Clear();
+                        }
+                    }
+                }
+            }
+            sqlBatch.AppendLine("DELETE FROM @RecordStatus WHERE Status = 0");
+            sqlBatch.AppendLine("SELECT '[' + TableName + ']_[' + CAST(RecordId as VARCHAR(16)) + ']' tableAndId FROM @RecordStatus");
+            recordsExistsOnDatabase.Clear();
+            var rows = ReadRows(sqlBatch.ToString(), connectionString);
+            if (rows == null)
+                return;
+            foreach (DataRow row in rows)
+            {
+                recordsExistsOnDatabase.Add(row[0].ToString());
+            }
+        }
+
         private static void Import2DatabaseFromXMLFile(string fileName, string connectionString)
         {
             if (!File.Exists(fileName))
             {
                 return;
             }
+            fetchRecordsFromDB(fileName, connectionString);
             var reader = XmlReader.Create(fileName);
             var dataHeaders = new List<string>();
             var dataValues = new List<string>();
@@ -308,9 +406,10 @@ namespace Aurea.Maintenance.Debugger.Common
 
 
                             //searching from firstColumn to check if record already present in DB
-                            var checkSql = $"IF EXISTS(SELECT 1 FROM {tableName} WHERE [{primaryKeyColumn.ColumnName}] = {primaryKeyValue} ) SELECT 1 ELSE SELECT 0";
-                            var isExists = ReadSingleValue<int>(checkSql, connectionString) == 1;
-                            if (!isExists)
+                            //var checkSql = $"IF EXISTS(SELECT 1 FROM {tableName} WHERE [{primaryKeyColumn.ColumnName}] = {primaryKeyValue} ) SELECT 1 ELSE SELECT 0";
+                            //var isExists = ReadSingleValue<int>(checkSql, connectionString) == 1;
+                            var isExists = recordsExistsOnDatabase.FindIndex(x => x.Equals($"[{tableName}]_[{primaryKeyValue}]", StringComparison.InvariantCultureIgnoreCase)) >= 0;
+                            if (!isExists) 
                             {
                                 sqlBatch.AppendLine(CreateInsertSql(tableName, ds.Tables[0].Columns, dbHeaders, dbValues.ToArray(), isPrimaryKeysHasValue, hasPrimaryKey));
                             }
@@ -340,6 +439,7 @@ namespace Aurea.Maintenance.Debugger.Common
             {
                 SqlHelper.ExecuteNonQuery(connectionString, CommandType.Text, sqlBatch.ToString());
             }
+            recordsExistsOnDatabase.Clear();
         }
 
         private static string CreateFieldValueSql(DataColumn field, string value)

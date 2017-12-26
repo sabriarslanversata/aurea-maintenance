@@ -114,13 +114,54 @@
 
         private static void Simulate_AESCIS16615_AfterRateTransition()
         {
+            var sql = string.Empty;
             string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
-            //DB.ImportFiles(dirToProcess, "AESCIS-16615-Basic", _appConfig.ConnectionCsr);
-            //DB.ImportFiles(dirToProcess, "AESCIS-16615-RateTransition", _appConfig.ConnectionCsr);
-            //GenerateEvents(new List<int> { 16 });//Change Request Evaluation - ChangeRequestEvaluation
-            //ProcessEvents();
+            DB.ImportFiles(dirToProcess, "AESCIS-16615-Basic", _appConfig.ConnectionCsr);
+            
+            //import RateTransition and ChangeRequest
+            DB.ImportFiles(dirToProcess, "AESCIS-16615-RateTransition", _appConfig.ConnectionCsr);
+            
+            // mark RateTransition as pending and ChangeRequest as new
+            sql = @"
+UPDATE RateTransition SET StatusID = 1 WHERE RateTransitionID = 974480
+UPDATE ChangeRequest SET StatusID = 1 WHERE ChangeRequestID = 75117
+";
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
+            
+            // execute ChangeRequestEvaluation
+            GenerateEvents(new List<int> { 16 });//Change Request Evaluation - ChangeRequestEvaluation
+            ProcessEvents();
+            
+            // import 814_C Accept Records to DB
             DB.ImportFiles(dirToProcess, "AESCIS-16615-814Accept", _appConfig.ConnectionCsr);
-            var sql = $"UPDATE ";
+            
+            // delete old Events if exists and mark CTR as unprocessed
+            sql = @"
+DECLARE @EventingQueues TABLE (EventingQueueId INT)
+DECLARE @EventActionQueues TABLE (EventActionQueueId INT)
+
+INSERT INTO @EventingQueues (EventingQueueId)
+SELECT DISTINCT eq.EventinQueueId
+FROM daes_BillingAdmin..EventActionQueue eaq
+INNER JOIN daes_BillingAdmin..EventingQueue eq on eq.EventingQueueId = eaq.EventingQueueId
+WHERE eaq.CustId = 19981 and eq.ClientId = 52 AND eaq.Source = 'ChangeRequest' AND eaq.SourceId = 75117
+
+INSERT INTO @EventActionQueues (EventActionQueueId)
+SELECT DISTINCT eaq.EventActionQueueId
+FROM daes_BillingAdmin..EventActionQueue eaq
+INNER JOIN daes_BillingAdmin..EventingQueue eq on eq.EventingQueueId = eaq.EventingQueueId
+WHERE eaq.CustId = 19981 and eq.ClientId = 52 AND eaq.Source = 'ChangeRequest' AND eaq.SourceId = 75117
+
+DELETE FROM daes_BillingAdmin..EventActionQueueParameter WHERE EventActionQueueId IN (SELECT EventActionQueueId FROM @EventActionQueues)
+DEETE FROM daes_BillingAdmin..EventActionQueue WHERE EventActionQueueId IN (SELECT EventActionQueueId FROM @EventActionQueues)
+DEETE FROM daes_BillingAdmin..EventingQueue WHERE EventingQueueId IN (SELECT EventingQueueId FROM @EventingQueues)
+
+UPDATE CustomerTransactionRequest SET EventCleared = 0 WHERE RequestID IN (4727194, 4727195)
+UPDATE ChangeRequest SET StatusID = 1 WHERE ChangeRequestID = 75117
+
+";
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
+
             GenerateEvents(new List<int> { 10 });//Simple Market Transaction Evaluation - SimpleMarketTransactionEvaluation
             ProcessEvents();
         }
