@@ -56,14 +56,21 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Clients.AEPEnergy.Miramar.dll</HintPath>
     </Reference>
-    <Reference Include="CIS.Components">
-      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Components.dll</HintPath>
+    <Reference Include="CIS.Components, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Components.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Components.Maintenance">
       <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Components.Maintenance.dll</HintPath>
     </Reference>
-    <Reference Include="CIS.Element.Billing, Version=16.1.0.0, Culture=neutral, PublicKeyToken=null" />
-    <Reference Include="CIS.Element.Core, Version=16.1.0.0, Culture=neutral, PublicKeyToken=null" />
+    <Reference Include="CIS.Element.Billing, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Element.Billing.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Element.Core, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Element.Core.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.Engine.Event">
       <HintPath>..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Engine.Event.dll</HintPath>
     </Reference>
@@ -159,6 +166,9 @@
     <Content Include="MockData\AESCIS-16615-CustomerData.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Components.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
