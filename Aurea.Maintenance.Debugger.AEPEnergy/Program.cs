@@ -79,8 +79,9 @@
 
             //Simulate_AESCIS17193("4184386");
             //simulate_AESCIS16615_WS();
-            //Simulate_AESCIS16615(19981, 543, DateTime.Parse("2017-12-05T23:31:41-06:00"), "N", DateTime.Today.Date);
-            Simulate_AESCIS16615_AfterRateTransition();
+            //Simulate_AESCIS16615("AESCIS-16615-Basic", 19981, 543, DateTime.Parse("2017-12-05T23:31:41-06:00"), "N", DateTime.Today.Date);
+            Simulate_AESCIS16615("AESCIS-16615-C2", 123581, 605, DateTime.Parse("2017-12-26 12:11:51.530"), "N", DateTime.Today.Date);
+            //Simulate_AESCIS16615_AfterRateTransition();
             _logger.Info("Debug Session has ended");
             Console.ReadKey();
         }
@@ -102,12 +103,12 @@
             
         }
 
-        private static void Simulate_AESCIS16615(int customerId, int productId, DateTime soldDate, string municipalAggregation, DateTime? switchDate = null)
+        private static void Simulate_AESCIS16615(string dataFilter, int customerId, int productId, DateTime soldDate, string municipalAggregation, DateTime? switchDate = null)
         {
             //CopyProduct, CopyCustomer
 
             string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
-            DB.ImportFiles(dirToProcess, "AESCIS-16615-Basic", _appConfig.ConnectionCsr);
+            DB.ImportFiles(dirToProcess, dataFilter, _appConfig.ConnectionCsr);
 
             CIS.Clients.AEPEnergy.RateType.RateUtility.ApplyRateTransition(customerId, productId, soldDate, municipalAggregation, switchDate);
         }
