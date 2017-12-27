@@ -365,7 +365,7 @@ namespace Aurea.Maintenance.Debugger.Common
                                 ds = metaDataCache.SingleOrDefault(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)).Value;
                             }
 
-                            var hasPrimaryKey = ds.Tables[0].PrimaryKey.Any();
+                            var hasPrimaryKey = ds.Tables[0].PrimaryKey.Any() && ds.Tables[0].PrimaryKey[0].AutoIncrement;
 
                             DataColumn primaryKeyColumn;
 
@@ -433,6 +433,8 @@ namespace Aurea.Maintenance.Debugger.Common
 
             if (sqlBatch.Length > 0)
             {
+                sqlBatch.Insert(0, "SET XACT_ABORT ON \r\n begin transaction\r\n ");
+                sqlBatch.AppendLine("commit transaction");
                 SqlHelper.ExecuteNonQuery(connectionString, CommandType.Text, sqlBatch.ToString());
             }
             recordsExistsOnDatabase.Clear();

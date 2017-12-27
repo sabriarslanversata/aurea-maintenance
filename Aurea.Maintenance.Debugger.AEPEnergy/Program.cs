@@ -80,7 +80,7 @@
             //Simulate_AESCIS17193("4184386");
             //simulate_AESCIS16615_WS();
             //Simulate_AESCIS16615("AESCIS-16615-Basic", 19981, 543, DateTime.Parse("2017-12-05T23:31:41-06:00"), "N", DateTime.Today.Date);
-            Simulate_AESCIS16615("AESCIS-16615-C2", 123581, 605, DateTime.Parse("2017-12-26 12:11:51.530"), "N", DateTime.Today.Date);
+            Simulate_AESCIS16615("AESCIS-16615-C2", 123581, 605, DateTime.Parse("2017-12-22T11:18:06-06:00"), "N", DateTime.Today.Date);
             //Simulate_AESCIS16615_AfterRateTransition();
             _logger.Info("Debug Session has ended");
             Console.ReadKey();
