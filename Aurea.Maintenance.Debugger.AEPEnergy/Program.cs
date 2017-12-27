@@ -72,7 +72,7 @@
         {
             
             // Set client configuration and then the application configuration context.            
-            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.AEP, Stages.Development);
+            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.AEP, Stages.Development, TransactionMode.Enlist);
             _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
 
             //System.ServiceModel.ServiceSecurityContext.Current.PrimaryIdentity.Name = Clients.AEP.GetServiceGuid.ToString();
@@ -121,9 +121,12 @@
 
             // mark old EventEvaluationQueue entries as processed and delete old EventEvaluationQueue for ChangeRequest
             sql = @"
+DELETE FROM CustomerTransactionRequest WHERE RequestID IN (4727195, 4727194)
 UPDATE EventEvaluationQueue SET Status = 1, ProcessDate = GETDATE()
-DELETE FROM EventEvaluationQueue WHERE TypeId = 7 AND SourceID = 75117"
-;
+DELETE FROM EventEvaluationQueue WHERE TypeId = 7 AND SourceID = 75117
+DELETE FROM ChangeRequestDetail WHERE ChangeRequestID = 75117
+DELETE FROM ChangeRequest WHERE ChangeRequestID = 75117
+";
             SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
 
             //import RateTransition and ChangeRequest
@@ -152,8 +155,9 @@ DELETE FROM daes_BillingAdmin..EventActionQueueParameter WHERE EventActionQueueI
 DELETE FROM daes_BillingAdmin..EventActionQueue WHERE EventActionQueueId IN (SELECT EventActionQueueId FROM @EventActionQueues)
 DELETE FROM daes_BillingAdmin..EventingQueue WHERE EventingQueueId IN (SELECT EventingQueueId FROM @EventingQueues)
 
-UPDATE ChangeRequest SET StatusID = 1 WHERE ChangeRequestID = 75117
+--UPDATE ChangeRequest SET StatusID = 1, ChangeTransactionId = NULL WHERE ChangeRequestID = 75117--had to change this in import data
 UPDATE RateTransition SET StatusID = 1 WHERE RateTransitionID = 974480
+DELETE FROM CustomerTransactionRequest WHERE CustId = 19981 AND TransactionType = '814' AND ActionCode = 'C' AND Direction = 0 AND ServiceActionCode = '7' AND DATEDIFF(d, ProcessDate, GETDate()) <= 1
 ";
             SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
 
@@ -161,16 +165,24 @@ UPDATE RateTransition SET StatusID = 1 WHERE RateTransitionID = 974480
             GenerateEvents(new List<int> { 27 }); // EventQueueEvaluation
             ProcessEvents();
             
-            // import 814_C Accept Records to DB
-            DB.ImportFiles(dirToProcess, "AESCIS -16615-814Accept", _appConfig.ConnectionCsr);
-            
-            // delete old Events if exists and mark CTR as unprocessed
-            sql = @"
-UPDATE CustomerTransactionRequest SET EventCleared = 0 WHERE RequestID IN (4727194, 4727195)
+            // make OutBound CTR processed, ChangeRequest Market Approved
+            sql = $@"
+UPDATE ChangeRequest SET StatusId = 9, ChangeTransactionID = (SELECT ChangeTransactionId FROM ChangeTransactionData WHERE ISNULL(ChangeTransactionID,0) > 0 AND RequestID = (SELECT RequestID FROM CustomerTransactionRequest WHERE CustId = 19981 AND TransactionType = '814' AND ActionCode = 'C' AND Direction = 0 AND ProcessFlag = 0)) WHERE ChangeRequestID = 75117
+UPDATE CustomerTransactionRequest SET ProcessFlag = 1, ProcessDate=GetDate(), EventCleared = 1 WHERE CustId = 19981 AND TransactionType = '814' AND ActionCode = 'C' AND Direction = 0 AND ProcessFlag = 0
 ";
             SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
+            
+            // import 814_C Accept Records to DB
+            DB.ImportFiles(dirToProcess, "AESCIS-16615-814Accept", _appConfig.ConnectionCsr);
+            
+            // delete old Events if exists and mark CTR as unprocessed
+            //sql = @"UPDATE CustomerTransactionRequest SET EventCleared = 0 WHERE RequestID IN (4727194, 4727195)";
+            //SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
 
-            GenerateEvents(new List<int> { 10 });//Simple Market Transaction Evaluation - SimpleMarketTransactionEvaluation
+            //import ?
+            //ImportTransaction();
+
+            GenerateEvents(new List<int> { 27 });//ChangeRequestEvaluation
             ProcessEvents();
         }
 
