@@ -1,0 +1,4 @@
+﻿Address
+AddrID	ValidationStatusID	AttnMS	Addr1	Addr2	City	State	Zip	Zip4	DPBC	CityID	CountyID	County	HomePhone	WorkPhone	FaxPhone	OtherPhone	Email	ESIID	GeoCode	Status	DeliveryPointCode	CreateDate	Migr_Enrollid	PhoneExtension	OtherExtension	FaxExtension	TaxingDistrict	TaxInCity	CchVersion
+#19973	0	Robert E Martin Jr	112 N Buchanan St	NULL	Fremont	OH	43420	4302	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	US3914328826	A	NULL	2015-02-04 13:57:42.783	NULL	NULL	NULL	NULL	NULL	1	2
+#19974	0	NULL	112 N Buchanan St	NULL	Fremont	OH	43420	4302	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	US3914328826	A	NULL	2015-02-04 13:57:42.837	NULL	NULL	NULL	NULL	NULL	1	2

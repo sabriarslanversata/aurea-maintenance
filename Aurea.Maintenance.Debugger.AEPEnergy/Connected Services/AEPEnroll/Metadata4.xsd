@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="https://svc.aepenergybilling.com" elementFormDefault="qualified" targetNamespace="https://svc.aepenergybilling.com" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation="https://ua-svc.aepenergybilling.com/EnrollmentService.svc/Metadata?xsd=xsd2" namespace="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Enrollments.Models" />
+  <xs:import schemaLocation="https://ua-svc.aepenergybilling.com/EnrollmentService.svc/Metadata?xsd=xsd3" namespace="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Common.Models" />
+  <xs:element name="CreateMaster">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q1="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Enrollments.Models" minOccurs="0" name="request" nillable="true" type="q1:CreateMasterRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="CreateMasterResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Enrollments.Models" minOccurs="0" name="CreateMasterResult" nillable="true" type="q2:CreateMasterResponse" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SubmitEnrollment">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q3="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Enrollments.Models" minOccurs="0" name="request" nillable="true" type="q3:EnrollmentRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SubmitEnrollmentResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q4="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Enrollments.Models" minOccurs="0" name="SubmitEnrollmentResult" nillable="true" type="q4:EnrollmentResponse" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetEnrollmentProcessingStatus">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="request" nillable="true" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetEnrollmentProcessingStatusResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q5="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Common.Models" minOccurs="0" name="GetEnrollmentProcessingStatusResult" nillable="true" type="q5:ResponseOfArrayOfProcessingStatusE9yAdE_S5" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SearchProducts">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q6="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Enrollments.Models" minOccurs="0" name="request" nillable="true" type="q6:ProductFilterRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SearchProductsResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q7="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Common.Models" minOccurs="0" name="SearchProductsResult" nillable="true" type="q7:ResponseOfArrayOfProductE9yAdE_S5" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetProductDetails">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="productId" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetProductDetailsResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q8="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Common.Models" minOccurs="0" name="GetProductDetailsResult" nillable="true" type="q8:ResponseOfProductE9yAdE_S5" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="RenewCustomer">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="customerId" type="xs:int" />
+        <xs:element minOccurs="0" name="productId" type="xs:int" />
+        <xs:element minOccurs="0" name="soldDate" type="xs:dateTime" />
+        <xs:element minOccurs="0" name="municipalAggregation" nillable="true" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="RenewCustomerResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q9="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Common.Models" minOccurs="0" name="RenewCustomerResult" nillable="true" type="q9:ResponseOfRateTransitionMessagesGWI6rpc" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="RetainCustomer">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="customerId" type="xs:int" />
+        <xs:element minOccurs="0" name="productId" type="xs:int" />
+        <xs:element minOccurs="0" name="soldDate" type="xs:dateTime" />
+        <xs:element minOccurs="0" name="municipalAggregation" nillable="true" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="RetainCustomerResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q10="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Common.Models" minOccurs="0" name="RetainCustomerResult" nillable="true" type="q10:ResponseOfRateTransitionMessagesGWI6rpc" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

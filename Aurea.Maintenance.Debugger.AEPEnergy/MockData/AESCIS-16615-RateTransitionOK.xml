@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<root>
+  <!--Scenario Test EventGenerator(ChangeRequestEvaluation) and EventHandler(ChangeRequest) EventTypeID = 16-->
+  <RateTransition RateTransitionID="974480" CustID="19981" RateID="192534" UserID="289" CreatedDate="2017-12-06T09:31:40.710" SwitchDate="2017-12-06T00:00:00" EndDate="2017-12-05T00:00:00" StatusID="2" SoldDate="2017-12-05T23:31:41" RolloverFlag="0" />
+  <!--ChangeRequest ChangeRequestID="75117" CustomerID="19981" ElementID="6" ElementPrimaryKey="974480" RequiresTransactionFlag="1" RequiresApprovalFlag="0" StatusID="5" CreatedByUserID="289" CreateDate="2017-12-06T09:31:40.850" ModifiedByUserID="0" ChangeTransactionID="26264" /-->
+  <ChangeRequest ChangeRequestID="75117" CustomerID="19981" ElementID="6" ElementPrimaryKey="974480" RequiresTransactionFlag="1" RequiresApprovalFlag="0" StatusID="1" CreatedByUserID="289" CreateDate="2017-12-06T09:31:40.850" ModifiedByUserID="0" />
+  <ChangeRequestDetail ChangeRequestDetailID="75117" ChangeRequestID="75117" FieldID="256" NewValue="CompletedTransition" OldValue="PendingTransition" />
+  <!-- it would be created when processing change request
+  <ChangeTransaction ChangeTransactionID="26264" StatusID="0" CreateDate="2017-12-06T10:01:55.147" CreatedByUserID="0" />
+  <ChangeTransactionData ChangeTransactionDataID="26184" ChangeTransactionID="26264" RequestID="4726935" ChangeCode="REFRB" ChangeValue="ELC19" FieldName="Status" EffectiveDate="2017-12-06T00:00:00" /-->
+
+  <!-- 814_C Change Request to Market
+  <CustomerTransactionRequest RequestID="4726935" CustID="19981" PremID="9994" TransactionType="814" ActionCode="C" TransactionDate="2017-12-06T00:00:00" Direction="0" RequestDate="2017-12-06T00:00:00" ServiceActionCode="7" StatusCode="Change E/M Rate" StatusReason="ELC19" SourceID="2420259" TransactionNumber="252791" ESIID="123838600010" ProcessFlag="1" ProcessDate="2017-12-06T10:06:12.767" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="42" CreateDate="2017-12-06T10:01:35.027" /-->
+  
+  <!-- 814_C Accept Response came from Market
+  <CustomerTransactionRequest RequestID="4727194" CustID="19981" PremID="9994" TransactionType="814" ActionCode="C" TransactionDate="2017-12-06T00:00:00" Direction="1" RequestDate="2017-12-06T00:00:00" ServiceActionCode="A" ServiceAction="S" StatusCode="AMTRJ" SourceID="2420521" TransactionNumber="ACPC12383860001020171206-S" ReferenceNumber="ACPC12383860001020171206" ESIID="123838600010" ProcessFlag="0" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="42" CreateDate="2017-12-06T23:01:49.637" />
+  <CustomerTransactionRequest RequestID="4727195" CustID="19981" PremID="9994" TransactionType="814" ActionCode="C" TransactionDate="2017-12-06T00:00:00" Direction="1" RequestDate="2017-12-06T00:00:00" ServiceActionCode="A" ServiceAction="S" StatusCode=" - " SourceID="2420522" TransactionNumber="ACF12383860001020171206-S" ReferenceNumber="ACF12383860001020171206" ESIID="123838600010" ProcessFlag="0" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="42" CreateDate="2017-12-06T23:01:50.257" /-->
+  
+</root>

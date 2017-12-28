@@ -62,6 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClientConfiguration.cs" />
+    <Compile Include="DB.cs" />
     <Compile Include="Extensions\AttributeExtension.cs" />
     <Compile Include="Extensions\ClientExtensions.cs" />
     <Compile Include="Extensions\ICopyableExtension.cs" />

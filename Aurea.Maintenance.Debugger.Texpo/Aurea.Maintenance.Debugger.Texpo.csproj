@@ -94,7 +94,7 @@
       <HintPath>..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Library.Cryptography.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Web.Services.Clients.Texpo">
-      <HintPath>..\..\aurea-aes-cis\Clients\Texpo\Deployment\Debug\Web\services.ista-billing.com\bin\CIS.Web.Services.Clients.Texpo.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\Web\services.ista-billing.com\bin\CIS.Web.Services.Clients.Texpo.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

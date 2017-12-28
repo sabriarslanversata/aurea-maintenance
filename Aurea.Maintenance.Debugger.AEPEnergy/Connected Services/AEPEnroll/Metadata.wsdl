@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns:tns="https://svc.aepenergybilling.com" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="https://svc.aepenergybilling.com" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xsd:schema targetNamespace="https://svc.aepenergybilling.com/Imports">
+      <xsd:import schemaLocation="https://ua-svc.aepenergybilling.com/EnrollmentService.svc/Metadata?xsd=xsd0" namespace="https://svc.aepenergybilling.com" />
+      <xsd:import schemaLocation="https://ua-svc.aepenergybilling.com/EnrollmentService.svc/Metadata?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+      <xsd:import schemaLocation="https://ua-svc.aepenergybilling.com/EnrollmentService.svc/Metadata?xsd=xsd2" namespace="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Enrollments.Models" />
+      <xsd:import schemaLocation="https://ua-svc.aepenergybilling.com/EnrollmentService.svc/Metadata?xsd=xsd3" namespace="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Services.Contracts.Common.Models" />
+      <xsd:import schemaLocation="https://ua-svc.aepenergybilling.com/EnrollmentService.svc/Metadata?xsd=xsd4" namespace="http://schemas.datacontract.org/2004/07/CIS.Clients.AEPEnergy.Models.Legacy" />
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="IEnrollmentService_CreateMaster_InputMessage">
+    <wsdl:part name="parameters" element="tns:CreateMaster" />
+  </wsdl:message>
+  <wsdl:message name="IEnrollmentService_CreateMaster_OutputMessage">
+    <wsdl:part name="parameters" element="tns:CreateMasterResponse" />
+  </wsdl:message>
+  <wsdl:message name="IEnrollmentService_SubmitEnrollment_InputMessage">
+    <wsdl:part name="parameters" element="tns:SubmitEnrollment" />
+  </wsdl:message>
+  <wsdl:message name="IEnrollmentService_SubmitEnrollment_OutputMessage">
+    <wsdl:part name="parameters" element="tns:SubmitEnrollmentResponse" />
+  </wsdl:message>
+  <wsdl:message name="IEnrollmentService_GetEnrollmentProcessingStatus_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetEnrollmentProcessingStatus" />
+  </wsdl:message>
+  <wsdl:message name="IEnrollmentService_GetEnrollmentProcessingStatus_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetEnrollmentProcessingStatusResponse" />
+  </wsdl:message>
+  <wsdl:message name="IEnrollmentService_SearchProducts_InputMessage">
+    <wsdl:part name="parameters" element="tns:SearchProducts" />
+  </wsdl:message>
+  <wsdl:message name="IEnrollmentService_SearchProducts_OutputMessage">
+    <wsdl:part name="parameters" element="tns:SearchProductsResponse" />
+  </wsdl:message>
+  <wsdl:message name="IEnrollmentService_GetProductDetails_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetProductDetails" />
+  </wsdl:message>
+  <wsdl:message name="IEnrollmentService_GetProductDetails_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetProductDetailsResponse" />
+  </wsdl:message>
+  <wsdl:message name="IEnrollmentService_RenewCustomer_InputMessage">
+    <wsdl:part name="parameters" element="tns:RenewCustomer" />
+  </wsdl:message>
+  <wsdl:message name="IEnrollmentService_RenewCustomer_OutputMessage">
+    <wsdl:part name="parameters" element="tns:RenewCustomerResponse" />
+  </wsdl:message>
+  <wsdl:message name="IEnrollmentService_RetainCustomer_InputMessage">
+    <wsdl:part name="parameters" element="tns:RetainCustomer" />
+  </wsdl:message>
+  <wsdl:message name="IEnrollmentService_RetainCustomer_OutputMessage">
+    <wsdl:part name="parameters" element="tns:RetainCustomerResponse" />
+  </wsdl:message>
+  <wsdl:portType name="IEnrollmentService">
+    <wsdl:operation name="CreateMaster">
+      <wsdl:input wsaw:Action="https://svc.aepenergybilling.com/IEnrollmentService/CreateMaster" message="tns:IEnrollmentService_CreateMaster_InputMessage" />
+      <wsdl:output wsaw:Action="https://svc.aepenergybilling.com/IEnrollmentService/CreateMasterResponse" message="tns:IEnrollmentService_CreateMaster_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="SubmitEnrollment">
+      <wsdl:input wsaw:Action="https://svc.aepenergybilling.com/IEnrollmentService/SubmitEnrollment" message="tns:IEnrollmentService_SubmitEnrollment_InputMessage" />
+      <wsdl:output wsaw:Action="https://svc.aepenergybilling.com/IEnrollmentService/SubmitEnrollmentResponse" message="tns:IEnrollmentService_SubmitEnrollment_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetEnrollmentProcessingStatus">
+      <wsdl:input wsaw:Action="https://svc.aepenergybilling.com/IEnrollmentService/GetEnrollmentProcessingStatus" message="tns:IEnrollmentService_GetEnrollmentProcessingStatus_InputMessage" />
+      <wsdl:output wsaw:Action="https://svc.aepenergybilling.com/IEnrollmentService/GetEnrollmentProcessingStatusResponse" message="tns:IEnrollmentService_GetEnrollmentProcessingStatus_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="SearchProducts">
+      <wsdl:input wsaw:Action="https://svc.aepenergybilling.com/IEnrollmentService/SearchProducts" message="tns:IEnrollmentService_SearchProducts_InputMessage" />
+      <wsdl:output wsaw:Action="https://svc.aepenergybilling.com/IEnrollmentService/SearchProductsResponse" message="tns:IEnrollmentService_SearchProducts_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetProductDetails">
+      <wsdl:input wsaw:Action="https://svc.aepenergybilling.com/IEnrollmentService/GetProductDetails" message="tns:IEnrollmentService_GetProductDetails_InputMessage" />
+      <wsdl:output wsaw:Action="https://svc.aepenergybilling.com/IEnrollmentService/GetProductDetailsResponse" message="tns:IEnrollmentService_GetProductDetails_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="RenewCustomer">
+      <wsdl:input wsaw:Action="https://svc.aepenergybilling.com/IEnrollmentService/RenewCustomer" message="tns:IEnrollmentService_RenewCustomer_InputMessage" />
+      <wsdl:output wsaw:Action="https://svc.aepenergybilling.com/IEnrollmentService/RenewCustomerResponse" message="tns:IEnrollmentService_RenewCustomer_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="RetainCustomer">
+      <wsdl:input wsaw:Action="https://svc.aepenergybilling.com/IEnrollmentService/RetainCustomer" message="tns:IEnrollmentService_RetainCustomer_InputMessage" />
+      <wsdl:output wsaw:Action="https://svc.aepenergybilling.com/IEnrollmentService/RetainCustomerResponse" message="tns:IEnrollmentService_RetainCustomer_OutputMessage" />
+    </wsdl:operation>
+  </wsdl:portType>
+</wsdl:definitions>
