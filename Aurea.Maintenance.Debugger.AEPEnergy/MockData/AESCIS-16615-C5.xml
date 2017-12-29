@@ -235,5 +235,14 @@ FROM InvoiceXML WHERE InvoiceId IN (SELECT InvoiceId FROM Invoice WHERE CustId =
 SELECT * FROM InvoiceLog WHERE InvLogId IN (SELECT InvLogId from Invoice Where CustId = @CustId) FOR XML AUTO
 SELECT * FROM AccountsReceivableHistory WHERE CustId = @CustId FOR XML AUTO
 SELECT * FROM InvoiceDetail WHERE InvoiceID IN (SELECT InvoiceId from Invoice Where CustId = @CustId) FOR XML AUTO
+
+<s:Body xmlns:s="http://www.w3.org/2003/05/soap-envelope">
+  <RetainCustomer xmlns="https://svc.aepenergybilling.com">
+    <customerId>116549</customerId>
+    <productId>605</productId>
+    <soldDate>2017-12-24T05:18:12-06:00</soldDate>
+    <municipalAggregation>N</municipalAggregation>
+  </RetainCustomer>
+</s:Body>
   -->
 </root>
