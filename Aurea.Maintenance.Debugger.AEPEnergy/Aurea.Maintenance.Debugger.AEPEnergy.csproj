@@ -164,6 +164,21 @@
     <Content Include="MockData\AESCIS-16615-C2-CustomerData.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="MockData\AESCIS-16615-C3.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\AESCIS-16615-C4.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\AESCIS-16615-C5.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\AESCIS-16615-C6.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\AESCIS-16615-C7.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="MockData\AESCIS-16615-RateTransitionOK.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
