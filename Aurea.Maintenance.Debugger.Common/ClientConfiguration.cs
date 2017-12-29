@@ -43,7 +43,8 @@
                 {"Connection.Tdsp", applicationConfiguration.ConnectionTdsp},
                 {"Connection.Csr", applicationConfiguration.ConnectionCsr },
                 {"ClientId", applicationConfiguration.ClientID.ToString() },
-                {"ApplicationID", Assembly.GetEntryAssembly().FullName }
+                {"ApplicationID", Assembly.GetEntryAssembly().FullName },
+                {"CslaAutoCloneOnUpdate", "false" }
             };
 
             RewriteAppSettings(Assembly.GetExecutingAssembly(), settings);
