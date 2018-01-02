@@ -259,23 +259,27 @@ b1x3zeE1G4Q4
 
         private static void Simulate_AESCIS_8679()
         {
-            string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
-            DB.ImportFiles(dirToProcess, "AESCIS-8679", _appConfig.ConnectionCsr);
+            var updateRunHoursQueries = new List<string>();
+            var restoreRunHousrsQueries = new List<string>();
+
             //get run hours of cspEmailJobDeclinedPaymentNotice
-            Dictionary<int, int> oldRunHours = new Dictionary<int, int>();
-            var rows = Common.DB.ReadRows("SELECT * FROM EmailJob WHERE ResultsProcedure='cspEmailJobDeclinedPaymentNotice' AND IsActive = 1", _appConfig.ConnectionCsr);
+            var rows = DB.ReadRows("SELECT * FROM EmailJob WHERE ResultsProcedure='cspEmailJobDeclinedPaymentNotice' AND IsActive = 1", _appConfig.ConnectionCsr);
             foreach (DataRow row in rows)
             {
-                oldRunHours.Add((int)row["EmailJobId"], (int)row["RunOnHour"]);
+                updateRunHoursQueries.Add($"UPDATE EmailJob SET RunHour = {DateTime.Now.Hour}, LastRunDate = '2017-02-01 06:00:00' WHERE EmailJobID = {row["EmailJobId"]} ");
+                restoreRunHousrsQueries.Add($"UPDATE EmailJob SET RunHour = {row["RunOnHour"]} WHERE EmailJobID = {row["EmailJobId"]} ");
             }
+
+            _logger.Info(string.Join(";\n", restoreRunHousrsQueries));
+            string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
+            DB.ImportFiles(dirToProcess, "AESCIS-8679", _appConfig.ConnectionCsr);
+            
             try
             {
 
                 //modify run hours to this time hour and point last run hours to morning of the day of Payments
-                oldRunHours.ForEach((KeyValuePair<int, int> vals) =>
-                {
-                    SqlHelper.ExecuteNonQuery($"UPDATE EmailJob SET RunHour = {DateTime.Now.Hour}, LastRunDate = '2017-02-01 06:00:00' WHERE EmailJobID = {vals.Key} ", CommandType.Text, _appConfig.ConnectionCsr);
-                });
+                SqlHelper.ExecuteNonQuery(string.Join(";\n", updateRunHoursQueries), CommandType.Text, _appConfig.ConnectionCsr);
+
                 //execute EmailJob
                 var emailJob = new CIS.Clients.Texpo.EmailJob(_appConfig.ConnectionCsr);
                 emailJob.Process();
@@ -283,11 +287,7 @@ b1x3zeE1G4Q4
             finally
             {
                 //restore runHours
-                //modify run hours to this time hour
-                oldRunHours.ForEach((KeyValuePair<int, int> vals) =>
-                {
-                    SqlHelper.ExecuteNonQuery($"UPDATE EmailJob SET RunHour = {vals.Value} WHERE EmailJobID = {vals.Key} ", CommandType.Text, _appConfig.ConnectionCsr);
-                });
+                SqlHelper.ExecuteNonQuery(string.Join(";\n", restoreRunHousrsQueries), CommandType.Text, _appConfig.ConnectionCsr);
             }
         }
 

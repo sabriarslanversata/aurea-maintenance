@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
+using Aurea.Db;
 using CIS.Framework.Data;
 
 namespace Aurea.Maintenance.Debugger.Common
@@ -447,7 +448,7 @@ namespace Aurea.Maintenance.Debugger.Common
                     case TypeCode.Char:
                     case TypeCode.String:
                     case TypeCode.DateTime:
-                        toReturn = $"'{value}'";
+                        toReturn = $"'{value.EscapeString()}'";
                         break;
                     case TypeCode.Single:
                     case TypeCode.Int16:
