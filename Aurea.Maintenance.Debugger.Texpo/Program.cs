@@ -209,7 +209,7 @@ b1x3zeE1G4Q4
         public static void Main(string[] args)
         {
             // Set client configuration and then the application configuration context.            
-            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.Texpo, Stages.UserAcceptance, TransactionMode.Enlist);
+            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.Texpo, Stages.Development, TransactionMode.Enlist);
             _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
 
             #region old Cases
@@ -266,19 +266,20 @@ b1x3zeE1G4Q4
             var rows = DB.ReadRows("SELECT * FROM EmailJob WHERE ResultsProcedure='cspEmailJobDeclinedPaymentNotice' AND IsActive = 1", _appConfig.ConnectionCsr);
             foreach (DataRow row in rows)
             {
-                updateRunHoursQueries.Add($"UPDATE EmailJob SET RunHour = {DateTime.Now.Hour}, LastRunDate = '2017-02-01 06:00:00' WHERE EmailJobID = {row["EmailJobId"]} ");
-                restoreRunHousrsQueries.Add($"UPDATE EmailJob SET RunHour = {row["RunOnHour"]} WHERE EmailJobID = {row["EmailJobId"]} ");
+                updateRunHoursQueries.Add($"UPDATE EmailJob SET RunOnHour = {DateTime.Now.Hour}, LastRunDate = '2017-02-01 06:00:00' WHERE EmailJobID = {row["EmailJobId"]} ");
+                restoreRunHousrsQueries.Add($"UPDATE EmailJob SET RunOnHour = {row["RunOnHour"]} WHERE EmailJobID = {row["EmailJobId"]} ");
             }
 
             _logger.Info(string.Join(";\n", restoreRunHousrsQueries));
+
             string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
             DB.ImportFiles(dirToProcess, "AESCIS-8679", _appConfig.ConnectionCsr);
             
             try
             {
 
-                //modify run hours to this time hour and point last run hours to morning of the day of Payments
-                SqlHelper.ExecuteNonQuery(string.Join(";\n", updateRunHoursQueries), CommandType.Text, _appConfig.ConnectionCsr);
+                //modify RunOnHour to this time hour and point last run hours to morning of the day of Payments
+                SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, string.Join(";\n", updateRunHoursQueries));
 
                 //execute EmailJob
                 var emailJob = new CIS.Clients.Texpo.EmailJob(_appConfig.ConnectionCsr);
@@ -286,8 +287,8 @@ b1x3zeE1G4Q4
             }
             finally
             {
-                //restore runHours
-                SqlHelper.ExecuteNonQuery(string.Join(";\n", restoreRunHousrsQueries), CommandType.Text, _appConfig.ConnectionCsr);
+                //restore RunOnHour
+                SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, string.Join(";\n", restoreRunHousrsQueries));
             }
         }
 
