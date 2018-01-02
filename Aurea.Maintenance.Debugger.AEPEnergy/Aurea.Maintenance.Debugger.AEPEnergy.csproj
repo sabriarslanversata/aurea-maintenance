@@ -167,7 +167,7 @@
     <Content Include="MockData\AESCIS-16615-C3.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="MockData\AESCIS-16615-C4.xml">
+    <Content Include="MockData\AESCIS-16615-C4-Basic.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="MockData\AESCIS-16615-C5.xml">

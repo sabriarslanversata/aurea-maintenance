@@ -80,8 +80,8 @@
             //Simulate_AESCIS17193("4184386");
             //simulate_AESCIS16615_WS();
             //Simulate_AESCIS16615("AESCIS-16615-Basic", 19981, 543, DateTime.Parse("2017-12-05T23:31:41-06:00"), "N", DateTime.Today.Date);
-            Simulate_AESCIS16615("AESCIS-16615-C5", 116549, 605, DateTime.Parse("2017-12-24T05:18:12-06:00"), "N", DateTime.Today.Date);
-            //Simulate_AESCIS16615_AfterRateTransition();
+            //Simulate_AESCIS16615("AESCIS-16615-C4", 116549, 605, DateTime.Parse("2017-12-24T05:18:12-06:00"), "N", DateTime.Today.Date);
+            Simulate_AESCIS16615_AfterRateTransition();
             _logger.Info("Debug Session has ended");
             Console.ReadKey();
         }
@@ -117,8 +117,16 @@
         {
             var sql = string.Empty;
             string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
-            DB.ImportFiles(dirToProcess, "AESCIS-16615-Basic", _appConfig.ConnectionCsr);
 
+            Simulate_AESCIS16615("AESCIS-16615-C4-Basic", 116543, 605, DateTime.Parse("2017-12-23T11:21:54-06:00"), "N", DateTime.Today.Date);
+
+            // evaluate change request and create EventingQueue for outbound 814_C 
+
+            // read 814_C requestID
+
+            // crate mock data for accecpting 814_C request
+
+            // evaluate 814_C CTR and apply rateTransition
 
             // mark old EventEvaluationQueue entries as processed and delete old EventEvaluationQueue for ChangeRequest
             sql = @"
