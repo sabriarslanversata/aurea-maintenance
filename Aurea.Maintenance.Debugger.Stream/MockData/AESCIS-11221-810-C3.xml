@@ -42,7 +42,9 @@
   <InvoiceDetail InvDetID="48319179" InvoiceID="19954966" PremID="807041" MeterID="55065664" CategoryID="1" RateDescID="2" RateDetID="2503245" ConsDetID="21469414" ConsUnitID="9" TaxAssessment="0" GeoCode="US2451004000" GroupCode="5500" ItemCode="000" InvDetDesc="Natural Gas Energy Charges" InvDetAmt="175.24" InvDetQty="260.0000" Rate="0.67400000" ServiceFrom="2017-11-28T00:00:00" ServiceTo="2017-12-28T00:00:00" Unit="THM" Taxable="Y" RegisterNumber="51" RateCode="PREM_663831" CchVersion="2" />
   <ConsumptionDetail ConsDetID="21469414" ConsID="16946098" ConsDetType="Cons" ConsDetQty="260.0000" ConsUnitID="9" ConsMultiplier="1.00" Source="NonIntervalDetailQty" SourceID="17657074" CreatedByID="0" />
   <ConsumptionDetail ConsDetID="21205689" ConsID="16759396" ConsDetType="Cons" ConsDetQty="118.0000" ConsUnitID="9" ConsMultiplier="1.00" Source="NonIntervalDetailQty" SourceID="17345438" CreatedByID="0" />
-
+  <TdspInvoice TDSPInvoiceID="10009368" RequestID="33496822" InvoiceID="19954966" ReleaseNo="MU96689862412604150252" TotalAmount="175.2400" TaxAmount="0.0000" DueDate="2018-01-29T00:00:00" DateFrom="2017-11-28T00:00:00" DateTo="2017-12-28T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="9894514" RequestID="32861393" InvoiceID="19743384" ReleaseNo="MU96689862412596677217" TotalAmount="79.5300" TaxAmount="0.0000" DueDate="2017-12-27T00:00:00" DateFrom="2017-11-01T00:00:00" DateTo="2017-11-28T00:00:00" />
+  
   <!-- queries used for fetching data
 DECLARE @CustId INT = 717104
 DECLARE @PremIds TABLE (PremId INT)
@@ -97,6 +99,7 @@ SELECT * FROM InvoiceLog WHERE InvLogId IN (SELECT InvLogId from Invoice Where C
 SELECT * FROM AccountsReceivableHistory WHERE CustId = @CustId FOR XML AUTO
 SELECT * FROM InvoiceDetail WHERE InvoiceID IN (SELECT InvoiceId from Invoice Where CustId = @CustId) FOR XML AUTO
 SELECT * FROM ConsumptionDetail WHERE ConsDetId IN (SELECT ConsDetID FROM InvoiceDetail WHERE InvoiceID IN (SELECT InvoiceId from Invoice Where CustId = @CustId) ) FOR XML AUTO
+SELECT * FROM TdspInvoice WHERE InvoiceId IN (SELECT InvoiceId from Invoice Where CustId = @CustId) AND RequestID IN (SELECT RequestID FROM CustomerTransactionRequest WHERE CustID = @CustId) FOR XML AUTO
 
   -->
 </root>

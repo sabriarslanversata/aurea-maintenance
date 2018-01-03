@@ -83,6 +83,12 @@
   <ConsumptionDetail ConsDetID="20597104" ConsID="16334224" ConsDetType="Cons" ConsDetQty="14.0000" ConsUnitID="9" ConsMultiplier="1.00" Source="NonIntervalDetailQty" SourceID="16597995" CreatedByID="0" />
   <!--ConsumptionDetail ConsDetID="21132060" ConsID="16706994" ConsDetType="Cons" ConsDetQty="52.0000" ConsUnitID="9" ConsMultiplier="1.00" Source="NonIntervalDetailQty" SourceID="17252904" CreatedByID="0" />
   <ConsumptionDetail ConsDetID="21379814" ConsID="16883004" ConsDetType="Cons" ConsDetQty="146.0000" ConsUnitID="9" ConsMultiplier="1.00" Source="NonIntervalDetailQty" SourceID="17546598" CreatedByID="0" /-->
+  <TdspInvoice TDSPInvoiceID="9628586" RequestID="31609437" InvoiceID="19130825" ReleaseNo="MU42917169222584094362" TotalAmount="6.4300" TaxAmount="0.0000" DueDate="2017-10-23T00:00:00" DateFrom="2017-08-17T00:00:00" DateTo="2017-09-20T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="9855752" RequestID="32592566" InvoiceID="19659084" ReleaseNo="MU42917169222594987809" TotalAmount="23.8700" TaxAmount="0.0000" DueDate="2017-12-18T00:00:00" DateFrom="2017-10-18T00:00:00" DateTo="2017-11-16T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="9489718" RequestID="30867144" InvoiceID="18816958" ReleaseNo="MU42917169222577689661" TotalAmount="3.2100" TaxAmount="0.0000" DueDate="2017-09-18T00:00:00" DateFrom="2017-07-19T00:00:00" DateTo="2017-08-17T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="9731059" RequestID="32061771" InvoiceID="19394669" ReleaseNo="MU42917169222589279047" TotalAmount="8.7200" TaxAmount="0.0000" DueDate="2017-11-15T00:00:00" DateFrom="2017-09-20T00:00:00" DateTo="2017-10-18T00:00:00" />
+  <!--TdspInvoice TDSPInvoiceID="9968498" RequestID="33209528" InvoiceID="19890426" ReleaseNo="MU42917169222600935566" TotalAmount="67.0100" TaxAmount="0.0000" DueDate="2018-01-16T00:00:00" DateFrom="2017-11-16T00:00:00" DateTo="2017-12-16T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="9375240" RequestID="30432257" InvoiceID="18563364" ReleaseNo="MU42917169222572057685" TotalAmount="2.7500" TaxAmount="0.0000" DueDate="2017-08-21T00:00:00" DateFrom="2017-07-01T00:00:00" DateTo="2017-07-19T00:00:00" /-->
   
   <!-- queries used for fetching data
 DECLARE @CustId INT = 687846
@@ -134,6 +140,6 @@ SELECT * FROM InvoiceLog WHERE InvLogId IN (SELECT InvLogId from Invoice Where C
 SELECT * FROM AccountsReceivableHistory WHERE CustId = @CustId FOR XML AUTO
 SELECT * FROM InvoiceDetail WHERE InvoiceID IN (SELECT InvoiceId from Invoice Where CustId = @CustId) FOR XML AUTO
 SELECT * FROM ConsumptionDetail WHERE ConsDetId IN (SELECT ConsDetID FROM InvoiceDetail WHERE InvoiceID IN (SELECT InvoiceId from Invoice Where CustId = @CustId) ) FOR XML AUTO
-
+SELECT * FROM TdspInvoice WHERE InvoiceId IN (SELECT InvoiceId from Invoice Where CustId = @CustId) AND RequestID IN (SELECT RequestID FROM CustomerTransactionRequest WHERE CustID = @CustId) FOR XML AUTO
   -->
 </root>

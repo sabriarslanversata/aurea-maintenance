@@ -278,6 +278,31 @@
   <ConsumptionDetail ConsDetID="21194897" ConsID="16751387" ConsDetType="Cons" ConsDetQty="103.0000" ConsUnitID="9" ConsMultiplier="1.00" Source="NonIntervalDetailQty" SourceID="17330938" CreatedByID="0" />
   <ConsumptionDetail ConsDetID="20372576" ConsID="16172597" ConsDetType="Cons" ConsDetQty="12.0000" ConsUnitID="9" ConsMultiplier="1.00" Source="NonIntervalDetailQty" SourceID="16341376" CreatedByID="0" />
   <ConsumptionDetail ConsDetID="15602724" ConsID="12750459" ConsDetType="Cons" ConsDetQty="71.0000" ConsUnitID="9" ConsMultiplier="1.00" Source="NonIntervalDetailQty" SourceID="11179597" CreatedByID="0" />
+  <TdspInvoice TDSPInvoiceID="7206276" RequestID="21907369" InvoiceID="14421326" ReleaseNo="MU89938736322340039461" TotalAmount="28.2600" TaxAmount="0.0000" DueDate="2016-02-01T00:00:00" DateFrom="2015-12-01T00:00:00" DateTo="2015-12-28T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="7323290" RequestID="22323178" InvoiceID="14664421" ReleaseNo="MU89938736322385158498" TotalAmount="64.4800" TaxAmount="0.0000" DueDate="2016-02-29T00:00:00" DateFrom="2015-12-28T00:00:00" DateTo="2016-01-27T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="7681222" RequestID="23572271" InvoiceID="15273460" ReleaseNo="MU89938736322456093107" TotalAmount="23.4800" TaxAmount="0.0000" DueDate="2016-05-31T00:00:00" DateFrom="2016-03-28T00:00:00" DateTo="2016-04-27T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="8139084" RequestID="25321680" InvoiceID="16062622" ReleaseNo="MU89938736322489593518" TotalAmount="3.7800" TaxAmount="0.0000" DueDate="2016-10-03T00:00:00" DateFrom="2016-07-27T00:00:00" DateTo="2016-08-26T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="8690740" RequestID="27640442" InvoiceID="17193934" ReleaseNo="MU89938736322534889286" TotalAmount="58.2900" TaxAmount="0.0000" DueDate="2017-02-27T00:00:00" DateFrom="2016-12-28T00:00:00" DateTo="2017-01-27T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="8801400" RequestID="28086050" InvoiceID="17409185" ReleaseNo="MU89938736322540805734" TotalAmount="49.7900" TaxAmount="0.0000" DueDate="2017-03-27T00:00:00" DateFrom="2017-01-27T00:00:00" DateTo="2017-02-24T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="9766725" RequestID="32233231" InvoiceID="19462341" ReleaseNo="MU89938736322590858991" TotalAmount="12.5600" TaxAmount="0.0000" DueDate="2017-11-27T00:00:00" DateFrom="2017-09-28T00:00:00" DateTo="2017-10-26T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="9886950" RequestID="32794451" InvoiceID="19723267" ReleaseNo="MU89938736322596401077" TotalAmount="61.5900" TaxAmount="0.0000" DueDate="2017-12-26T00:00:00" DateFrom="2017-10-26T00:00:00" DateTo="2017-11-27T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="10009325" RequestID="33496779" InvoiceID="19954760" ReleaseNo="MU89938736322603855378" TotalAmount="83.7200" TaxAmount="0.0000" DueDate="2018-01-29T00:00:00" DateFrom="2017-11-27T00:00:00" DateTo="2017-12-27T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="9654374" RequestID="31741595" InvoiceID="19195646" ReleaseNo="MU89938736322585581558" TotalAmount="8.9700" TaxAmount="0.0000" DueDate="2017-10-30T00:00:00" DateFrom="2017-08-25T00:00:00" DateTo="2017-09-28T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="9525491" RequestID="31087775" InvoiceID="18898356" ReleaseNo="MU89938736322579291728" TotalAmount="7.1800" TaxAmount="0.0000" DueDate="2017-09-25T00:00:00" DateFrom="2017-07-27T00:00:00" DateTo="2017-08-25T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="9402192" RequestID="30534542" InvoiceID="18623449" ReleaseNo="MU89938736322573658102" TotalAmount="7.7700" TaxAmount="0.0000" DueDate="2017-08-28T00:00:00" DateFrom="2017-06-28T00:00:00" DateTo="2017-07-27T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="9293151" RequestID="30108297" InvoiceID="18380050" ReleaseNo="MU89938736322567766505" TotalAmount="7.7700" TaxAmount="0.0000" DueDate="2017-07-31T00:00:00" DateFrom="2017-05-25T00:00:00" DateTo="2017-06-28T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="9155306" RequestID="29509449" InvoiceID="18080299" ReleaseNo="MU89938736322560673494" TotalAmount="12.3500" TaxAmount="0.0000" DueDate="2017-06-26T00:00:00" DateFrom="2017-04-26T00:00:00" DateTo="2017-05-25T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="9043811" RequestID="29048285" InvoiceID="17862109" ReleaseNo="MU89938736322553483377" TotalAmount="20.4600" TaxAmount="0.0000" DueDate="2017-05-30T00:00:00" DateFrom="2017-03-27T00:00:00" DateTo="2017-04-26T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="8918879" RequestID="28502412" InvoiceID="17628143" ReleaseNo="MU89938736322546975946" TotalAmount="50.9500" TaxAmount="0.0000" DueDate="2017-04-25T00:00:00" DateFrom="2017-02-24T00:00:00" DateTo="2017-03-27T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="8569931" RequestID="27179056" InvoiceID="16955366" ReleaseNo="MU89938736322528309890" TotalAmount="59.8300" TaxAmount="0.0000" DueDate="2017-01-30T00:00:00" DateFrom="2016-11-28T00:00:00" DateTo="2016-12-28T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="8460856" RequestID="26578323" InvoiceID="16719259" ReleaseNo="MU89938736322520144480" TotalAmount="33.6400" TaxAmount="0.0000" DueDate="2016-12-27T00:00:00" DateFrom="2016-10-27T00:00:00" DateTo="2016-11-28T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="8344660" RequestID="26089429" InvoiceID="16472599" ReleaseNo="MU89938736322513682311" TotalAmount="9.8300" TaxAmount="0.0000" DueDate="2016-11-28T00:00:00" DateFrom="2016-09-28T00:00:00" DateTo="2016-10-27T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="8239961" RequestID="25719416" InvoiceID="16258605" ReleaseNo="MU89938736322506243460" TotalAmount="6.0500" TaxAmount="0.0000" DueDate="2016-10-31T00:00:00" DateFrom="2016-08-26T00:00:00" DateTo="2016-09-28T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="8008422" RequestID="24826080" InvoiceID="15817012" ReleaseNo="MU89938736322480848177" TotalAmount="4.9100" TaxAmount="0.0000" DueDate="2016-08-29T00:00:00" DateFrom="2016-06-28T00:00:00" DateTo="2016-07-27T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="7901228" RequestID="24407438" InvoiceID="15640061" ReleaseNo="MU89938736322473438161" TotalAmount="6.8000" TaxAmount="0.0000" DueDate="2016-07-27T00:00:00" DateFrom="2016-05-25T00:00:00" DateTo="2016-06-28T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="7782026" RequestID="23939259" InvoiceID="15423014" ReleaseNo="MU89938736322463595507" TotalAmount="17.5100" TaxAmount="0.0000" DueDate="2016-06-27T00:00:00" DateFrom="2016-04-27T00:00:00" DateTo="2016-05-25T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="7557709" RequestID="23094284" InvoiceID="15066434" ReleaseNo="MU89938736322445030097" TotalAmount="39.0000" TaxAmount="0.0000" DueDate="2016-04-26T00:00:00" DateFrom="2016-02-25T00:00:00" DateTo="2016-03-28T00:00:00" />
+  <TdspInvoice TDSPInvoiceID="7431136" RequestID="22664301" InvoiceID="14858918" ReleaseNo="MU89938736322427354747" TotalAmount="62.8800" TaxAmount="0.0000" DueDate="2016-03-28T00:00:00" DateFrom="2016-01-27T00:00:00" DateTo="2016-02-25T00:00:00" />
   
   <!-- queries used for fetching data
 DECLARE @CustId INT = 588757
@@ -329,6 +354,6 @@ SELECT * FROM InvoiceLog WHERE InvLogId IN (SELECT InvLogId from Invoice Where C
 SELECT * FROM AccountsReceivableHistory WHERE CustId = @CustId FOR XML AUTO
 SELECT * FROM InvoiceDetail WHERE InvoiceID IN (SELECT InvoiceId from Invoice Where CustId = @CustId) FOR XML AUTO
 SELECT * FROM ConsumptionDetail WHERE ConsDetId IN (SELECT ConsDetID FROM InvoiceDetail WHERE InvoiceID IN (SELECT InvoiceId from Invoice Where CustId = @CustId) ) FOR XML AUTO
-
+SELECT * FROM TdspInvoice WHERE InvoiceId IN (SELECT InvoiceId from Invoice Where CustId = @CustId) AND RequestID IN (SELECT RequestID FROM CustomerTransactionRequest WHERE CustID = @CustId) FOR XML AUTO
   -->
 </root>

@@ -112,7 +112,7 @@ namespace Aurea.Maintenance.Debugger.Stream
             var sqlQueries = new StringBuilder();
             requestIds.ForEach(id =>
                 sqlQueries.AppendLine(
-                    $"UPDATE CustomerTransactionRequest SourceID = NULL, TransactionNumber = NULL, ProcessFlag = 0, ProcessDate = NULL WHERE RequestID = {id}"));
+                    $"UPDATE CustomerTransactionRequest SET SourceID = NULL, TransactionNumber = NULL, ProcessFlag = 0, ProcessDate = NULL WHERE RequestID = {id}"));
             DB.ExecuteQuery(sqlQueries.ToString(), _appConfig.ConnectionCsr);
         }
 
