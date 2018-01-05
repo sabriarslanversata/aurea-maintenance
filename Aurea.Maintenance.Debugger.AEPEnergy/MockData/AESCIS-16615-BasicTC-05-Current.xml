@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<root>
+  
+  <!--Below queries used to generate these data
+DECLARE @CustId INT = 197124
+DECLARE @PremId INT = (SELECT PremId FROM Premise WHERE CustId = @CustId)
+DECLARE @AcctsRecID INT = (SELECT AcctsRecID FROM Customer WHERE CustId = @CustId)
+
+SELECT * FROM Customer WHERE CustId = @CustId FOR XML AUTO
+SELECT * FROM Premise WHERE CustId = @CustId FOR XML AUTO
+SELECT * FROM CustomerAdditionalInfo WHERE CustId = @CustId FOR XML AUTO
+SELECT * FROM AccountsReceivable WHERE AcctsRecID = @AcctsRecID FOR XML AUTO
+SELECT * FROM Meter WHERE PremId = @PremId FOR XML AUTO
+SELECT * FROM Address WHERE AddrId IN (
+	    SELECT SiteAddrId	FROM Customer WHERE CustID = @CustId
+        UNION
+        SELECT MailAddrId	FROM Customer WHERE CustID = @CustId
+        UNION
+        SELECT CorrAddrId	FROM Customer WHERE CustID = @CustId
+        UNION
+        SELECT AddrId FROM Premise WHERE CustID = @CustId
+    ) FOR XML AUTO
+
+SELECT * FROM Rate WHERE RateId IN (
+SELECT RateId FROM Customer WHERE CustId = @CustId
+UNION
+SELECT RateId FROM RateTransition WHERE CustId = @CustId
+) FOR XML AUTO
+
+SELECT * FROM RateDetail WHERE RateId IN (
+SELECT RateId from Customer where CustId = @CustId
+UNION
+SELECT RateId from RateTransition WHERE CustId = @CustId
+) FOR XML AUTO
+
+SELECT * FROM RateTransition WHERE CustId = @CustId FOR XML AUTO
+SELECT * FROM Product WHERE RateId IN (SELECT RateId from RateTransition WHERE CustId = @CustId) FOR XML AUTO
+SELECT * FROM CustomerTransactionRequest WHERE CustID = @CustId ORDER BY 1 FOR XML AUTO
+
+SELECT * FROM Consumption WHERE MeterId IN (SELECT MeterId FROM Meter WHERE PremId = (SELECT PremId FROM Premise WHERE CustId = @CustId)) FOR XML AUTO
+SELECT * FROM Invoice Where CustId = @CustId FOR XML AUTO
+select InvoiceXMLID, InvoiceID, '<hint>NoNeedForThisTestCase</hint>' as InvoiceXML, CreateDate, PrintFormatID, PrintStatusID, PhysicalFile, PDFContent, HasPDF, MachineName 
+FROM InvoiceXML WHERE InvoiceId IN (SELECT InvoiceId FROM Invoice WHERE CustId = @CustId) FOR XML AUTO
+SELECT * FROM InvoiceLog WHERE InvLogId IN (SELECT InvLogId from Invoice Where CustId = @CustId) FOR XML AUTO
+SELECT * FROM AccountsReceivableHistory WHERE CustId = @CustId FOR XML AUTO
+SELECT * FROM InvoiceDetail WHERE InvoiceID IN (SELECT InvoiceId from Invoice Where CustId = @CustId) FOR XML AUTO
+SELECT * FROM ConsumptionDetail WHERE ConsDetId IN (SELECT ConsDetID FROM InvoiceDetail WHERE InvoiceID IN (SELECT InvoiceId from Invoice Where CustId = @CustId) ) FOR XML AUTO
+
+<s:Body xmlns:s="http://www.w3.org/2003/05/soap-envelope">
+  <RetainCustomer xmlns="https://svc.aepenergybilling.com">
+    <customerId>116549</customerId>
+    <productId>605</productId>
+    <soldDate>2017-12-24T05:18:12-06:00</soldDate>
+    <municipalAggregation>N</municipalAggregation>
+  </RetainCustomer>
+</s:Body>
+  -->
+</root>

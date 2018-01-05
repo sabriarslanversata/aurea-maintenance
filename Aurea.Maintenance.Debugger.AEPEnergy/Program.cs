@@ -82,6 +82,8 @@
             //Simulate_AESCIS16615("AESCIS-16615-Basic", 19981, 543, DateTime.Parse("2017-12-05T23:31:41-06:00"), "N", DateTime.Today.Date);
             //Simulate_AESCIS16615("AESCIS-16615-C4", 116549, 605, DateTime.Parse("2017-12-24T05:18:12-06:00"), "N", DateTime.Today.Date);
             Simulate_AESCIS16615_AfterRateTransition();
+            //prepData2Simulate_AESCIS_16615_onUA();
+
             _logger.Info("Debug Session has ended");
             Console.ReadKey();
         }
@@ -103,6 +105,21 @@
             
         }
 
+        private static void prepData2Simulate_AESCIS_16615_onUA()
+        {
+            var clientConfig = ClientConfiguration.GetClientConfiguration(Clients.AEP, Stages.UserAcceptance, TransactionMode.Enlist);
+            var appConfig = ClientConfiguration.SetConfigurationContext(clientConfig);
+
+            string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
+            DB.ImportFiles(dirToProcess, "AESCIS-16615-UA", appConfig.ConnectionCsr);
+
+            //copy product and Customer to UA from Production which is not replicated to UA yet
+            //Simulate_AESCIS16615("AESCIS-16615-C4-Basic", 116543, 605, DateTime.Parse("2017-12-23T11:21:54-06:00"), "N", DateTime.Today.Date);
+
+            //reflag 814_C to be processed by GenerateEvents
+
+        }
+
         private static void Simulate_AESCIS16615(string dataFilter, int customerId, int productId, DateTime soldDate, string municipalAggregation, DateTime? switchDate = null)
         {
             //CopyProduct, CopyCustomer
@@ -117,8 +134,9 @@
         {
             var sql = string.Empty;
             string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
+            DB.ImportFiles(dirToProcess, "AESCIS-16615-Basic-C5", _appConfig.ConnectionCsr);
 
-            Simulate_AESCIS16615("AESCIS-16615-C4-Basic", 116543, 605, DateTime.Parse("2017-12-23T11:21:54-06:00"), "N", DateTime.Today.Date);
+            //Simulate_AESCIS16615("AESCIS-16615-C4-Basic", 116543, 605, DateTime.Parse("2017-12-23T11:21:54-06:00"), "N", DateTime.Today.Date);
 
             // evaluate change request and create EventingQueue for outbound 814_C 
 
@@ -183,13 +201,13 @@ UPDATE CustomerTransactionRequest SET ProcessFlag = 1, ProcessDate=GetDate(), Ev
             
             // import 814_C Accept Records to DB
             DB.ImportFiles(dirToProcess, "AESCIS-16615-814Accept", _appConfig.ConnectionCsr);
-            
+
             // delete old Events if exists and mark CTR as unprocessed
             //sql = @"UPDATE CustomerTransactionRequest SET EventCleared = 0 WHERE RequestID IN (4727194, 4727195)";
             //SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
 
             //import ?
-            //ImportTransaction();
+            ExecuteImportTransactionQueue();
 
             GenerateEvents(new List<int> { 27 });//ChangeRequestEvaluation
             ProcessEvents();
@@ -222,6 +240,12 @@ UPDATE CustomerTransactionRequest SET ProcessFlag = 1, ProcessDate=GetDate(), Ev
 
             };
             baseImport.MyImportTransaction();
+        }
+
+        private static void ExecuteImportTransactionQueue()
+        {
+            CIS.Import.Billing.Transaction.Queue q = new CIS.Import.Billing.Transaction.Queue(Clients.AEP.Abbreviation(), _appConfig.ConnectionMarket, _appConfig.ConnectionCsr, _appConfig.ConnectionTdsp, _clientConfig.ConnectionBillingAdmin);
+            q.Import(_logger);
         }
 
         private static void ExecuteTask(string taskId)
