@@ -220,7 +220,7 @@
   <RateTransition RateTransitionID="877689" CustID="117002" RateID="184906" UserID="289" CreatedDate="2017-10-04T23:31:47.230" SwitchDate="2017-11-13T00:00:00" EndDate="2018-11-13T00:00:00" StatusID="4" SoldDate="2017-10-04T23:30:53" RolloverFlag="0" />
   <RateTransition RateTransitionID="927986" CustID="117002" RateID="189666" UserID="289" CreatedDate="2017-11-10T16:11:17.713" SwitchDate="2017-11-13T00:00:00" EndDate="2017-11-12T00:00:00" StatusID="2" SoldDate="2017-11-10T09:01:00" RolloverFlag="0" />
   <!-- we need to mark this RT to pendingMarketApproval, prev status id 2 and prev end date 2018-01-03T00:00:00-->
-  <RateTransition RateTransitionID="1022786" CustID="117002" RateID="184906" UserID="708" CreatedDate="2018-01-04T13:06:40.410" SwitchDate="2018-01-04T00:00:00" EndDate="2019-01-03T00:00:00" StatusID="2" SoldDate="2018-01-04T00:00:00" RolloverFlag="0" />
+  <RateTransition RateTransitionID="1022786" CustID="117002" RateID="184906" UserID="708" CreatedDate="2018-01-04T13:06:40.410" SwitchDate="2018-01-04T00:00:00" EndDate="2019-01-03T00:00:00" StatusID="1" SoldDate="2018-01-04T00:00:00" RolloverFlag="0" />
 
   <!-- we need ChangeRequest and ChangeTransaction and reflag to importable, old StatusId 5, 2	pending approval, 5	processed, 8	pending market approval, 9	market approved, 10	market rejected-->
   <ChangeRequest ChangeRequestID="68815" CustomerID="117002" ElementID="6" ElementPrimaryKey="927986" RequiresTransactionFlag="1" RequiresApprovalFlag="0" StatusID="8" CreatedByUserID="289" CreateDate="2017-11-10T16:11:17.777" ModifiedByUserID="0" ChangeTransactionID="24920" />

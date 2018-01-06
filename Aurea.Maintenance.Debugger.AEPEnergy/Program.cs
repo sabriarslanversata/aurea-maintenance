@@ -78,7 +78,7 @@
             //Simulate_AESCIS16615("AESCIS-16615-C4", 116549, 605, DateTime.Parse("2017-12-24T05:18:12-06:00"), "N", DateTime.Today.Date);
             //Simulate_AESCIS16615_AfterRateTransitionSkipImport();
             //prepData2Simulate_AESCIS_16615_onUA();
-            Simulate_AESCIS16615_AfterRateTransitionDoImport("13");
+            Simulate_AESCIS16615_AfterRateTransitionDoImport("14");
 
             _logger.Info("Debug Session has ended");
             Console.ReadKey();
@@ -128,10 +128,10 @@
 
         private static void Simulate_AESCIS16615_AfterRateTransitionDoImport(string caseNumber)
         {
-            var sql = string.Empty;
             string dirToProcess = Path.Combine(_appDirectory, "MockData");
             DB.ImportFiles(dirToProcess, $"AESCIS-16615-BasicTC-{caseNumber}", _appConfig.ConnectionCsr);
             DB.ImportFiles(dirToProcess, $"AESCIS-16615-TC-{caseNumber}", _appConfig.ConnectionCsr);
+            //Next candidate 178066, test all on saes alter permission?
 
             ExecuteImportChangeRequests();
 
@@ -262,6 +262,7 @@ UPDATE CustomerTransactionRequest SET ProcessFlag = 1, ProcessDate=GetDate(), Ev
             var t = new CIS.Import.Billing.ChangeRequest(_appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _clientConfig.ConnectionBillingAdmin, Clients.AEP.Id(), _logger);
             t.Import();
         }
+
         private static void ExecuteTask(string taskId)
         {
             var adminDataAccess = new CIS.Clients.AEPEnergy.Miramar.DataAccess.AdminDataAccess(_clientConfig.ConnectionBillingAdmin);
