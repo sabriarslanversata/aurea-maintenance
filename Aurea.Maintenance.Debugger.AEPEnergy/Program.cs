@@ -65,24 +65,20 @@
 
     class Program
     {
-        private static ClientEnvironmentConfiguration _clientConfig;
-        private static GlobalApplicationConfigurationDS.GlobalApplicationConfiguration _appConfig;
+        private static readonly ClientEnvironmentConfiguration _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.AEP, Stages.Development, TransactionMode.Enlist);
+        private static readonly GlobalApplicationConfigurationDS.GlobalApplicationConfiguration _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
+        private static readonly string _appDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
         private static readonly ILogger _logger = new Logger();
+
         static void Main(string[] args)
         {
-            
-            // Set client configuration and then the application configuration context.            
-            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.AEP, Stages.Development, TransactionMode.Enlist);
-            _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
-
-            //System.ServiceModel.ServiceSecurityContext.Current.PrimaryIdentity.Name = Clients.AEP.GetServiceGuid.ToString();
-
             //Simulate_AESCIS17193("4184386");
             //simulate_AESCIS16615_WS();
             //Simulate_AESCIS16615("AESCIS-16615-Basic", 19981, 543, DateTime.Parse("2017-12-05T23:31:41-06:00"), "N", DateTime.Today.Date);
             //Simulate_AESCIS16615("AESCIS-16615-C4", 116549, 605, DateTime.Parse("2017-12-24T05:18:12-06:00"), "N", DateTime.Today.Date);
-            Simulate_AESCIS16615_AfterRateTransition();
+            //Simulate_AESCIS16615_AfterRateTransitionSkipImport();
             //prepData2Simulate_AESCIS_16615_onUA();
+            Simulate_AESCIS16615_AfterRateTransitionDoImport("13");
 
             _logger.Info("Debug Session has ended");
             Console.ReadKey();
@@ -110,7 +106,7 @@
             var clientConfig = ClientConfiguration.GetClientConfiguration(Clients.AEP, Stages.UserAcceptance, TransactionMode.Enlist);
             var appConfig = ClientConfiguration.SetConfigurationContext(clientConfig);
 
-            string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
+            string dirToProcess = Path.Combine(_appDirectory, "MockData");
             DB.ImportFiles(dirToProcess, "AESCIS-16615-UA", appConfig.ConnectionCsr);
 
             //copy product and Customer to UA from Production which is not replicated to UA yet
@@ -124,19 +120,32 @@
         {
             //CopyProduct, CopyCustomer
 
-            string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
+            string dirToProcess = Path.Combine(_appDirectory, "MockData");
             DB.ImportFiles(dirToProcess, dataFilter, _appConfig.ConnectionCsr);
 
             CIS.Clients.AEPEnergy.RateType.RateUtility.ApplyRateTransition(customerId, productId, soldDate, municipalAggregation, switchDate);
         }
 
-        private static void Simulate_AESCIS16615_AfterRateTransition()
+        private static void Simulate_AESCIS16615_AfterRateTransitionDoImport(string caseNumber)
         {
             var sql = string.Empty;
-            string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
+            string dirToProcess = Path.Combine(_appDirectory, "MockData");
+            DB.ImportFiles(dirToProcess, $"AESCIS-16615-BasicTC-{caseNumber}", _appConfig.ConnectionCsr);
+            DB.ImportFiles(dirToProcess, $"AESCIS-16615-TC-{caseNumber}", _appConfig.ConnectionCsr);
+
+            ExecuteImportChangeRequests();
+
+            GenerateEvents(new List<int> { 27 });//ChangeRequestEvaluation
+            ProcessEvents();
+        }
+
+        private static void Simulate_AESCIS16615_AfterRateTransitionSkipImport()
+        {
+            var sql = string.Empty;
+            string dirToProcess = Path.Combine(_appDirectory, "MockData");
             DB.ImportFiles(dirToProcess, "AESCIS-16615-Basic-C5", _appConfig.ConnectionCsr);
 
-            //Simulate_AESCIS16615("AESCIS-16615-C4-Basic", 116543, 605, DateTime.Parse("2017-12-23T11:21:54-06:00"), "N", DateTime.Today.Date);
+            Simulate_AESCIS16615("AESCIS-16615-C4-Basic", 116543, 605, DateTime.Parse("2017-12-23T11:21:54-06:00"), "N", DateTime.Today.Date);
 
             // evaluate change request and create EventingQueue for outbound 814_C 
 
@@ -248,6 +257,11 @@ UPDATE CustomerTransactionRequest SET ProcessFlag = 1, ProcessDate=GetDate(), Ev
             q.Import(_logger);
         }
 
+        private static void ExecuteImportChangeRequests()
+        {
+            var t = new CIS.Import.Billing.ChangeRequest(_appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _clientConfig.ConnectionBillingAdmin, Clients.AEP.Id(), _logger);
+            t.Import();
+        }
         private static void ExecuteTask(string taskId)
         {
             var adminDataAccess = new CIS.Clients.AEPEnergy.Miramar.DataAccess.AdminDataAccess(_clientConfig.ConnectionBillingAdmin);

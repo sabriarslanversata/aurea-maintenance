@@ -158,13 +158,22 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="MockData\AESCIS-16615-BasicTC-05-Current.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\AESCIS-16615-TC-13-814Accept.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\AESCIS-16615-BasicTC-13-Next.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="MockData\AESCIS-16615-TC-11-814Accept.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="MockData\AESCIS-16615-BasicTC-02.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="MockData\AESCIS-16615-BasicTC-05-Current.xml">
+    <Content Include="MockData\AESCIS-16615-TC-05-814Accept.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="MockData\AESCIS-16615-BasicTC-01.xml">
