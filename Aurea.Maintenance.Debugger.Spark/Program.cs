@@ -1,6 +1,9 @@
-﻿using System.Threading;
+﻿using System.IO;
+using System.Reflection;
+using System.Threading;
 using Aurea.TaskToaster;
 using Aurea.TaskToaster.Client.Spark.Tasks;
+using CIS.Clients.Spark.Model.Common;
 using CIS.Clients.Spark.Model.Product;
 
 namespace Aurea.Maintenance.Debugger.Spark
@@ -126,14 +129,21 @@ namespace Aurea.Maintenance.Debugger.Spark
 
         private static void Simulate_AESCIS18511()
         {
+            string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
+            DB.ImportFiles(dirToProcess, "AESCIS-18511", _appConfig.ConnectionCsr);
+
             ExecuteEnrollCustomerPromotionTask();
-            GenerateEvents(new List<int> {18});//generate events EnrollCustomerEvaluation 18
-            ProcessEvents();
+            //EvaluateCustomerDepositStatusforEnrollment();
+            //EvaluateCustomerforFutureDatedEnrollment();
+            SendEnrollMarketTransaction();
+            // --EnrollTransaction
+            // --no need to export we just need 814 record, Export 814
+            //GenerateEvents(new List<int> {18});//generate events EnrollCustomerEvaluation 18
+            //ProcessEvents();
         }
 
         private static void ExecuteEnrollCustomerPromotionTask()
         {
-            var promotionTask = new PromotionTask();
             var taskContext = new TaskContext
             {
                 Logger = _logger,
@@ -142,7 +152,68 @@ namespace Aurea.Maintenance.Debugger.Spark
                 ClientConnection = _appConfig.ConnectionCsr,
             };
 
+            var promotionTask = new PromotionTask { Context = taskContext };
             promotionTask.Execute();
+
+            SimulateWelcomeLetterGenerateTask(taskContext);
+
+            EvaluateCustomerDepositStatusforEnrollment();
+            EvaluateCustomerforFutureDatedEnrollment();
+
+            //var depositHoldEvaluationTask = new DepositHoldEvaluationTask {Context = taskContext};
+            //depositHoldEvaluationTask.Execute();
+
+            //var depositStatusEvaluationTask = new DepositStatusEvaluationTask {Context = taskContext};
+            //depositStatusEvaluationTask.Execute();
+
+            //var futureDateEnrollmentEvaluationTask = new FutureDateEnrollmentEvaluationTask {Context = taskContext};
+            //futureDateEnrollmentEvaluationTask.Execute();
+
+            //var futureDateHoldEvaluationTask = new FutureDateHoldEvaluationTask {Context = taskContext};
+            //futureDateHoldEvaluationTask.Execute();
+
+            //var sendEnrollMarketTransactionTask = new SendEnrollMarketTransactionTask {Context = taskContext};
+            //sendEnrollMarketTransactionTask.Execute();
+        }
+
+        private static void SimulateWelcomeLetterGenerateTask(TaskContext taskContext)
+        {
+            //disabled 
+            //var welcomeLetterGenerationTask = new WelcomeLetterGenerationTask { Context = taskContext };
+            //welcomeLetterGenerationTask.Execute();
+
+            var dataGateway = new CIS.Clients.Spark.Model.DataGateway
+            {
+                ClientId = taskContext.ClientId,
+                ConnectionBillingAdmin = taskContext.BillingAdminConnection,
+                ConnectionCsr = taskContext.ClientConnection,
+                UserId = 289
+            };
+            var context = new CIS.Clients.Spark.Processors.Enrollment.Context.GenerateWelcomeLetterContext(dataGateway, taskContext.Logger);
+            var welcomeLetterTask = new CIS.Clients.Spark.Processors.Enrollment.Task.GenerateWelcomePacket(context);
+            foreach (var model in welcomeLetterTask.ListReadyForWelcomeLetterGeneration())
+            {
+                context.CustomerDataGateway.UpdateCustomerStatus(model.CustId, CustomerStatus.Dictionary[CustomerStatusOption.EnrollmentProcessing_LetterGenerated]);
+                context.CorrelationDataGateway.InsertState(model.IstaCorrelationId, SourceTypeOption.LetterGeneration, model.CustId, CorrelationStateOption.WelcomeLetterSent, "Welcome Letter sent succesfully");
+            }
+        }
+
+        private static void EvaluateCustomerDepositStatusforEnrollment()
+        {
+            var maintenance = new MyMaintenance(_appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _clientConfig.ConnectionBillingAdmin);
+            maintenance.EvaluateCustomerDepositStatusforEnrollment();
+        }
+
+        private static void EvaluateCustomerforFutureDatedEnrollment()
+        {
+            var maintenance = new MyMaintenance(_appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _clientConfig.ConnectionBillingAdmin);
+            maintenance.EvaluateCustomerforFutureDatedEnrollment();
+        }
+
+        private static void SendEnrollMarketTransaction()
+        {
+            var maintenance = new MyMaintenance(_appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _clientConfig.ConnectionBillingAdmin);
+            maintenance.SendEnrollMarketTransaction();
         }
 
         private static void GenerateEvents(List<int> eventTypeIds)
