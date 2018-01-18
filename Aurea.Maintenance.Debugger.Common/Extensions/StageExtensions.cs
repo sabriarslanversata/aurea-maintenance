@@ -39,7 +39,6 @@
             switch (stage)
             {
                 case Stages.Development:
-                    return "aesua.local";
                 case Stages.UserAcceptance:
                     return "aesua.local";
                 case Stages.Production:
@@ -54,7 +53,6 @@
             switch (stage)
             {
                 case Stages.Development:
-                    return "SGISUSEUAV01";
                 case Stages.UserAcceptance:
                     return "SGISUSEUAV01";
                 case Stages.Production:
