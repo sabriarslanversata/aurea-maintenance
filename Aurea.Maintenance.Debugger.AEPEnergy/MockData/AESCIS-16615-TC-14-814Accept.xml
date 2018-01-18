@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<root>
+  <!-- don't forget to reflag by changing ProcessFlag to 0-->
+  <daes_AEPEnergyMarket..tbl_814_header _x0038_14_Key="2513245" MarketFileId="45832" TransactionSetId="814" TransactionSetControlNbr="" TransactionSetPurposeCode="S" TransactionNbr="ACPC19342666001720180105-S" TransactionDate="20180105" ReferenceNbr="ACPC19342666001720180105" ActionCode="C" TdspDuns="COLUMBIAG" TdspName="Columbia Gas" CrDuns="077778954" CrName="AEP Energy" ProcessFlag="0" ProcessDate="2018-01-05T22:32:40.420" Direction="1" TransactionTypeID="42" TransactionTime="" TransactionTimeCode="" TransactionQualifier="10" CreateDate="2018-01-05T22:31:21.9626247" />
+  <daes_AEPEnergyMarket..tbl_814_Service Service_Key="2503238" _x0038_14_Key="2513245" AssignId="1" ServiceTypeCode1="SH" ServiceType1="GAS" ServiceTypeCode2="SH" ServiceType2="CE" ServiceTypeCode3="SH" ServiceType3="" ServiceTypeCode4="" ServiceType4="" ActionCode="A" MaintenanceTypeCode="001" DistributionLossFactorCode="" PremiseType="" BillType="" BillCalculator="" EsiId="193426660017" StationId="" PowerRegion="" EnergizedFlag="" EsiIdStartDate="" EsiIdEndDate="" EsiIdEligibilityDate="" NotificationWaiver="" SpecialReadSwitchDate="20180105" RTODate="20180105" MembershipID="193426660017" LDCBillingCycle="14" GasPoolId="00010263" MeterCycleCode="14" SpecialReadSwitchTime="" UnmeteredAcct="" PaymentOption="N" />
+  <daes_AEPEnergyMarket..tbl_814_Service_Date Date_Key="2404902" Service_Key="2503238" Qualifier="" Date="" Time="" TimeCode="" PeriodFormat="" Period="" NotesDate="" />
+  <daes_AEPEnergyMarket..tbl_814_Service_Meter Meter_Key="1156308" Service_Key="2503238" EntityIdCode="" MeterNumber="ALL" MeterCode="" MeterType="" LoadProfile="" RateClass="" RateSubClass="" ESPRateCode="ELC25" />
+  <daes_AEPEnergyMarket..tblMarketFile MarketFileId="45832" FileName="814_AEPOHCOLUMBIAGENR_59247791_211658916_.211658927.211658934.pgp.txt.xml" FileType="814" ProcessStatus="Y" ProcessDate="2018-01-05T22:31:12.263" ProcessError="" SenderTranNum="" DirectionFlag="1" Status="3" LDCID="0" CSPDUNSID="0" RefMarketFileId="0" CreateDate="2018-01-05T22:31:09.153" TransactionCount="274" />
+  
+  <daes_AEPEnergyMarket..tbl_814_header _x0038_14_Key="2513246" MarketFileId="45832" TransactionSetId="814" TransactionSetControlNbr="" TransactionSetPurposeCode="S" TransactionNbr="ACF19342666001720180105-S" TransactionDate="20180105" ReferenceNbr="ACF19342666001720180105" ActionCode="C" TdspDuns="COLUMBIAG" TdspName="Columbia Gas" CrDuns="077778954" CrName="AEP Energy" ProcessFlag="0" ProcessDate="2018-01-05T22:32:40.610" Direction="1" TransactionTypeID="42" TransactionTime="" TransactionTimeCode="" TransactionQualifier="10" CreateDate="2018-01-05T22:31:21.9916121" />
+  <daes_AEPEnergyMarket..tbl_814_Service Service_Key="2503239" _x0038_14_Key="2513246" AssignId="1" ServiceTypeCode1="SH" ServiceType1="GAS" ServiceTypeCode2="SH" ServiceType2="CE" ServiceTypeCode3="SH" ServiceType3="" ServiceTypeCode4="" ServiceType4="" ActionCode="A" MaintenanceTypeCode="001" DistributionLossFactorCode="" PremiseType="" BillType="" BillCalculator="" EsiId="193426660017" StationId="" PowerRegion="" EnergizedFlag="" EsiIdStartDate="" EsiIdEndDate="" EsiIdEligibilityDate="" NotificationWaiver="" SpecialReadSwitchDate="20180105" RTODate="20180105" MembershipID="193426660017" PreviousEsiId="193426660017" GasPoolId="00010263" SpecialReadSwitchTime="" UnmeteredAcct="" PaymentOption="N" />
+  <daes_AEPEnergyMarket..tbl_814_Service_Account_Change Change_Key="37593" Service_Key="2503239" ChangeReason="N18R" ChangeDescription="" />
+  <daes_AEPEnergyMarket..tbl_814_Service_Date Date_Key="2404903" Service_Key="2503239" Qualifier="" Date="" Time="" TimeCode="" PeriodFormat="" Period="" NotesDate="" />
+  <daes_AEPEnergyMarket..tbl_814_Service_Meter Meter_Key="1156309" Service_Key="2503239" EntityIdCode="" MeterNumber="ALL" MeterCode="" MeterType="" LoadProfile="" RateClass="" RateSubClass="" ESPRateCode="ELC25" />
+  <daes_AEPEnergyMarket..tbl_814_Service_Meter_Change Change_Key="64874" Meter_Key="1156309" ChangeReason="REFRB" ChangeDescription="RATE CHANGE" />
+  
+  <!--queries to retrieve
+DECLARE @RequestId INT = 4953716
+
+SELECT * FROM paes_AEPEnergyMarket..tbl_814_header WHERE [814_Key] IN (SELECT SourceId FROM CustomerTransactionRequest WHERE RequestID = @RequestId) FOR XML AUTO
+SELECT * FROM paes_AEPEnergyMarket..tbl_814_Service WHERE [814_Key] IN (SELECT SourceId FROM CustomerTransactionRequest WHERE RequestID = @RequestId) FOR XML AUTO
+SELECT * FROM paes_AEPEnergyMarket..tbl_814_Service_Account_Change WHERE Service_Key IN (SELECT Service_Key FROM paes_AEPEnergyMarket..tbl_814_Service WHERE [814_Key] IN (SELECT SourceId FROM CustomerTransactionRequest WHERE RequestID = @RequestId)) FOR XML AUTO
+SELECT * FROM paes_AEPEnergyMarket..tbl_814_Service_Date WHERE Service_Key IN (SELECT Service_Key FROM paes_AEPEnergyMarket..tbl_814_Service WHERE [814_Key] IN (SELECT SourceId FROM CustomerTransactionRequest WHERE RequestID = @RequestId)) FOR XML AUTO
+SELECT * FROM paes_AEPEnergyMarket..tbl_814_Service_Meter WHERE Service_Key IN (SELECT Service_Key FROM paes_AEPEnergyMarket..tbl_814_Service WHERE [814_Key] IN (SELECT SourceId FROM CustomerTransactionRequest WHERE RequestID = @RequestId)) FOR XML AUTO
+SELECT * FROM paes_AEPEnergyMarket..tbl_814_Service_Meter_Change WHERE Meter_Key IN (SELECT Meter_Key FROM paes_AEPEnergyMarket..tbl_814_Service_Meter WHERE Service_Key IN (SELECT Service_Key FROM paes_AEPEnergyMarket..tbl_814_Service WHERE [814_Key] IN (SELECT SourceId FROM CustomerTransactionRequest WHERE RequestID = @RequestId))) FOR XML AUTO
+SELECT * FROM paes_AEPEnergyMarket..tblMarketFile WHERE MarketFileId IN (SELECT MarketFileId FROM paes_AEPEnergyMarket..tbl_814_header WHERE [814_Key] IN (SELECT SourceId FROM CustomerTransactionRequest WHERE RequestID = @RequestId)) FOR XML AUTO
+
+SET @RequestId = 4953717
+
+SELECT * FROM paes_AEPEnergyMarket..tbl_814_header WHERE [814_Key] IN (SELECT SourceId FROM CustomerTransactionRequest WHERE RequestID = @RequestId) FOR XML AUTO
+SELECT * FROM paes_AEPEnergyMarket..tbl_814_Service WHERE [814_Key] IN (SELECT SourceId FROM CustomerTransactionRequest WHERE RequestID = @RequestId) FOR XML AUTO
+SELECT * FROM paes_AEPEnergyMarket..tbl_814_Service_Account_Change WHERE Service_Key IN (SELECT Service_Key FROM paes_AEPEnergyMarket..tbl_814_Service WHERE [814_Key] IN (SELECT SourceId FROM CustomerTransactionRequest WHERE RequestID = @RequestId)) FOR XML AUTO
+SELECT * FROM paes_AEPEnergyMarket..tbl_814_Service_Date WHERE Service_Key IN (SELECT Service_Key FROM paes_AEPEnergyMarket..tbl_814_Service WHERE [814_Key] IN (SELECT SourceId FROM CustomerTransactionRequest WHERE RequestID = @RequestId)) FOR XML AUTO
+SELECT * FROM paes_AEPEnergyMarket..tbl_814_Service_Meter WHERE Service_Key IN (SELECT Service_Key FROM paes_AEPEnergyMarket..tbl_814_Service WHERE [814_Key] IN (SELECT SourceId FROM CustomerTransactionRequest WHERE RequestID = @RequestId)) FOR XML AUTO
+SELECT * FROM paes_AEPEnergyMarket..tbl_814_Service_Meter_Change WHERE Meter_Key IN (SELECT Meter_Key FROM paes_AEPEnergyMarket..tbl_814_Service_Meter WHERE Service_Key IN (SELECT Service_Key FROM paes_AEPEnergyMarket..tbl_814_Service WHERE [814_Key] IN (SELECT SourceId FROM CustomerTransactionRequest WHERE RequestID = @RequestId))) FOR XML AUTO
+SELECT * FROM paes_AEPEnergyMarket..tblMarketFile WHERE MarketFileId IN (SELECT MarketFileId FROM paes_AEPEnergyMarket..tbl_814_header WHERE [814_Key] IN (SELECT SourceId FROM CustomerTransactionRequest WHERE RequestID = @RequestId)) FOR XML AUTO
+
+  -->
+</root>

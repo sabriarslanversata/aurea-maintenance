@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<root>
+  <!--CustomerTypeId 4-->
+  <Customer CustID="740920" CSPID="1" CustomerTypeID="4" CustNo="3001691680" CustName="Dana Floyd" LastName="Floyd" FirstName="Dana" DBA="Dana Floyd" AcctsRecID="741436" ProductionCycle="55" BillCycle="55" RateID="705163" SiteAddrID="2097781" MailAddrId="2097780" MailToSiteAddress="0" MasterCustID="740921" Master="N" CustStatus="A" CustType="R" FEIN="6790" Taxable="Y" LateFees="N" SummaryInv="N" TDSPTemplateID="3" TDSPGroupID="1" LifeSupportIndictor="N" BillFormat="1" PrintLayoutID="1" RequiredDeposit="N" UserDefined1="None" CreateDate="2017-12-12T20:30:25.863" CustomerPrivacy="0" UsagePrivacy="0" AutoCreditAfterInvoiceFlag="0" LidaDiscount="0" DoNotDisconnect="0" DDPlus1="N" DeliveryTypeID="1" PaymentModelId="1" PORFlag="N" />
+  <Premise PremID="829600" CustID="740920" CSPID="1" AddrID="2097782" TDSP="50" TaxAssessment="0" PremNo="6358552116" PremDesc="1200   Martin Court, Apt. D , Baltimore, MD 21229" PremStatus="Bill" PremType="Gas" SpecialNeedsFlag="0" Metered="?" Taxable="Y" BeginServiceDate="2018-01-01T00:00:00" StatusID="5" StatusDate="2017-12-30T17:01:10.470" CreateDate="2017-12-12T20:30:46.333" DeleteFlag="0" LDCID="50" BillingAccountNumber="3001691680" GasSupplyServiceOption="A" LDC_UnMeteredAcct="0" OnSwitchHold="0" ConsumptionImportTypeId="1" LidaDiscount="0" IsTOU="0" />
+  <CustomerAdditionalInfo CustID="740920" CSPDUNSID="11" BillingTypeID="2" ContractDate="2017-12-12T19:28:58.247" ClientAccountNo="G2744683" CollectionsStageID="0" CollectionsStatus="0" DisconnectLtr="N" AuthorizedReleaseName=" " EFTFlag="0" PromiseToPayFlag="0" DisconnectFlag="0" CreditHoldFlag="0" RawConsumptionImportFlag="1" CustomerProtectionStatus="0" MCPEFlag="0" HasLocationMasterFlag="0" DivisionID="2" DivisionCode="SGEMD" CustomerGroupID="3" EarlyTermFee="0.0000" EarlyTermFeeUpdateDate="2017-12-12T20:30:25.873" DeceasedFlag="0" BankruptFlag="0" DoNotCall="0" IsDPP="0" SubsequentDepositExempt="0" AutoPayFlag="0" SpecialNeedsFlag="0" OnSwitchHold="0" UpdateContactInfoFlag="0" IsFriendlyLatePaymentReminderSent="0" IsLowIncome="0" AutoPayLastUpdated="2017-12-12T20:30:27.733" GreenEnergyOptIn="0" ServiceAccount="R" CustInfo1="0" CommissionAmount="0.0000" TCPAAuthorization="NA" IsPUCComplaint="0" />
+  <AccountsReceivable AcctsRecID="741436" PrevBal="0.00" CurrInvs="0.00" CurrPmts="0.00" CurrAdjs="0.00" BalDue="0.00" LateFee="0.00" LateFeeRate="0.0000" LateFeeMaxAmount="0.0000" AuthorizedPymt="0.00" PastDue="N" BalAge0="0.00" BalAge1="0.00" BalAge2="0.00" BalAge3="0.00" BalAge4="0.00" BalAge5="0.00" BalAge6="0.00" Deposit="0.00" PaymentPlanFlag="0" PaymentPlanTrueUpFlag="0" PaymentPlanAmount="0.0000" PaymentPlanTrueUpThresholdAmount="0.0000" PrePaymentFlag="0" PrePaymentDailyAmount="0.0000" CapitalCredit="0.00" Terms="26" StatusID="1" GracePeriod="0" PaymentPlanTotalVariance="0.0000" PaymentPlanVarianceUnit="0.0000" CancelFeeTypeId="1" CancelFeeAmount="100.000000000" InvoiceMinimumAmount="0.000000000" LateFeeThresholdAmt="0.00" />
+  <Meter MeterID="55069999" PremID="829600" MeterReadType="N" MeterFactor="1.00" BegRead="0.00" EndRead="0.00" DateFrom="2018-01-01T00:00:00" MeterStatus="A" CreateDate="2017-12-14T10:11:19.410" EdiRateClassId="1442" EdiLoadProfileId="19634" />
+  <Address AddrID="2097780" ValidationStatusID="0" AttnMS="Dana  Floyd" Addr1="1200 Martin Ct Apt D" City="Baltimore" State="MD" Zip="21229" HomePhone="2022537962" WorkPhone="2022537962" OtherPhone="2022537962" Email="fervor512@gmail.com" GeoCode="US2451004000" Status="A" CreateDate="2017-12-12T20:30:25.857" TaxInCity="1" CchVersion="2" />
+  <Address AddrID="2097781" ValidationStatusID="0" Status="A" CreateDate="2017-12-12T20:30:25.860" TaxInCity="1" CchVersion="2" />
+  <Address AddrID="2097782" ValidationStatusID="0" Addr1="1200   Martin Court, Apt. D" City="Baltimore" State="MD" Zip="21229" GeoCode="US2451004000" Status="A" CreateDate="2017-12-12T20:30:25.913" TaxInCity="1" CchVersion="2" />
+  <Rate RateID="266956" CSPID="1" RateCode="MD_BGE_G_6MORate" RateDesc="6 Month Fixed Rate" EffectiveDate="2013-08-01T00:00:00" IsMajority="0" TemplateFlag="1" LDCCode="50" CreateDate="2013-08-13T15:43:22.880" RatePackageName="MD_BGE_G_6MORatePackage" ServiceType="G" ActiveFlag="1" />
+  <Rate RateID="705163" RateCode="PREM_691680" RateDesc="" EffectiveDate="2017-12-12T00:00:00" ExpirationDate="2018-06-12T00:00:00" RateType="          " PlanType="0" IsMajority="0" TemplateFlag="1" CreateDate="2017-12-12T20:30:25.833" />
+  <RateDetail RateDetID="623997" RateID="266956" CategoryID="1" RateTypeID="3002" ConsUnitID="9" RateDescID="2" EffectiveDate="2013-08-01T00:00:00" MinDetAmt="0.00" MaxDetAmt="0.00" AmountCap="N" Taxable="Y" ChargeType="C" MiscData1="51" FixedCapRate="406.00000000" Active="1" StatusID="1" BlockPriceIndicator="0" CreateDate="2013-08-13T15:43:22.910" MeterMultiplierFlag="0" />
+  <RateDetail RateDetID="2574023" RateID="705163" CategoryID="1" RateTypeID="3002" ConsUnitID="9" RateDescID="2" EffectiveDate="2017-12-12T00:00:00" ExpirationDate="2017-12-31T00:00:00" RateAmt="0.43300000" MinDetAmt="0.00" MaxDetAmt="0.00" GLAcct="               " CustType="" Progressive=" " AmountCap="N" MaxRateAmt=" " MinRateAmt=" " CategoryRollup=" " Taxable="Y" ChargeType="C" MiscData1="51" FixedCapRate="406.00000000" TemplateRateDetID="623997" Building="" TaxCategoryID="0" Active="0" StatusID="1" BlockPriceIndicator="0" RateTransitionId="2234046" CreateDate="2017-12-12T20:30:47.497" MeterMultiplierFlag="0" TOUTemplateRegisterName="" />
+  <RateDetail RateDetID="2576377" RateID="705163" CategoryID="1" RateTypeID="3002" ConsUnitID="9" RateDescID="2" EffectiveDate="2018-01-01T00:00:00" ExpirationDate="2018-07-01T00:00:00" RateAmt="0.43300000" MinDetAmt="0.00" MaxDetAmt="0.00" GLAcct="               " CustType="" Progressive=" " AmountCap="N" MaxRateAmt=" " MinRateAmt=" " CategoryRollup=" " Taxable="Y" ChargeType="C" MiscData1="51" FixedCapRate="406.00000000" TemplateRateDetID="623997" Building="" TaxCategoryID="0" Active="1" StatusID="1" BlockPriceIndicator="0" RateTransitionId="2234046" CreateDate="2017-12-14T11:31:14.683" MeterMultiplierFlag="0" TOUTemplateRegisterName="" />
+  <RateTransition RateTransitionID="2234046" CustID="740920" RateID="266956" UserID="0" CreatedDate="2017-12-12T20:30:47.413" SwitchDate="2018-01-01T00:00:00" EndDate="2018-07-01T00:00:00" StatusID="2" SoldDate="2017-12-12T00:00:00" RolloverFlag="0" />
+  <Product ProductID="239" RateID="243975" LDCCode="50" PlanType="2" TDSPTemplateID="3" Description="ROLLOVER RATE PLAN" BeginDate="2013-01-23T00:00:00" CustType="R" Graduated="N" ActiveFlag="1" PriceDescription="DO NOT USE" ConsUnitID="9" Default="0" ServiceType="G" CSPId="1" RolloverProductId="239" ProductCode="MD_BGE_G_M2M_RO" RatePackageId="243972" ProductName="DO NOT USE" ProductZoneID="10" IsGreen="0" IsBestChoice="0" ActiveEnrollmentFlag="1" />
+  <Product ProductID="425" RateID="266956" LDCCode="50" PlanType="1" TDSPTemplateID="3" Description="6 Month Fixed Rate Plan" BeginDate="2013-08-01T00:00:00" CustType="R" Graduated="N" ActiveFlag="1" PriceDescription="6 Month Fixed Rate" ConsUnitID="9" Default="0" ServiceType="G" CSPId="1" TermsId="46" RolloverProductId="239" CancelFeeId="4" ProductCode="MD_BGE_G_6MO" RatePackageId="266957" ProductName="6 Month Fixed Rate Plan" ProductZoneID="10" IsGreen="0" IsBestChoice="0" ActiveEnrollmentFlag="1" />
+  <CustomerTransactionRequest RequestID="33057378" CustID="740920" PremID="829600" TransactionType="814" ActionCode="E" TransactionDate="2017-12-12T00:00:00" Direction="0" RequestDate="2017-12-12T00:00:00" ServiceActionCode="E" SourceID="6927624" TransactionNumber="11934151" ESIID="6358552116" ProcessFlag="1" ProcessDate="2017-12-12T20:31:15.747" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="39" CreateDate="2017-12-12T20:30:25.957" />
+  <!--CustomerTransactionRequest RequestID="33057379" CustID="740920" PremID="829600" TransactionType="814" ActionCode="HU" TransactionDate="2017-12-12T00:00:00" Direction="0" RequestDate="2017-12-12T00:00:00" SourceID="6927625" TransactionNumber="11934152" ESIID="6358552116" ProcessFlag="1" ProcessDate="2017-12-12T20:31:15.840" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="44" CreateDate="2017-12-12T20:30:25.960" />
+  <CustomerTransactionRequest RequestID="33094906" CustID="740920" PremID="829600" TransactionType="814" ActionCode="E" TransactionDate="2017-12-14T00:00:00" Direction="1" RequestDate="2018-01-01T00:00:00" ServiceActionCode="A" ServiceAction="S" SourceID="6941925" TransactionNumber="63585521162599712726-S" ReferenceSourceID="0" ReferenceNumber="63585521162599712726" ESIID="6358552116" ProcessFlag="0" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="47" CreateDate="2017-12-14T10:10:58.483" />
+  <CustomerTransactionRequest RequestID="33420891" UserID="3068" CustID="740920" PremID="829600" TransactionType="814" ActionCode="D" TransactionDate="2017-12-30T00:00:00" Direction="0" ServiceActionCode="Q" StatusCode="S1" StatusReason="S1 - Supplier Drop" SourceID="7093626" TransactionNumber="12022018" ESIID="6358552116" ProcessFlag="1" ProcessDate="2017-12-30T16:50:44.643" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="43" CreateDate="2017-12-30T16:50:21.217" /-->
+  
+  <!-- queries used for fetching data
+use paes_Stream
+DECLARE @CustId INT = 312680
+DECLARE @PremIds TABLE (PremId INT)
+DECLARE @AcctsRecID INT = (SELECT AcctsRecID FROM Customer WHERE CustId = @CustId)
+INSERT INTO @PremIds 
+SELECT PremId FROM Premise WHERE CustId = @CustId
+
+SELECT * FROM Customer WHERE CustId = @CustId FOR XML AUTO
+SELECT * FROM Premise WHERE CustId = @CustId FOR XML AUTO
+SELECT * FROM CustomerAdditionalInfo WHERE CustId = @CustId FOR XML AUTO
+SELECT * FROM AccountsReceivable WHERE AcctsRecID = @AcctsRecID FOR XML AUTO
+SELECT * FROM Meter WHERE PremId IN (SELECT PremId FROM @PremIds) FOR XML AUTO
+SELECT * FROM Address WHERE AddrId IN (
+	    SELECT SiteAddrId	FROM Customer WHERE CustID = @CustId
+        UNION
+        SELECT MailAddrId	FROM Customer WHERE CustID = @CustId
+        UNION
+        SELECT CorrAddrId	FROM Customer WHERE CustID = @CustId
+        UNION
+        SELECT SpecialNeedsAddrId	FROM Customer WHERE CustID = @CustId
+        UNION
+        SELECT PowerOutageAddrId	FROM Customer WHERE CustID = @CustId
+        UNION
+        SELECT AddrId FROM Premise WHERE CustID = @CustId
+    ) FOR XML AUTO
+
+SELECT * FROM Rate WHERE RateId IN (
+SELECT RateId FROM Customer WHERE CustId = @CustId
+UNION
+SELECT RateId FROM RateTransition WHERE CustId = @CustId
+) FOR XML AUTO
+
+SELECT * FROM RateDetail WHERE RateId IN (
+SELECT RateId from Customer where CustId = @CustId
+UNION
+SELECT RateId from RateTransition WHERE CustId = @CustId
+) FOR XML AUTO
+
+SELECT * FROM RateTransition WHERE CustId = @CustId FOR XML AUTO
+SELECT * FROM Product WHERE RateId IN (SELECT RateId from RateTransition WHERE CustId = @CustId) FOR XML AUTO
+SELECT * FROM CustomerTransactionRequest WHERE CustID = @CustId ORDER BY 1 FOR XML AUTO
+  -->
+</root>

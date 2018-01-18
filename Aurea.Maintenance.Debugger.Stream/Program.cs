@@ -1,4 +1,8 @@
-﻿namespace Aurea.Maintenance.Debugger.Stream
+﻿// ReSharper disable InconsistentNaming
+using System.Runtime.CompilerServices;
+using Aurea.Maintenance.Debugger.Common.Extensions;
+
+namespace Aurea.Maintenance.Debugger.Stream
 {
     using System;
     using System.Linq;
@@ -9,28 +13,108 @@
     using System.Collections;
     using System.Data;
     using System.Data.SqlClient;
-    
-    using System.Collections.Generic;
-    
 
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Reflection;
+    using Aurea.Logging;
+
+
+    public class MyExport : CIS.Clients.Stream.Export.MainProcess
+    {
+        public MyExport() : base()
+        {
+            base.Client = Clients.Stream.Abbreviation();
+            base.ServiceName = Assembly.GetEntryAssembly().FullName;
+        }
+
+        public MyExport(string connectionMarket, string connectionCSR, string connectionAdmin) 
+            : base(connectionMarket, connectionCSR, connectionAdmin)
+        {
+            base.Client = Clients.Stream.Abbreviation();
+            base.ServiceName = Assembly.GetEntryAssembly().FullName;
+        }
+
+        public void MyExportTransactions()
+        {
+            base.ExportTransactions();
+        }
+
+        public void MyCreateMarket810()
+        {
+            base.CreateMarket810();
+        }
+
+        public void MyCreateMarket814()
+        {
+            base.CreateMarket814();
+        }
+    }
 
     class Program
     {
-        private static ClientEnvironmentConfiguration _clientConfig;
-        private static GlobalApplicationConfigurationDS.GlobalApplicationConfiguration _appConfig;
+        private static readonly ClientEnvironmentConfiguration _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.Stream, Stages.Development, TransactionMode.Enlist);
+        private static readonly GlobalApplicationConfigurationDS.GlobalApplicationConfiguration _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
+        private static readonly ILogger _logger = new Logger();
+        private static readonly string _appDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+        private static readonly string _mockDataDir = Path.Combine(_appDir, "MockData");
 
         static void Main(string[] args)
         {
-            // Set client configuration and then the application configuration context.            
-            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.Stream, Stages.Development);
-            _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
-
-            //SimulatePostEnrollmentEvent(clientConfiguration);
+            #region oldCases
+            /*
+            SimulatePostEnrollmentEvent(clientConfiguration);
             CreateMockData();
             SimulateInbound814E();
+             */
+            #endregion
+
+            Simulate_AESCIS_11221();
+            _logger.Info("Debug session has ended");
+            Console.ReadLine();
         }
 
-        #region private methods
+        private static void Simulate_AESCIS_11221()
+        {
+            var myExport = new MyExport(_appConfig.ConnectionMarket, _appConfig.ConnectionCsr, _clientConfig.ConnectionBillingAdmin);
+            Simulate810Export(myExport);
+            Simulate814Export(myExport);
+        }
+
+        private static void Simulate810Export(MyExport myExport)
+        {
+            var requestIds = new List<int> { 33496779 , 32061771 , 33496822 };
+            // copy records for 810 simulation, Customer, Premise, Meter, CustomerAdditionalInfo, AccountsReceivable, Address, Consumption, Invoice ...
+            DB.ImportFiles(_mockDataDir, "AESCIS-11221-810", _appConfig.ConnectionCsr);
+            
+            MarkCustomerTransactionRequestsAsUnProcessed(requestIds);
+
+            // export 810
+            myExport.MyCreateMarket810();
+        }
+
+        private static void Simulate814Export(MyExport myExport)
+        {
+            var requestIds = new List<int> { 33489671, 33057378 };
+            // copy records for 814 simulation, Customer, Premise, CustomerAdditionalInfo, AccountsReceivable, Address...
+            DB.ImportFiles(_mockDataDir, "AESCIS-11221-814", _appConfig.ConnectionCsr);
+
+            // mark Enrollment as 814 ready
+            MarkCustomerTransactionRequestsAsUnProcessed(requestIds);
+
+            // export 814
+            myExport.MyCreateMarket814();
+        }
+
+        private static void MarkCustomerTransactionRequestsAsUnProcessed(List<int> requestIds)
+        {
+            // mark latest invoice for 810 CTR creation
+            var sqlQueries = new StringBuilder();
+            requestIds.ForEach(id =>
+                sqlQueries.AppendLine(
+                    $"UPDATE CustomerTransactionRequest SET SourceID = NULL, TransactionNumber = NULL, ProcessFlag = 0, ProcessDate = NULL WHERE RequestID = {id}"));
+            DB.ExecuteQuery(sqlQueries.ToString(), _appConfig.ConnectionCsr);
+        }
 
         private static void SimulateInbound814E()
         {
@@ -46,11 +130,6 @@
             };
             pe.Process(30396997);
         }
-
-        #endregion
-
-        #region helper methods
-        
 
         private static void CreateMockData()
         {
@@ -299,19 +378,7 @@
                         (EventActionQueueId, ActionParameterId, ParameterValue, ActionParameterFunctionId)
                 SELECT @CustomerEventActionQueueId, 28, 'A', 0
                 ";
-
-            using (IDbConnection connection = new SqlConnection(_appConfig.ConnectionCsr))
-            {
-                connection.Open();
-                var cmd = connection.CreateCommand();
-                cmd.CommandType = CommandType.Text;
-                cmd.CommandText = sqlString;
-                cmd.CommandTimeout = 1000 * 60 * 5;
-                cmd.ExecuteNonQuery();
-                connection.Close();
-            }
+            DB.ExecuteQuery(sqlString, _appConfig.ConnectionCsr);
         }
-
-        #endregion
     }
 }

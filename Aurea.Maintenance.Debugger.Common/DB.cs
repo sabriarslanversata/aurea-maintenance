@@ -10,6 +10,7 @@
     using System.Xml;
     using System.Xml.Linq;
     using CIS.Framework.Data;
+    using Aurea.Db;
 
     public static class DB
     {
@@ -456,7 +457,7 @@
                     case TypeCode.Char:
                     case TypeCode.String:
                     case TypeCode.DateTime:
-                        toReturn = $"'{value}'";
+                        toReturn = $"'{value.EscapeString()}'";
                         break;
                     case TypeCode.Single:
                     case TypeCode.Int16:

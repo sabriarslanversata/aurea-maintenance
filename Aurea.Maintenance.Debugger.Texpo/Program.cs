@@ -1,4 +1,7 @@
-﻿namespace Aurea.Maintenance.Debugger.Texpo
+﻿using System.Collections.Generic;
+using CIS.Framework.Data;
+
+namespace Aurea.Maintenance.Debugger.Texpo
 {
     using System;
     using System.Collections;
@@ -205,12 +208,9 @@ b1x3zeE1G4Q4
         */
 
         public static void Main(string[] args)
-        {
-            // Set client configuration and then the application configuration context.
-            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.Texpo, Stages.UserAcceptance, TransactionMode.Enlist);
+        {      
+            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.Texpo, Stages.Development, TransactionMode.Enlist);
             _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
-
-
 
             #region old Cases
             //TransactionManager.DistributedTransactionStarted += delegate (object sender, TransactionEventArgs e)
@@ -235,15 +235,21 @@ b1x3zeE1G4Q4
 
             //SimulateLetterGeneration("360533");
             ProcessEvents();
+
+            string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
+            Directory.EnumerateFiles(dirToProcess, "*.xls", SearchOption.AllDirectories).ForEach(
+                filename =>
+                {
+                    SimulateImportMassEnrollment(filename);
+                }
+            );
+
+            SimulateWSEnrollment();
+
 			*/
 
-            //string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
-            //Directory.EnumerateFiles(dirToProcess, "*.xls", SearchOption.AllDirectories).ForEach(
-            //    filename =>
-            //    {
-            //        SimulateImportMassEnrollment(filename);
-            //    }
-            //);
+
+
 
             #endregion
 
@@ -266,7 +272,45 @@ b1x3zeE1G4Q4
             notification.SendEmailJob(37, emailParams);
 
 
+
+            Simulate_AESCIS_8679();
+            _logger.Info("Debug session has ended");
             Console.ReadLine();
+        }
+
+        private static void Simulate_AESCIS_8679()
+        {
+            var updateRunHoursQueries = new List<string>();
+            var restoreRunHousrsQueries = new List<string>();
+
+            //get run hours of cspEmailJobDeclinedPaymentNotice
+            var rows = DB.ReadRows("SELECT * FROM EmailJob WHERE ResultsProcedure='cspEmailJobDeclinedPaymentNotice' AND IsActive = 1", _appConfig.ConnectionCsr);
+            foreach (DataRow row in rows)
+            {
+                updateRunHoursQueries.Add($"UPDATE EmailJob SET RunOnHour = {DateTime.Now.Hour}, LastRunDate = '2017-02-01 06:00:00' WHERE EmailJobID = {row["EmailJobId"]} ");
+                restoreRunHousrsQueries.Add($"UPDATE EmailJob SET RunOnHour = {row["RunOnHour"]} WHERE EmailJobID = {row["EmailJobId"]} ");
+            }
+
+            _logger.Info(string.Join(";\n", restoreRunHousrsQueries));
+
+            string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
+            DB.ImportFiles(dirToProcess, "AESCIS-8679", _appConfig.ConnectionCsr);
+            
+            try
+            {
+
+                //modify RunOnHour to this time hour and point last run hours to morning of the day of Payments
+                SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, string.Join(";\n", updateRunHoursQueries));
+
+                //execute EmailJob
+                var emailJob = new CIS.Clients.Texpo.EmailJob(_appConfig.ConnectionCsr);
+                emailJob.Process();
+            }
+            finally
+            {
+                //restore RunOnHour
+                SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, string.Join(";\n", restoreRunHousrsQueries));
+            }
         }
 
         private static void SimulateWSEnrollment()
@@ -376,7 +420,7 @@ b1x3zeE1G4Q4
             _logger.Info($"going to delete old import status for '{fileNameToInsert}' and chksum '{checkSum}'");
 
             var sql = $"DELETE FROM dbo.tblFile WHERE [FileName] = '{fileNameToInsert}' OR [FileHash] = '{checkSum}'";
-            DB.ExecuteQuery(sql);
+            DB.ExecuteQuery(sql, _appConfig.ConnectionCsr);
         }
 
         private static void CopyRateAndProduct(string rateId)
@@ -414,7 +458,7 @@ AND NOT EXISTS(SELECT 1 FROM daes_Texpo..Product WHERE RateId = '{rateId}')
 SET IDENTITY_INSERT daes_Texpo..Product OFF
 
 ";
-            DB.ExecuteQuery(sql);
+            DB.ExecuteQuery(sql, _appConfig.ConnectionCsr);
         }
 
         private static void SimulateLetterGeneration(string custNo)
@@ -566,7 +610,7 @@ AND NOT EXISTS(SELECT 1 FROM daes_Texpo..CustomerAdditionalInfo WHERE CustID = @
 
 PRINT 'END Copy Customer'
 ";
-            DB.ExecuteQuery(sql);
+            DB.ExecuteQuery(sql, _appConfig.ConnectionCsr);
         }
 
         private static void MakeCustomerEligibleForDisconnectLetter(string custNo)
@@ -580,7 +624,7 @@ UPDATE Premise SET StatusID = 10, EndServiceDate = NULL WHERE CustId = @CustID
 DELETE FROM CustomerDisconnect WHERE CustId = @CustID
 DELETE FROM MethodLog WHERE MethodId IN (310, 311, 314, 339, 341, 340, 313, 348, 9000, 9010, 6000, 6001)";
 
-            DB.ExecuteQuery(sql);
+            DB.ExecuteQuery(sql, _appConfig.ConnectionCsr);
         }
 
         private static void GenerateEvents()
@@ -643,22 +687,6 @@ DELETE FROM MethodLog WHERE MethodId IN (310, 311, 314, 339, 341, 340, 313, 348,
             var engine = new CIS.Engine.Event.Queue(_clientConfig.ConnectionBillingAdmin);
             engine.ProcessEventQueue(_appConfig.ClientID, _appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _appConfig.ClientAbbreviation);
         }
-
-        public sealed class DB
-        {
-            public static void ExecuteQuery(string sql)
-            {
-                using (IDbConnection connection = new SqlConnection(_appConfig.ConnectionCsr))
-                {
-                    connection.Open();
-                    var cmd = connection.CreateCommand();
-                    cmd.CommandType = CommandType.Text;
-                    cmd.CommandText = sql;
-                    cmd.CommandTimeout = 1000 * 60 * 5;
-                    cmd.ExecuteNonQuery();
-                    connection.Close();
-                }
-            }
-        }
+        
     }
 }
