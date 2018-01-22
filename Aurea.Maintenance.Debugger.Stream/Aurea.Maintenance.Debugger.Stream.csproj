@@ -38,6 +38,10 @@
     <Reference Include="CIS.Billing.BusinessObject">
       <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Billing.BusinessObject.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.BusinessComponent, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.BusinessComponent.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.BusinessComponent.Market">
       <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.BusinessComponent.Market.dll</HintPath>
     </Reference>
@@ -47,9 +51,29 @@
     <Reference Include="CIS.Clients.Stream">
       <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Clients.Stream.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.Components, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Components.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Element, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Element.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Element.Market, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Element.Market.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.Engine.Event, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Engine.Event.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Enum, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Enum.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Export, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Export.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Framework.Event.EventHandler">
       <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Framework.Event.EventHandler.dll</HintPath>
@@ -79,6 +103,24 @@
       <Name>Aurea.Maintenance.Debugger.Common</Name>
       <Private>True</Private>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="MockData\AESCIS-11221-810-C3.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\AESCIS-11221-814-C2.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\AESCIS-11221-814-C1.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\AESCIS-11221-810-C2.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\AESCIS-11221-810-C1.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
