@@ -277,10 +277,10 @@ namespace Aurea.Maintenance.Debugger.Common
                             else
                             {
                                 string primaryKeyName = dataHeaders.First();
-                                primaryKeyColumn = (DataColumn)
+                                primaryKeyColumn = (DataColumn)(
                                     from DataColumn c in ds.Tables[0].Columns
                                     where c.ColumnName.Equals(primaryKeyName, StringComparison.InvariantCultureIgnoreCase)
-                                    select c;
+                                    select c).SingleOrDefault();
                             }
                             
                             var primaryKeyIndex = dataHeaders.FindIndex(x => x.Equals(primaryKeyColumn.ColumnName, StringComparison.InvariantCultureIgnoreCase));
