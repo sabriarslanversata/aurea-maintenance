@@ -1,13 +1,12 @@
 ﻿namespace Aurea.Maintenance.Debugger.Common
 {
-    using System;
-    using CIS.Framework.ExceptionManagement;
     using System.IO;
-    using System.Collections.Generic;
-    using System.Configuration;
-    using System.Globalization;
-    using System.Reflection;
     using System.Threading;
+    using System.Reflection;
+    using System.Globalization;
+    using System.Configuration;
+    using System.Collections.Generic;
+    using CIS.Framework.ExceptionManagement;
     using CIS.BusinessComponent;
     using CIS.BusinessEntity;
     using CIS.Framework.Security;
@@ -15,7 +14,10 @@
 
     public static class ClientConfiguration
     {
-        public static ClientEnvironmentConfiguration GetClientConfiguration(Clients client, Stages stage, TransactionMode transactionMode = TransactionMode.Normal)
+        public static ClientEnvironmentConfiguration GetClientConfiguration(
+            Clients client,
+            Stages stage,
+            TransactionMode transactionMode = TransactionMode.Normal)
         {
             return new ClientEnvironmentConfiguration(client, stage, transactionMode);
         }
@@ -50,14 +52,16 @@
             RewriteAppSettings(Assembly.GetExecutingAssembly(), settings);
             RewriteAppSettings(Assembly.GetEntryAssembly(), settings);
 
-            SecurityManager.SetSecurityContext(applicationConfiguration, 0, 
-                config.ConnectionBillingAdmin, 
-                applicationConfiguration.ConnectionTdsp, 
-                string.Empty, 
+            SecurityManager.SetSecurityContext(
+                applicationConfiguration,
+                0,
+                config.ConnectionBillingAdmin,
+                applicationConfiguration.ConnectionTdsp,
+                string.Empty,
                 string.Empty);
 
             // Set culture to en-EN to prevent string manipulation issues in base code
-            var culture = "en-US";
+            const string culture = "en-US";
             var cultureInfo = CultureInfo.GetCultureInfo(culture);
             Thread.CurrentThread.CurrentCulture = cultureInfo;
             Thread.CurrentThread.CurrentUICulture = cultureInfo;

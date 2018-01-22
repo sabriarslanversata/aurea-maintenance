@@ -65,23 +65,21 @@
 
     class Program
     {
-        private static ClientEnvironmentConfiguration _clientConfig;
-        private static GlobalApplicationConfigurationDS.GlobalApplicationConfiguration _appConfig;
+        private static readonly ClientEnvironmentConfiguration _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.AEP, Stages.Development, TransactionMode.Enlist);
+        private static readonly GlobalApplicationConfigurationDS.GlobalApplicationConfiguration _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
+        private static readonly string _appDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
         private static readonly ILogger _logger = new Logger();
+
         static void Main(string[] args)
         {
-            
-            // Set client configuration and then the application configuration context.            
-            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.AEP, Stages.Development, TransactionMode.Enlist);
-            _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
-
-            //System.ServiceModel.ServiceSecurityContext.Current.PrimaryIdentity.Name = Clients.AEP.GetServiceGuid.ToString();
-
             //Simulate_AESCIS17193("4184386");
             //simulate_AESCIS16615_WS();
             //Simulate_AESCIS16615("AESCIS-16615-Basic", 19981, 543, DateTime.Parse("2017-12-05T23:31:41-06:00"), "N", DateTime.Today.Date);
             //Simulate_AESCIS16615("AESCIS-16615-C4", 116549, 605, DateTime.Parse("2017-12-24T05:18:12-06:00"), "N", DateTime.Today.Date);
-            Simulate_AESCIS16615_AfterRateTransition();
+            //Simulate_AESCIS16615_AfterRateTransitionSkipImport();
+            //prepData2Simulate_AESCIS_16615_onUA();
+            Simulate_AESCIS16615_AfterRateTransitionDoImport("14");
+
             _logger.Info("Debug Session has ended");
             Console.ReadKey();
         }
@@ -103,20 +101,49 @@
             
         }
 
+        private static void prepData2Simulate_AESCIS_16615_onUA()
+        {
+            var clientConfig = ClientConfiguration.GetClientConfiguration(Clients.AEP, Stages.UserAcceptance, TransactionMode.Enlist);
+            var appConfig = ClientConfiguration.SetConfigurationContext(clientConfig);
+
+            string dirToProcess = Path.Combine(_appDirectory, "MockData");
+            DB.ImportFiles(dirToProcess, "AESCIS-16615-UA", appConfig.ConnectionCsr);
+
+            //copy product and Customer to UA from Production which is not replicated to UA yet
+            //Simulate_AESCIS16615("AESCIS-16615-C4-Basic", 116543, 605, DateTime.Parse("2017-12-23T11:21:54-06:00"), "N", DateTime.Today.Date);
+
+            //reflag 814_C to be processed by GenerateEvents
+
+        }
+
         private static void Simulate_AESCIS16615(string dataFilter, int customerId, int productId, DateTime soldDate, string municipalAggregation, DateTime? switchDate = null)
         {
             //CopyProduct, CopyCustomer
 
-            string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
+            string dirToProcess = Path.Combine(_appDirectory, "MockData");
             DB.ImportFiles(dirToProcess, dataFilter, _appConfig.ConnectionCsr);
 
             CIS.Clients.AEPEnergy.RateType.RateUtility.ApplyRateTransition(customerId, productId, soldDate, municipalAggregation, switchDate);
         }
 
-        private static void Simulate_AESCIS16615_AfterRateTransition()
+        private static void Simulate_AESCIS16615_AfterRateTransitionDoImport(string caseNumber)
+        {
+            string dirToProcess = Path.Combine(_appDirectory, "MockData");
+            DB.ImportFiles(dirToProcess, $"AESCIS-16615-BasicTC-{caseNumber}", _appConfig.ConnectionCsr);
+            DB.ImportFiles(dirToProcess, $"AESCIS-16615-TC-{caseNumber}", _appConfig.ConnectionCsr);
+            //Next candidate 178066, test all on saes alter permission?
+
+            ExecuteImportChangeRequests();
+
+            GenerateEvents(new List<int> { 27 });//ChangeRequestEvaluation
+            ProcessEvents();
+        }
+
+        private static void Simulate_AESCIS16615_AfterRateTransitionSkipImport()
         {
             var sql = string.Empty;
-            string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
+            string dirToProcess = Path.Combine(_appDirectory, "MockData");
+            DB.ImportFiles(dirToProcess, "AESCIS-16615-Basic-C5", _appConfig.ConnectionCsr);
 
             Simulate_AESCIS16615("AESCIS-16615-C4-Basic", 116543, 605, DateTime.Parse("2017-12-23T11:21:54-06:00"), "N", DateTime.Today.Date);
 
@@ -183,13 +210,13 @@ UPDATE CustomerTransactionRequest SET ProcessFlag = 1, ProcessDate=GetDate(), Ev
             
             // import 814_C Accept Records to DB
             DB.ImportFiles(dirToProcess, "AESCIS-16615-814Accept", _appConfig.ConnectionCsr);
-            
+
             // delete old Events if exists and mark CTR as unprocessed
             //sql = @"UPDATE CustomerTransactionRequest SET EventCleared = 0 WHERE RequestID IN (4727194, 4727195)";
             //SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
 
             //import ?
-            //ImportTransaction();
+            ExecuteImportTransactionQueue();
 
             GenerateEvents(new List<int> { 27 });//ChangeRequestEvaluation
             ProcessEvents();
@@ -222,6 +249,18 @@ UPDATE CustomerTransactionRequest SET ProcessFlag = 1, ProcessDate=GetDate(), Ev
 
             };
             baseImport.MyImportTransaction();
+        }
+
+        private static void ExecuteImportTransactionQueue()
+        {
+            CIS.Import.Billing.Transaction.Queue q = new CIS.Import.Billing.Transaction.Queue(Clients.AEP.Abbreviation(), _appConfig.ConnectionMarket, _appConfig.ConnectionCsr, _appConfig.ConnectionTdsp, _clientConfig.ConnectionBillingAdmin);
+            q.Import(_logger);
+        }
+
+        private static void ExecuteImportChangeRequests()
+        {
+            var t = new CIS.Import.Billing.ChangeRequest(_appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _clientConfig.ConnectionBillingAdmin, Clients.AEP.Id(), _logger);
+            t.Import();
         }
 
         private static void ExecuteTask(string taskId)

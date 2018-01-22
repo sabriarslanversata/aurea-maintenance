@@ -19,6 +19,7 @@ namespace Aurea.Maintenance.Debugger.Texpo
     using CIS.Clients.Texpo.Import;
     using CIS.Enum.Enrollment;
     using CIS.Web.Services.Clients.Texpo;
+    using CIS.Clients.Texpo;
 
     public class Program
     {
@@ -207,8 +208,7 @@ b1x3zeE1G4Q4
         */
 
         public static void Main(string[] args)
-        {
-            // Set client configuration and then the application configuration context.            
+        {      
             _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.Texpo, Stages.Development, TransactionMode.Enlist);
             _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
 
@@ -228,10 +228,10 @@ b1x3zeE1G4Q4
 			CalculateConsumptionDueDatesTask myTask = new CalculateConsumptionDueDatesTask();
 
             myTask.Initialize(CreateContext());
-            
-            //execute Maintenance.CalculateConsumptionDueDates 
+
+            //execute Maintenance.CalculateConsumptionDueDates
             myTask.Execute();
-            
+
 
             //SimulateLetterGeneration("360533");
             ProcessEvents();
@@ -250,7 +250,28 @@ b1x3zeE1G4Q4
 
 
 
+
             #endregion
+
+            //SimulateWSEnrollment();
+
+            var notification = Notification.NewNotification();
+
+            var emailParams = new Hashtable
+            {
+                { "FromEmail", "customer.care@southwestpl.com" },
+                { "ToEmail", "ytnhome@gmail.com" },
+                { "CustID", 90013 },
+                { "InvoiceID", 7333859 },
+                { "LOGO", "https://csr.texpobilling.com/Clients/TXP/Images/SWPL-Logo.gif" },
+                { "CustName", "Young Nguyen" },
+                { "DivisionName", "Southwest Power and Light" },
+                { "DivisionPhoneNumber", "1-866-941-SWPL (7975)" }
+            };
+
+            notification.SendEmailJob(37, emailParams);
+
+
 
             Simulate_AESCIS_8679();
             _logger.Info("Debug session has ended");
@@ -635,7 +656,7 @@ DELETE FROM MethodLog WHERE MethodId IN (310, 311, 314, 339, 341, 340, 313, 348,
             exporter.Export();
             */
         }
-        
+
         private static void GenerateSimpleMarketTransactionEvaluationEvents()
         {
             var hashTable = new Hashtable();
@@ -649,7 +670,7 @@ DELETE FROM MethodLog WHERE MethodId IN (310, 311, 314, 339, 341, 340, 313, 348,
                 Console.WriteLine("CustomerEvaluation Events could not generated");
             }
             var gen = new CIS.Framework.Event.EventGenerator.SimpleMarketTransactionEvaluation(_appConfig.ConnectionCsr, _clientConfig.ConnectionBillingAdmin);
-            
+
 
             if (gen.Generate(_clientConfig.ClientId, hashTable))
             {

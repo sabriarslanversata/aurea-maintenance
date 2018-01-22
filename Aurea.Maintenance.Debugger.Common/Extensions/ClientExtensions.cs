@@ -1,5 +1,6 @@
 ﻿namespace Aurea.Maintenance.Debugger.Common.Extensions
 {
+    using System;
     using Aurea.Maintenance.Debugger.Common.Models;
 
     public static class ClientExtensions
@@ -58,15 +59,15 @@
             }
         }
 
-        public static System.Guid GetServiceGuid(this Clients client)
+        public static Guid GetServiceGuid(this Clients client)
         {
             switch (client)
             {
                 case Clients.AEP:
-                    return new System.Guid("15E69993-11A4-4507-9E2A-8DD9DE7A0FA3");
+                    return new Guid("15E69993-11A4-4507-9E2A-8DD9DE7A0FA3");
                 default:
-                    throw new System.NotImplementedException($"GetServiceGuid for client {client} not implemented");
+                    return Guid.Empty;
             }
-        } 
+        }
     }
 }

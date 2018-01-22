@@ -1,67 +1,76 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.Linq;
-using Aurea.Db;
-using CIS.Framework.Data;
-
-namespace Aurea.Maintenance.Debugger.Common
+﻿namespace Aurea.Maintenance.Debugger.Common
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Data.SqlClient;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using System.Xml;
+    using System.Xml.Linq;
+    using CIS.Framework.Data;
+    using Aurea.Db;
+
     public static class DB
     {
-        public static T ReadSingleValue<T>(string sql, string connectionString, int columnNumber = 0)
-        {
-            var reader = SqlHelper.ExecuteReader(connectionString, CommandType.Text, sql);
-            if (reader.HasRows && reader.Read())
-            {
-                return reader.GetFieldValue<T>(columnNumber);
-            }
-            return default(T);
-        }
-
-        public static DataRow ReadSingleRow(string sql, string connectionString)
-        {
-            var ds = SqlHelper.ExecuteDataset(connectionString, CommandType.Text, sql);
-            if (ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
-            {
-                return ds.Tables[0].Rows[0];
-            }
-            return null;
-        }
-
-        public static DataRowCollection ReadRows(string sql, string connectionString, int tableNumber = 0)
-        {
-            var ds = SqlHelper.ExecuteDataset(connectionString, CommandType.Text, sql);
-            if (ds.Tables.Count >= tableNumber + 1 && ds.Tables[tableNumber].Rows.Count > 0)
-            {
-                return ds.Tables[tableNumber].Rows;
-            }
-            return null;
-        }
-
-        public static void ExecuteQuery(string sql, string connectionString)
-        {
-            SqlHelper.ExecuteNonQuery(connectionString, CommandType.Text, sql);
-        }
-
-        static IEnumerable<string> ReadAsLines(string filename)
-        {
-            using (var reader = new StreamReader(filename))
-                while (!reader.EndOfStream)
-                    yield return reader.ReadLine();
-        }
-
         private static readonly Dictionary<string, string> insertSqlCache = new Dictionary<string, string>();
         private static readonly Dictionary<string, string> updateSqlCache = new Dictionary<string, string>();
         private static readonly Dictionary<string, DataSet> metaDataCache = new Dictionary<string, DataSet>();
         private static readonly List<string> constrainCheckDisabledTables = new List<string>();
         private static readonly List<string> identityInsertCheckClosedTables = new List<string>();
+
+        public static T ReadSingleValue<T>(string commandText, string connectionString, int columnNumber = 0)
+        {
+            var reader = SqlHelper.ExecuteReader(connectionString, CommandType.Text, commandText);
+
+            if (reader.HasRows && reader.Read())
+            {
+                return reader.GetFieldValue<T>(columnNumber);
+            }
+
+            return default(T);
+        }
+
+        public static DataRow ReadSingleRow(string commandText, string connectionString)
+        {
+            var dataSet = SqlHelper.ExecuteDataset(connectionString, CommandType.Text, commandText);
+
+            if (dataSet.Tables.Count > 0 && dataSet.Tables[0].Rows.Count > 0)
+            {
+                return dataSet.Tables[0].Rows[0];
+            }
+
+            return null;
+        }
+
+        public static DataRowCollection ReadRows(string commandText, string connectionString, int tableNumber = 0)
+        {
+            var dataSet = SqlHelper.ExecuteDataset(connectionString, CommandType.Text, commandText);
+
+            if (dataSet.Tables.Count >= tableNumber + 1 && dataSet.Tables[tableNumber].Rows.Count > 0)
+            {
+                return dataSet.Tables[tableNumber].Rows;
+            }
+
+            return null;
+        }
+
+        public static void ExecuteQuery(string commandText, string connectionString)
+        {
+            SqlHelper.ExecuteNonQuery(connectionString, CommandType.Text, commandText);
+        }
+
+        public static IEnumerable<string> ReadAsLines(string filename)
+        {
+            using (var reader = new StreamReader(filename))
+            {
+                while (!reader.EndOfStream)
+                {
+                    yield return reader.ReadLine();
+                }
+            }
+        }
 
         /// <summary>
         /// Imports Text and XML files found with given filter to DB

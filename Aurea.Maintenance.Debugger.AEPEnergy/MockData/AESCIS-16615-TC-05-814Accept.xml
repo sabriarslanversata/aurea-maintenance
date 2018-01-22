@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<root>
+  <!-- don't forget to reflag by changing ProcessFlag to 0-->
+  <daes_AEPEnergyMarket..tbl_814_header _x0038_14_Key="2445714" MarketFileId="44861" TransactionSetId="814" TransactionSetControlNbr="" TransactionSetPurposeCode="S" TransactionNbr="F150003978462520171227-S" TransactionDate="" ReferenceNbr="F150003978462520171227" ActionCode="C" TdspDuns="DOMINIONG" TdspName="Dominion East Ohio" CrDuns="077778954" CrName="AEPEnergy" ProcessFlag="0" ProcessDate="2017-12-27T05:49:03.463" Direction="1" TransactionTypeID="42" TransactionTime="" TransactionTimeCode="" TransactionQualifier="8" CreateDate="2017-12-27T05:46:28.2519264" />
+  <daes_AEPEnergyMarket..tbl_814_Service Service_Key="2435707" _x0038_14_Key="2445714" AssignId="1" ServiceTypeCode1="SH" ServiceType1="GAS" ServiceTypeCode2="SH" ServiceType2="CE" ServiceTypeCode3="SH" ServiceType3="" ServiceTypeCode4="" ServiceType4="" ActionCode="A" MaintenanceTypeCode="001" DistributionLossFactorCode="" PremiseType="01" BillType="" BillCalculator="" EsiId="1500039784625" StationId="" PowerRegion="" EnergizedFlag="" EsiIdStartDate="" EsiIdEndDate="20171213" EsiIdEligibilityDate="" NotificationWaiver="" SpecialReadSwitchDate="20171226" RTODate="20171226" MembershipID="1500039784625" LDCBillingCycle="06" GasPoolId="5502269797" MeterCycleCode="06" SpecialReadSwitchTime="" UnmeteredAcct="" PaymentOption="N" />
+  <daes_AEPEnergyMarket..tbl_814_Service_Date Date_Key="2339531" Service_Key="2435707" Qualifier="" Date="" Time="" TimeCode="" PeriodFormat="" Period="" NotesDate="" />
+  <daes_AEPEnergyMarket..tbl_814_Service_Meter Meter_Key="1148001" Service_Key="2435707" EntityIdCode="" MeterNumber="" MeterCode="" MeterType="" LoadProfile="" RateClass="" RateSubClass="" ESPRateCode="AEP012" />
+  <daes_AEPEnergyMarket..tblMarketFile MarketFileId="44861" FileName="814_AEPOHDOMINIONGENRI_58503835_211244238_.211244250.pgp.txt.xml" FileType="814" ProcessStatus="Y" ProcessDate="2017-12-27T05:46:33.857" ProcessError="" SenderTranNum="" DirectionFlag="1" Status="3" LDCID="0" CSPDUNSID="0" RefMarketFileId="0" CreateDate="2017-12-27T05:46:24.747" TransactionCount="79" />
+  
+  <!--queries to retrieve
+DECLARE @RequestId INT = 4842221
+
+SELECT * FROM paes_AEPEnergyMarket..tbl_814_header WHERE [814_Key] IN (SELECT SourceId FROM CustomerTransactionRequest WHERE RequestID = @RequestId) FOR XML AUTO
+SELECT * FROM paes_AEPEnergyMarket..tbl_814_Service WHERE [814_Key] IN (SELECT SourceId FROM CustomerTransactionRequest WHERE RequestID = @RequestId) FOR XML AUTO
+SELECT * FROM paes_AEPEnergyMarket..tbl_814_Service_Account_Change WHERE Service_Key IN (SELECT Service_Key FROM paes_AEPEnergyMarket..tbl_814_Service WHERE [814_Key] IN (SELECT SourceId FROM CustomerTransactionRequest WHERE RequestID = @RequestId)) FOR XML AUTO
+SELECT * FROM paes_AEPEnergyMarket..tbl_814_Service_Date WHERE Service_Key IN (SELECT Service_Key FROM paes_AEPEnergyMarket..tbl_814_Service WHERE [814_Key] IN (SELECT SourceId FROM CustomerTransactionRequest WHERE RequestID = @RequestId)) FOR XML AUTO
+SELECT * FROM paes_AEPEnergyMarket..tbl_814_Service_Meter WHERE Service_Key IN (SELECT Service_Key FROM paes_AEPEnergyMarket..tbl_814_Service WHERE [814_Key] IN (SELECT SourceId FROM CustomerTransactionRequest WHERE RequestID = @RequestId)) FOR XML AUTO
+SELECT * FROM paes_AEPEnergyMarket..tbl_814_Service_Meter_Change WHERE Meter_Key IN (SELECT Meter_Key FROM paes_AEPEnergyMarket..tbl_814_Service_Meter WHERE Service_Key IN (SELECT Service_Key FROM paes_AEPEnergyMarket..tbl_814_Service WHERE [814_Key] IN (SELECT SourceId FROM CustomerTransactionRequest WHERE RequestID = @RequestId))) FOR XML AUTO
+SELECT * FROM paes_AEPEnergyMarket..tblMarketFile WHERE MarketFileId IN (SELECT MarketFileId FROM paes_AEPEnergyMarket..tbl_814_header WHERE [814_Key] IN (SELECT SourceId FROM CustomerTransactionRequest WHERE RequestID = @RequestId)) FOR XML AUTO
+  -->
+</root>

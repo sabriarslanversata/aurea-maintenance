@@ -96,6 +96,7 @@
     <Reference Include="CIS.Web.Services.Clients.Texpo">
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\Web\services.ista-billing.com\bin\CIS.Web.Services.Clients.Texpo.dll</HintPath>
     </Reference>
+    <Reference Include="Csla, Version=3.6.2.0, Culture=neutral, PublicKeyToken=93be5fdc093e4c30" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />

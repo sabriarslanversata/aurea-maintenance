@@ -13,19 +13,20 @@
             Stage = stage.Name();
             Server = stage.Server();
             TransactionMode = transactionMode;
-            ConnectionBillingAdmin = string.Format(
-                _billingAdminConnectionString,
-                stage.Server(),
-                stage.Domain(),
-                stage.Prefix(),
+            ConnectionBillingAdmin = string.Format(_billingAdminConnectionString, stage.Server(), stage.Domain(), stage.Prefix(),
                 transactionMode == TransactionMode.Enlist ? ";Enlist=false" : "");
         }
 
         public string Client { get; set; }
+
         public int ClientId { get; set; }
-        public string Stage { get; set; }
+
+        public string Stage { get; set; }    
+        
         public string Server { get; set; }
+
         public TransactionMode TransactionMode { get; set; }
+
         public string ConnectionBillingAdmin { get; set; }
     }
 }
