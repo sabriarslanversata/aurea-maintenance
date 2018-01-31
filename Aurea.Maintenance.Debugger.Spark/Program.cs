@@ -58,6 +58,7 @@ namespace Aurea.Maintenance.Debugger.Spark
             public MyImport() : base()
             {
                 Client = ClientConfigurationFactory.ClientCode;
+                ClientID = Clients.Spark.Id();
                 ServiceName = "Import";
             }
 
@@ -80,7 +81,7 @@ namespace Aurea.Maintenance.Debugger.Spark
 
         // ReSharper disable once InconsistentNaming
         private static readonly ILogger _logger = new Logger();
-
+        private static string appDir = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
         public static void Main(string[] args)
         {
             // Set client configuration and then the application configuration context.            
@@ -118,13 +119,22 @@ namespace Aurea.Maintenance.Debugger.Spark
             ProcessEvents();
             //GenerateEventsFromEventEvaluationQueue();
             //ProcessEvents();
+            
 
+            Simulate_AESCIS18511();
             */
             #endregion
 
-            Simulate_AESCIS18511();
+            Simulate_AESCIS19714();
             _logger.Info("Debug session end");
             Console.ReadLine();
+        }
+
+        private static void Simulate_AESCIS19714()
+        {
+            DB.ImportFiles(appDir, "Past", _appConfig.ConnectionCsr);
+
+            SimulateCustomerContractEvaluation();
         }
 
         private static void Simulate_AESCIS18511()
@@ -946,7 +956,45 @@ SET IDENTITY_INSERT daes_Spark..ChangeRequestDetailTransaction OFF
             }
         }
 
-        private static void SimulateCustomerContractEvaluation(List<int> desiredCusList)
+        private static void SimulateCustomerContractEvaluation()
+        {
+            try
+            {
+                var dataGateway = new DataGateway
+                {
+                    ClientId = 48,
+                    ConnectionBillingAdmin = _clientConfig.ConnectionBillingAdmin,
+                    ConnectionCsr = _appConfig.ConnectionCsr,
+                    UserId = 0,
+                };
+
+                //if (!(Thread.CurrentPrincipal is SecurityPrincipal))
+                //Utility.SetSecurityContext(dataGateway.ClientId, dataGateway.ConnectionBillingAdmin, dataGateway.UserId);
+
+                var context = new ChangeProductEvaluationContext(_logger, dataGateway);
+                var contractEvalution = new ChangeProductEvaluation(context);
+
+                List<ChangeProductModel> list = contractEvalution.GetCustomersEligibleForContractCreation();
+                foreach (var model in list)
+                {
+                    try
+                    {
+                        contractEvalution.CreateContract(model);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error(ex,
+                            $"Exception Logged for ChangeProductRequest id: {model.Id}, CustomerId: {model.CustId}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex);
+            }
+        }
+
+        private static void SimulateCustomerContractEvaluation(List<int> desiredCustList)
         {
             try
             {
@@ -967,7 +1015,7 @@ SET IDENTITY_INSERT daes_Spark..ChangeRequestDetailTransaction OFF
                 List<ChangeProductModel> list = contractEvalution.GetCustomersEligibleForContractCreation();
                 foreach (var model in list.Where(x=>x.MarketerCode == "ICC"))
                 {
-                    if (!desiredCusList.Contains(model.CustId)) 
+                    if (!desiredCustList.Contains(model.CustId)) 
                         continue;
                 
                     try
