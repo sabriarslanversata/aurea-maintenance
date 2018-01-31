@@ -35,6 +35,12 @@
     <Reference Include="Aurea">
       <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\Aurea.dll</HintPath>
     </Reference>
+    <Reference Include="Aurea.TaskToaster">
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\TaskToaster\Aurea.TaskToaster.dll</HintPath>
+    </Reference>
+    <Reference Include="Aurea.TaskToaster.Client.Stream.Tasks">
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\TaskToaster\Aurea.TaskToaster.Client.Stream.Tasks.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.Billing.BusinessObject">
       <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Billing.BusinessObject.dll</HintPath>
     </Reference>
@@ -59,6 +65,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Element.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.Element.Core">
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Element.Core.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.Element.Market, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Element.Market.dll</HintPath>
@@ -75,11 +84,25 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Export.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.Framework">
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Framework.Event.EventGenerator">
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Framework.Event.EventGenerator.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Framework.Event.EventGeneratorBase, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Framework.Event.EventGeneratorBase.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.Framework.Event.EventHandler">
       <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Framework.Event.EventHandler.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Framework.Event.EventHandlerBase">
       <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Framework.Event.EventHandlerBase.dll</HintPath>
+    </Reference>
+    <Reference Include="Csla, Version=3.6.2.0, Culture=neutral, PublicKeyToken=93be5fdc093e4c30, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Legacy\Product\Binaries\Dependencies\Csla\3.6.2\Csla.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -119,6 +142,13 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="MockData\AESCIS-11221-810-C1.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MockData\AESCIS-19713\FutureSoldDate.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="MockData\AESCIS-19713\TodaySoldDate.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

@@ -1,6 +1,7 @@
 ﻿// ReSharper disable InconsistentNaming
 using System.Runtime.CompilerServices;
 using Aurea.Maintenance.Debugger.Common.Extensions;
+using Aurea.TaskToaster;
 
 namespace Aurea.Maintenance.Debugger.Stream
 {
@@ -32,6 +33,7 @@ namespace Aurea.Maintenance.Debugger.Stream
             : base(connectionMarket, connectionCSR, connectionAdmin)
         {
             base.Client = Clients.Stream.Abbreviation();
+            base.ClientID = Clients.Stream.Id();
             base.ServiceName = Assembly.GetEntryAssembly().FullName;
         }
 
@@ -66,12 +68,55 @@ namespace Aurea.Maintenance.Debugger.Stream
             SimulatePostEnrollmentEvent(clientConfiguration);
             CreateMockData();
             SimulateInbound814E();
+            Simulate_AESCIS_11221();
              */
             #endregion
 
-            Simulate_AESCIS_11221();
+
+            Simulate_AESCIS_19713();
+
             _logger.Info("Debug session has ended");
             Console.ReadLine();
+        }
+
+        private static void Simulate_AESCIS_19713()
+        {
+            var myExport = new MyExport(_appConfig.ConnectionMarket, _appConfig.ConnectionCsr, _clientConfig.ConnectionBillingAdmin);
+            DB.ImportFiles(_mockDataDir, "Today", _appConfig.ConnectionCsr);
+
+            PromoteEnrollCustomers();
+
+            GenerateEvents(new List<int> {10});
+            ProcessEvents();
+
+            // export 814
+            myExport.MyCreateMarket814();
+        }
+
+        private static void PromoteEnrollCustomers()
+        {
+            CIS.Clients.Stream.MaintenanceHandlers.Enrollment enrollmentPromotion = new CIS.Clients.Stream.MaintenanceHandlers.Enrollment(_appConfig.ConnectionCsr);
+            enrollmentPromotion.ProcessEnrollments();
+        }
+
+
+        private static void GenerateEvents(List<int> eventTypeIds)
+        {
+            var list = CIS.Element.Core.Event.EventTypeList.Load(_clientConfig.ClientId);
+
+            eventTypeIds.ForEach(id =>
+            {
+                var htParams = new Hashtable { { "EventTypeID", id } };
+                var _event = list.SingleOrDefault(x => x.EventTypeID == id);
+                new CIS.Engine.Event.EventGenerator().GenerateEvent(_clientConfig.ClientId, htParams, _clientConfig.Client, _appConfig.ConnectionCsr, _clientConfig.ConnectionBillingAdmin, _event.AssemblyName, _event.ClassName);
+            });
+        }
+
+
+        private static void ProcessEvents()
+        {
+            var engine = new CIS.Engine.Event.Queue(_clientConfig.ConnectionBillingAdmin);
+            engine.ProcessEventQueue(_appConfig.ClientID, _appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _appConfig.ClientAbbreviation);
         }
 
         private static void Simulate_AESCIS_11221()
