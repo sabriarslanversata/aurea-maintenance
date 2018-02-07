@@ -113,6 +113,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Import.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.Import.Billing.Transaction, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Spark\Deployment\Debug\bin\CIS.Import.Billing.Transaction.dll</HintPath>
+    </Reference>
     <Reference Include="Csla, Version=3.6.2.0, Culture=neutral, PublicKeyToken=93be5fdc093e4c30, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Resources\GACAssembliesDependencies\Csla\3.6.2\Csla.dll</HintPath>
@@ -164,6 +168,13 @@
     <Content Include="MockData\AESCIS-19714\PastSoldDate.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
+    </Content>
+    <Content Include="MockData\AESCIS-20017\AESCIS-20017-C2.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="MockData\AESCIS-20017\AESCIS-20017-C1.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Models\ConvertTableToEntity.txt" />
   </ItemGroup>

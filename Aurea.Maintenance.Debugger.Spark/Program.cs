@@ -122,12 +122,43 @@ namespace Aurea.Maintenance.Debugger.Spark
             
 
             Simulate_AESCIS18511();
+            Simulate_AESCIS19714();
             */
             #endregion
 
-            Simulate_AESCIS19714();
+            Simulate_AESCIS_20017();
+
             _logger.Info("Debug session end");
             Console.ReadLine();
+        }
+
+        private static void Simulate_AESCIS_20017()
+        {
+            DB.ExecuteQuery("DISABLE TRIGGER ALL ON ChangeRequest;", _appConfig.ConnectionCsr);
+
+            DB.ImportFiles(appDir, "20017-C1", _appConfig.ConnectionCsr);
+
+            DB.ExecuteQuery("ENABLE TRIGGER ALL ON ChangeRequest;", _appConfig.ConnectionCsr);
+
+            var custId = 1527408;
+            var minTransactionDate = "2017-05-27";
+            var sql = $"DELETE FROM CustomerTransactionRequest WHERE CustId = {custId}  AND TransactionType='814' AND ActionCode = 'C' AND Direction = 1 AND TransactionDate>'{minTransactionDate}'";
+            DB.ExecuteQuery(sql, _appConfig.ConnectionCsr);
+            
+            
+            // execute import task
+            ExecuteImportChangeRequests();
+            GenerateEvents(new List<int>() {27});
+            ProcessEvents();
+
+            GenerateEvents(new List<int>() { 16 });
+            ProcessEvents();
+        }
+
+        private static void ExecuteImportChangeRequests()
+        {
+            var t = new CIS.Import.Billing.ChangeRequest(_appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _clientConfig.ConnectionBillingAdmin, Clients.AEP.Id(), _logger);
+            t.Import();
         }
 
         private static void Simulate_AESCIS19714()
