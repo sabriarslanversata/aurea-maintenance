@@ -132,6 +132,11 @@ namespace Aurea.Maintenance.Debugger.Spark
             Console.ReadLine();
         }
 
+        private static void Simulate_AESCIS_16949()
+        {
+            //
+        }
+
         private static void Simulate_AESCIS_20017()
         {
             DB.ExecuteQuery("DISABLE TRIGGER ALL ON ChangeRequest;", _appConfig.ConnectionCsr);
