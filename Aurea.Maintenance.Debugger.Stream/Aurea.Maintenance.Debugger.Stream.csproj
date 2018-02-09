@@ -148,6 +148,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="MockData\AESCIS-19713\New-C1.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="MockData\AESCIS-19713\TodaySoldDate.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

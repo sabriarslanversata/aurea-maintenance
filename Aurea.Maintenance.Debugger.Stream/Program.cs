@@ -73,16 +73,29 @@ namespace Aurea.Maintenance.Debugger.Stream
             #endregion
 
 
-            Simulate_AESCIS_19713();
+            //Simulate_AESCIS_19713();
+            Simulate_AESCIS_19713_2();
 
             _logger.Info("Debug session has ended");
             Console.ReadLine();
         }
 
+        private static void Simulate_AESCIS_19713_2()
+        {
+            var myExport = new MyExport(_appConfig.ConnectionMarket, _appConfig.ConnectionCsr, _clientConfig.ConnectionBillingAdmin);
+            DB.ImportFiles(_mockDataDir, "New-C1", _appConfig.ConnectionCsr);
+
+            GenerateEvents(new List<int> { 10 });
+            ProcessEvents();
+
+            // export 814
+            myExport.MyCreateMarket814();
+        }
+
         private static void Simulate_AESCIS_19713()
         {
             var myExport = new MyExport(_appConfig.ConnectionMarket, _appConfig.ConnectionCsr, _clientConfig.ConnectionBillingAdmin);
-            DB.ImportFiles(_mockDataDir, "Today", _appConfig.ConnectionCsr);
+            DB.ImportFiles(_mockDataDir, "New-C1", _appConfig.ConnectionCsr);
 
             PromoteEnrollCustomers();
 
