@@ -45,6 +45,8 @@ namespace Aurea.Maintenance.Debugger.Texpo
         private static ClientEnvironmentConfiguration _clientConfig;
         private static GlobalApplicationConfigurationDS.GlobalApplicationConfiguration _appConfig;
         private static ILogger _logger = new Logger();
+        private static readonly string _appDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+        private static readonly string _mockDataDir = Path.Combine(_appDir, "MockData");
 
         public class MyExport : CIS.Clients.Texpo.Export.MainProcess//CIS.Export.BaseExport
         {
@@ -246,15 +248,6 @@ b1x3zeE1G4Q4
 
             SimulateWSEnrollment();
 
-			*/
-
-
-
-
-            #endregion
-
-            //SimulateWSEnrollment();
-
             var notification = Notification.NewNotification();
 
             var emailParams = new Hashtable
@@ -271,11 +264,27 @@ b1x3zeE1G4Q4
 
             notification.SendEmailJob(37, emailParams);
 
-
-
             Simulate_AESCIS_8679();
+
+			*/
+            #endregion
+
+
+            Simulate_AESCIS_11082();
+
             _logger.Info("Debug session has ended");
             Console.ReadLine();
+        }
+
+        private static void Simulate_AESCIS_11082()
+        {
+            DB.ImportFiles(_mockDataDir, "CnclCons", _appConfig.ConnectionCsr);
+
+            //var consId = 5816763;
+            //var sql = $"UPDATE Consumption SET Processed='N', ProcessDate = NULL, DoNotProcess = 0, RequestId = NULL, ValidateFlag = 0, ValidatedDate = NULL WHERE ConsId = {consId}";
+            //DB.ExecuteQuery(sql, _appConfig.ConnectionCsr);
+
+            SimulateImportTransactionQueue();
         }
 
         private static void Simulate_AESCIS_8679()
@@ -378,8 +387,9 @@ b1x3zeE1G4Q4
 
         private static void SimulateImportTransactionQueue()
         {
-            var queue = new CIS.Import.Billing.Transaction.Queue(_clientConfig.Client, _appConfig.ConnectionMarket, _appConfig.ConnectionCsr, _appConfig.ConnectionTdsp, _clientConfig.ConnectionBillingAdmin);
-            queue.Import(_logger);
+            var queue = new CIS.Import.Billing.Transaction.Queue(_clientConfig.Client, _appConfig.ConnectionMarket,
+                _appConfig.ConnectionCsr, _appConfig.ConnectionTdsp, _clientConfig.ConnectionBillingAdmin, _logger);
+            queue.Import();
         }
 
         private static void SimulateImportMassEnrollment(string fileName)
