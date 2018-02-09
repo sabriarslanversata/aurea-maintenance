@@ -3517,7 +3517,7 @@
   <daes_TexpoMarket..tbl_867_NonIntervalSummary NonIntervalSummary_Key="3958642" _x0038_67_Key="5446309" TypeCode="SU" MeterUOM="KH" MeterInterval="MON" />
   <daes_TexpoMarket..tbl_867_NonIntervalSummary NonIntervalSummary_Key="3958653" _x0038_67_Key="5446319" TypeCode="SU" MeterUOM="KH" MeterInterval="MON" />
   <daes_TexpoMarket..tbl_867_NonIntervalSummary NonIntervalSummary_Key="3976531" _x0038_67_Key="5466809" TypeCode="SU" MeterUOM="KH" MeterInterval="MON" />
-  <daes_TexpoMarket..tbl_867_NonIntervalSummary NonIntervalSummary_Key="3976546" _x0038_67_Key="5466820" TypeCode="SU" MeterUOM="KH" MeterInterval="MON" />
+  <!--daes_TexpoMarket..tbl_867_NonIntervalSummary NonIntervalSummary_Key="3976546" _x0038_67_Key="5466820" TypeCode="SU" MeterUOM="KH" MeterInterval="MON" /-->
 
   <daes_TexpoMarket..tbl_867_NonIntervalSummary_Qty NonIntervalSummaryQty_Key="11304" NonIntervalSummary_Key="11304" Qualifier="QD" Quantity="1551" MeasurementSignificanceCode="51" ServicePeriodStart="20071220" ServicePeriodEnd="20080115" Processflag="0" />
   <daes_TexpoMarket..tbl_867_NonIntervalSummary_Qty NonIntervalSummaryQty_Key="14154" NonIntervalSummary_Key="14154" Qualifier="QD" Quantity="1888" MeasurementSignificanceCode="51" ServicePeriodStart="20080115" ServicePeriodEnd="20080212" Processflag="0" />
@@ -3644,7 +3644,7 @@
   <daes_TexpoMarket..tbl_867_NonIntervalSummary_Qty NonIntervalSummaryQty_Key="4186783" NonIntervalSummary_Key="3958642" Qualifier="KA" Quantity="1435" MeasurementSignificanceCode="51" ServicePeriodStart="20180112" ServicePeriodEnd="20180122" Processflag="0" />
   <daes_TexpoMarket..tbl_867_NonIntervalSummary_Qty NonIntervalSummaryQty_Key="4186794" NonIntervalSummary_Key="3958653" Qualifier="KA" Quantity="1445" MeasurementSignificanceCode="51" ServicePeriodStart="20180112" ServicePeriodEnd="20180122" Processflag="0" />
   <daes_TexpoMarket..tbl_867_NonIntervalSummary_Qty NonIntervalSummaryQty_Key="4205137" NonIntervalSummary_Key="3976531" Qualifier="KA" Quantity="1445" MeasurementSignificanceCode="51" ServicePeriodStart="20180112" ServicePeriodEnd="20180122" Processflag="0" />
-  <daes_TexpoMarket..tbl_867_NonIntervalSummary_Qty NonIntervalSummaryQty_Key="4205152" NonIntervalSummary_Key="3976546" Qualifier="KA" Quantity="1438" MeasurementSignificanceCode="51" ServicePeriodStart="20180112" ServicePeriodEnd="20180122" Processflag="0" />
+  <!--daes_TexpoMarket..tbl_867_NonIntervalSummary_Qty NonIntervalSummaryQty_Key="4205152" NonIntervalSummary_Key="3976546" Qualifier="KA" Quantity="1438" MeasurementSignificanceCode="51" ServicePeriodStart="20180112" ServicePeriodEnd="20180122" Processflag="0" /-->
 
   <daes_TexpoMarket..tbl_867_Switch Switch_Key="2702" _x0038_67_Key="14476" TypeCode="BJ" MeterNumber="534258430" SwitchDate="20071220" />
   <daes_TexpoMarket..tbl_867_Switch_Qty SwitchQty_Key="2660" Switch_Key="2702" Qualifier="QD" UOM="KH" SwitchRead="708" MeasurementSignificanceCode="51" />
