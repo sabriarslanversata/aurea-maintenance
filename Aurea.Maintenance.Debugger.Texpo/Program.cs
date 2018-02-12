@@ -352,39 +352,39 @@ DELETE FROM CustomerTransactionRequest WHERE RequestId = @RequestId
         private static int CreateInvoiceBatch(int customerId, DateTime beginDate, DateTime endDate,
             DateTime invoiceDate)
         {
-            var arrParms = new System.Data.SqlClient.SqlParameter[4];
-            arrParms[0] = new System.Data.SqlClient.SqlParameter("@CustID", SqlDbType.Int)
+            var arrParms = new SqlParameter[5];
+            arrParms[0] = new SqlParameter("@CustID", SqlDbType.Int)
             {
                 Value = customerId
             };
-            arrParms[1] = new System.Data.SqlClient.SqlParameter("@RangeBeginDate", SqlDbType.DateTime)
+            arrParms[1] = new SqlParameter("@RangeBeginDate", SqlDbType.DateTime)
             {
                 Value = beginDate
             };
-            arrParms[2] = new System.Data.SqlClient.SqlParameter("@RangeEndDate", SqlDbType.DateTime)
+            arrParms[2] = new SqlParameter("@RangeEndDate", SqlDbType.DateTime)
             {
                 Value = endDate
             };
-            arrParms[3] = new System.Data.SqlClient.SqlParameter("@InvoiceDate", SqlDbType.DateTime)
+            arrParms[3] = new SqlParameter("@InvoiceDate", SqlDbType.DateTime)
             {
                 Value = invoiceDate
             };
-            arrParms[4] = new System.Data.SqlClient.SqlParameter("@BatchID", SqlDbType.Int)
+            arrParms[4] = new SqlParameter("@BatchID", SqlDbType.Int)
             {
                 Direction = ParameterDirection.Output
             };
 
-            var dataSet = SqlHelper.ExecuteDataset(_appConfig.ConnectionCsr, CommandType.StoredProcedure,
+            SqlHelper.ExecuteDataset(_appConfig.ConnectionCsr, CommandType.StoredProcedure,
                 "cspBatchCreateByCustomer", arrParms);
             return Util.ToInt32(arrParms[4].Value);
         }
 
         private static void UpdateBatchDetail(int invoiceId, int batchId)
         {
-            var arrParms = new System.Data.SqlClient.SqlParameter[2];
-            arrParms[0] = new System.Data.SqlClient.SqlParameter("@BatchID", SqlDbType.Int);
+            var arrParms = new SqlParameter[2];
+            arrParms[0] = new SqlParameter("@BatchID", SqlDbType.Int);
             arrParms[0].Value = batchId;
-            arrParms[1] = new System.Data.SqlClient.SqlParameter("@InvoiceID", SqlDbType.Int);
+            arrParms[1] = new SqlParameter("@InvoiceID", SqlDbType.Int);
             arrParms[1].Value = invoiceId;
             SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.StoredProcedure, "cspBatchDetailUpdateInvoiceByCustomer", arrParms);
         }
