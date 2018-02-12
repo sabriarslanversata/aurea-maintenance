@@ -38,6 +38,10 @@
     <Reference Include="Aurea.TaskToaster">
       <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\TaskToaster\Aurea.TaskToaster.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.BusinessComponent, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.BusinessComponent.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.BusinessEntity, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.BusinessEntity.dll</HintPath>
@@ -54,9 +58,21 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Components.dll</HintPath>
     </Reference>
+    <Reference Include="CIS.Components.Invoice, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Components.Invoice.dll</HintPath>
+    </Reference>
     <Reference Include="CIS.Components.Maintenance, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Components.Maintenance.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Element, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Element.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Element.Core, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Element.Core.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Engine.Event, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -84,6 +100,14 @@
     <Reference Include="CIS.Import, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Import.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Import.Billing.Consumption, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Import.Billing.Consumption.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Import.Billing.Tdsp, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Import.Billing.Tdsp.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Import.Billing.Transaction, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -198,6 +222,7 @@
   <ItemGroup>
     <Content Include="MockData\AESCIS-11082\CnclCons.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </Content>
     <Content Include="MockData\AESCIS-8679.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
