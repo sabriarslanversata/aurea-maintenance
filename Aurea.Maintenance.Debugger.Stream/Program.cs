@@ -74,7 +74,10 @@ namespace Aurea.Maintenance.Debugger.Stream
 
 
             //Simulate_AESCIS_19713();
-            Simulate_AESCIS_19713_2();
+            //Simulate_AESCIS_19713_2();
+            var sql = string.Format(MockData.Scripts.CustomerExportString, 759151);
+            DB.ImportRecordsFromQuery(sql, _appConfig.ConnectionCsr, "saes_", "daes_", _appDir);
+
 
             _logger.Info("Debug session has ended");
             Console.ReadLine();

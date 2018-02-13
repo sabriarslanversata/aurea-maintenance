@@ -1,0 +1,309 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<root>
+  <Customer CustID="747109" CSPID="1" CustomerTypeID="4" CustNo="3001697998" CustName="John Williams" LastName="Williams" FirstName="John" DBA="John Williams" AcctsRecID="747632" ProductionCycle="55" BillCycle="55" RateID="710804" SiteAddrID="2113629" MailAddrId="2113628" MailToSiteAddress="0" MasterCustID="747111" Master="N" CustStatus="A" CustType="R" FEIN="6322" Taxable="Y" LateFees="N" SummaryInv="N" TDSPTemplateID="3" TDSPGroupID="1" LifeSupportIndictor="N" BillFormat="1" PrintLayoutID="1" RequiredDeposit="N" UserDefined1="None" CreateDate="2017-12-29T16:01:20.537" CustomerPrivacy="0" UsagePrivacy="0" AutoCreditAfterInvoiceFlag="0" LidaDiscount="0" DoNotDisconnect="0" DDPlus1="N" DeliveryTypeID="1" PaymentModelId="1" PORFlag="N" />
+  <Customer CustID="747110" CSPID="1" CustomerTypeID="1" CustNo="3001697999" CustName="John Williams" LastName="Williams" FirstName="John" DBA="John Williams" AcctsRecID="747633" ProductionCycle="55" BillCycle="55" RateID="710805" SiteAddrID="2113632" MailAddrId="2113631" MailToSiteAddress="0" MasterCustID="747111" Master="N" CustStatus="A" CustType="R" FEIN="6322" Taxable="Y" LateFees="N" SummaryInv="N" TDSPTemplateID="3" TDSPGroupID="1" LifeSupportIndictor="N" BillFormat="1" PrintLayoutID="1" RequiredDeposit="N" UserDefined1="None" CreateDate="2017-12-29T16:01:21.430" CustomerPrivacy="0" UsagePrivacy="0" AutoCreditAfterInvoiceFlag="0" LidaDiscount="0" DoNotDisconnect="0" DDPlus1="N" DeliveryTypeID="1" PaymentModelId="1" PORFlag="N" />
+  <Customer CustID="747111" CSPID="1" CustomerTypeID="1" CustNo="5000747111" CustName="John Williams" LastName="Williams" FirstName="John" DBA="John Williams" AcctsRecID="747634" ProductionCycle="55" BillCycle="55" SiteAddrID="2113635" MailAddrId="2113634" MailToSiteAddress="0" MasterCustID="10001" Master="Y" CustStatus="A" CustType="R" FEIN="6322" Taxable="Y" LateFees="Y" SummaryInv="N" TDSPTemplateID="3" TDSPGroupID="1" LifeSupportIndictor="N" BillFormat="1" PrintLayoutID="1" RequiredDeposit="N" CreateDate="2017-12-29T16:01:22.137" CustomerPrivacy="0" UsagePrivacy="0" AutoCreditAfterInvoiceFlag="0" LidaDiscount="0" DoNotDisconnect="0" DDPlus1="N" PaymentModelId="1" PORFlag="N" />
+
+  <Premise PremID="835313" CustID="747109" CSPID="1" AddrID="2113630" TDSP="13" TaxAssessment="47" PremNo="544523097500007" PremDesc="75 N Kensico Ave 2, White Plains, NY 10604" PremStatus="Bill" PremType="Elec" SpecialNeedsFlag="0" Metered="?" Taxable="Y" BeginServiceDate="2018-02-10T00:00:00" StatusID="5" StatusDate="2018-02-05T17:13:52.343" CreateDate="2017-12-29T16:01:03.943" DeleteFlag="0" LDCID="13" BillingAccountNumber="3001697998" GasSupplyServiceOption="A" LDC_UnMeteredAcct="0" OnSwitchHold="0" ConsumptionImportTypeId="1" LidaDiscount="0" IsTOU="0" />
+  <Premise PremID="835314" CustID="747110" CSPID="1" AddrID="2113633" TDSP="13" TaxAssessment="47" PremNo="544523097500007" PremDesc="75 N Kensico Ave 2, White Plains, NY 10604" PremStatus="Bill" PremType="Gas" SpecialNeedsFlag="0" Metered="?" Taxable="Y" BeginServiceDate="2018-02-08T00:00:00" EndServiceDate="2018-02-08T00:00:00" StatusID="2" StatusDate="2018-02-08T16:31:15.193" CreateDate="2017-12-29T16:01:04.943" DeleteFlag="0" LDCID="13" BillingAccountNumber="3001697999" GasSupplyServiceOption="A" LDC_UnMeteredAcct="0" OnSwitchHold="0" ConsumptionImportTypeId="1" LidaDiscount="0" IsTOU="0" />
+  <Premise PremID="847415" CustID="747109" CSPID="1" AddrID="2144542" TDSP="13" TaxAssessment="47" PremNo="544523097500007" PremDesc="75 N Kensico Ave 2, White Plains, NY 10604" PremStatus="Bill" PremType="Elec" SpecialNeedsFlag="0" Metered="?" Taxable="Y" BeginServiceDate="2018-02-07T00:00:00" EndServiceDate="2018-02-08T00:00:00" StatusID="0" StatusDate="2018-02-06T12:32:26.800" CreateDate="2018-02-06T12:32:26.800" DeleteFlag="0" LDCID="13" BillingAccountNumber="3001697998" GasSupplyServiceOption="A" LDC_UnMeteredAcct="0" OnSwitchHold="0" ConsumptionImportTypeId="1" LidaDiscount="0" IsTOU="0" />
+  <Premise PremID="847485" CustID="747109" CSPID="1" AddrID="2144750" TDSP="13" TaxAssessment="47" PremNo="544523097500007" PremDesc="75 N Kensico Ave 2, White Plains, NY 10604" PremStatus="Bill" PremType="Elec" SpecialNeedsFlag="0" Metered="?" Taxable="Y" BeginServiceDate="2018-02-06T00:00:00" EndServiceDate="2018-02-09T00:00:00" StatusID="0" StatusDate="2018-02-06T15:00:39.690" CreateDate="2018-02-06T15:00:39.690" DeleteFlag="0" LDCID="13" BillingAccountNumber="3001697998" GasSupplyServiceOption="A" LDC_UnMeteredAcct="0" OnSwitchHold="0" ConsumptionImportTypeId="1" LidaDiscount="0" IsTOU="0" />
+  
+  <CustomerAdditionalInfo CustID="747109" CSPDUNSID="7" BillingTypeID="3" ClientAccountNo="C2219500" CollectionsStageID="0" CollectionsStatus="0" DisconnectLtr="N" AuthorizedReleaseName=" " EFTFlag="0" PromiseToPayFlag="0" DisconnectFlag="0" CreditHoldFlag="0" RawConsumptionImportFlag="1" CustomerProtectionStatus="0" MCPEFlag="0" HasLocationMasterFlag="0" DivisionID="1" DivisionCode="SGENormal" CustomerGroupID="3" EarlyTermFee="0.0000" EarlyTermFeeUpdateDate="2017-12-29T16:01:20.570" DeceasedFlag="0" BankruptFlag="0" DoNotCall="0" IsDPP="0" SubsequentDepositExempt="0" AutoPayFlag="0" SpecialNeedsFlag="0" OnSwitchHold="0" UpdateContactInfoFlag="0" IsFriendlyLatePaymentReminderSent="0" IsLowIncome="0" AutoPayLastUpdated="2017-12-29T16:01:22.647" GreenEnergyOptIn="0" ServiceAccount="R" CustInfo1="0" CommissionAmount="0.0000" TCPAAuthorization="NA" IsPUCComplaint="0" />
+  <CustomerAdditionalInfo CustID="747110" CSPDUNSID="7" BillingTypeID="3" ClientAccountNo="G2024724" CollectionsStageID="0" CollectionsStatus="0" DisconnectLtr="N" AuthorizedReleaseName=" " EFTFlag="0" PromiseToPayFlag="0" DisconnectFlag="0" CreditHoldFlag="0" RawConsumptionImportFlag="1" CustomerProtectionStatus="0" MCPEFlag="0" HasLocationMasterFlag="0" DivisionID="1" DivisionCode="SGENormal" CustomerGroupID="3" EarlyTermFee="0.0000" EarlyTermFeeUpdateDate="2017-12-29T16:01:21.440" DeceasedFlag="0" BankruptFlag="0" DoNotCall="0" IsDPP="0" SubsequentDepositExempt="0" AutoPayFlag="0" SpecialNeedsFlag="0" OnSwitchHold="0" UpdateContactInfoFlag="0" IsFriendlyLatePaymentReminderSent="0" IsLowIncome="0" AutoPayLastUpdated="2017-12-29T16:01:22.790" GreenEnergyOptIn="0" ServiceAccount="R" CustInfo1="0" CommissionAmount="0.0000" TCPAAuthorization="NA" IsPUCComplaint="0" />
+  <CustomerAdditionalInfo CustID="747111" CSPDUNSID="1" BillingTypeID="1" CollectionsStageID="0" CollectionsStatus="0" DisconnectLtr="N" EFTFlag="0" PromiseToPayFlag="0" DisconnectFlag="0" CreditHoldFlag="0" RawConsumptionImportFlag="1" CustomerProtectionStatus="0" MCPEFlag="0" HasLocationMasterFlag="0" EarlyTermFee="0.0000" EarlyTermFeeUpdateDate="2017-12-29T16:01:22.163" DeceasedFlag="0" BankruptFlag="0" DoNotCall="0" IsDPP="0" SubsequentDepositExempt="0" AutoPayFlag="0" SpecialNeedsFlag="0" OnSwitchHold="0" UpdateContactInfoFlag="0" IsFriendlyLatePaymentReminderSent="0" IsLowIncome="0" AutoPayLastUpdated="2017-12-29T16:01:22.593" GreenEnergyOptIn="0" CustInfo1="0" CommissionAmount="0.0000" IsPUCComplaint="0" />
+
+  <AccountsReceivable AcctsRecID="747632" PrevBal="0.00" CurrInvs="0.00" CurrPmts="0.00" CurrAdjs="0.00" BalDue="0.00" LateFee="0.00" LateFeeRate="0.0000" LateFeeMaxAmount="0.0000" AuthorizedPymt="0.00" PastDue="N" BalAge0="0.00" BalAge1="0.00" BalAge2="0.00" BalAge3="0.00" BalAge4="0.00" BalAge5="0.00" BalAge6="0.00" Deposit="0.00" PaymentPlanFlag="0" PaymentPlanTrueUpFlag="0" PaymentPlanAmount="0.0000" PaymentPlanTrueUpThresholdAmount="0.0000" PrePaymentFlag="0" PrePaymentDailyAmount="0.0000" CapitalCredit="0.00" Terms="26" StatusID="1" GracePeriod="0" PaymentPlanTotalVariance="0.0000" PaymentPlanVarianceUnit="0.0000" CancelFeeTypeId="1" CancelFeeAmount="150.000000000" InvoiceMinimumAmount="0.000000000" LateFeeThresholdAmt="0.00" />
+  <AccountsReceivable AcctsRecID="747633" PrevBal="0.00" CurrInvs="0.00" CurrPmts="0.00" CurrAdjs="0.00" BalDue="0.00" LateFee="0.00" LateFeeRate="0.0000" LateFeeMaxAmount="0.0000" AuthorizedPymt="0.00" PastDue="N" BalAge0="0.00" BalAge1="0.00" BalAge2="0.00" BalAge3="0.00" BalAge4="0.00" BalAge5="0.00" BalAge6="0.00" Deposit="0.00" PaymentPlanFlag="0" PaymentPlanTrueUpFlag="0" PaymentPlanAmount="0.0000" PaymentPlanTrueUpThresholdAmount="0.0000" PrePaymentFlag="0" PrePaymentDailyAmount="0.0000" CapitalCredit="0.00" Terms="26" StatusID="1" GracePeriod="0" PaymentPlanTotalVariance="0.0000" PaymentPlanVarianceUnit="0.0000" InvoiceMinimumAmount="0.000000000" LateFeeThresholdAmt="0.00" />
+  <AccountsReceivable AcctsRecID="747634" PrevBal="0.00" CurrInvs="0.00" CurrPmts="0.00" CurrAdjs="0.00" BalDue="0.00" LateFee="0.00" LateFeeRate="0.0000" LateFeeMaxAmount="0.0000" AuthorizedPymt="0.00" PastDue="N" BalAge0="0.00" BalAge1="0.00" BalAge2="0.00" BalAge3="0.00" BalAge4="0.00" BalAge5="0.00" BalAge6="0.00" Deposit="0.00" PaymentPlanFlag="0" PaymentPlanTrueUpFlag="0" PaymentPlanAmount="0.0000" PaymentPlanTrueUpThresholdAmount="0.0000" PrePaymentFlag="0" PrePaymentDailyAmount="0.0000" CapitalCredit="0.00" Terms="26" StatusID="1" GracePeriod="0" PaymentPlanTotalVariance="0.0000" PaymentPlanVarianceUnit="0.0000" InvoiceMinimumAmount="0.000000000" LateFeeThresholdAmt="0.00" />
+
+  <Address AddrID="2113628" ValidationStatusID="0" AttnMS="John  Williams" Addr1="75 N Kensico Ave Apt 2" City="White Plains" State="NY" Zip="10604" HomePhone="9144507873" WorkPhone="9144507873" OtherPhone="9144507873" Email="johnwilliams@gmail.com" GeoCode="US36119A0015" Status="A" CreateDate="2017-12-29T16:01:20.517" TaxInCity="1" CchVersion="2" />
+  <Address AddrID="2113629" ValidationStatusID="0" Status="A" CreateDate="2017-12-29T16:01:20.533" TaxInCity="1" CchVersion="2" />
+  <Address AddrID="2113630" ValidationStatusID="0" Addr1="75 N Kensico Ave" Addr2="2" City="White Plains" State="NY" Zip="10604" GeoCode="US36119A0015" Status="A" CreateDate="2017-12-29T16:01:20.590" TaxInCity="1" CchVersion="2" />
+  <Address AddrID="2113631" ValidationStatusID="0" AttnMS="John  Williams" Addr1="75 N Kensico Ave Apt 2" City="White Plains" State="NY" Zip="10604" HomePhone="9144507873" WorkPhone="9144507873" OtherPhone="9144507873" Email="johnwilliams@gmail.com" GeoCode="US36119A0015" Status="A" CreateDate="2017-12-29T16:01:21.420" TaxInCity="1" CchVersion="2" />
+  <Address AddrID="2113632" ValidationStatusID="0" Status="A" CreateDate="2017-12-29T16:01:21.427" TaxInCity="1" CchVersion="2" />
+  <Address AddrID="2113633" ValidationStatusID="0" Addr1="75 N Kensico Ave" Addr2="2" City="White Plains" State="NY" Zip="10604" GeoCode="US36119A0015" Status="A" CreateDate="2017-12-29T16:01:21.460" TaxInCity="1" CchVersion="2" />
+  <Address AddrID="2113634" ValidationStatusID="0" Addr1="75 N Kensico Ave Apt 2" City="White Plains" State="NY" Zip="10604" HomePhone="9144507873" OtherPhone="9144507873" Email="johnwilliams@gmail.com" GeoCode="US36119A0015" Status="A" CreateDate="2017-12-29T16:01:22.130" TaxInCity="1" CchVersion="2" />
+  <Address AddrID="2113635" ValidationStatusID="0" Status="A" CreateDate="2017-12-29T16:01:22.133" TaxInCity="1" CchVersion="2" />
+  <Address AddrID="2144542" ValidationStatusID="0" Addr1="75 N Kensico Ave" Addr2="2" City="White Plains" State="NY" Zip="10604" GeoCode="US36119A0015" Status="A" CreateDate="2018-02-06T12:32:27.883" TaxInCity="1" CchVersion="2" />
+  <Address AddrID="2144750" ValidationStatusID="0" Addr1="75 N Kensico Ave" Addr2="2" City="White Plains" State="NY" Zip="10604" GeoCode="US36119A0015" Status="A" CreateDate="2018-02-06T15:00:40.850" TaxInCity="1" CchVersion="2" />
+
+  <Rate RateID="575188" CSPID="1" RateCode="NY_CONED_I_E_24MO_0.0788" RateDesc="24 Month Fixed Rate" EffectiveDate="2016-02-05T00:00:00" IsMajority="0" TemplateFlag="0" LDCCode="13" CreateDate="2016-02-03T11:37:37.783" RatePackageName="NY_CONED_I_E_24MO_0.0788_RATEPACKAGE" CustType="R" ServiceType="E" DivisionCode="SGENormal" ConsUnitId="5" ActiveFlag="1" />
+  <Rate RateID="705661" CSPID="1" RateCode="NY_CONED_G_M2M_CB_0.398" RateDesc="2% Cash Back Rewards" EffectiveDate="2017-12-15T00:00:00" IsMajority="0" TemplateFlag="0" LDCCode="13" CreateDate="2017-12-14T15:47:19.287" RatePackageName="NY_CONED_G_M2M_CB_0.398_RATEPACKAGE" CustType="R" ServiceType="G" DivisionCode="SGENormal" ConsUnitId="9" ActiveFlag="1" />
+  <Rate RateID="710804" RateCode="PREM_697998" RateDesc="" EffectiveDate="2017-12-29T00:00:00" ExpirationDate="2019-12-29T00:00:00" RateType="          " PlanType="0" IsMajority="0" TemplateFlag="1" CreateDate="2017-12-29T16:01:20.460" />
+  <Rate RateID="710805" RateCode="PREM_697999" RateDesc="" EffectiveDate="2017-12-29T00:00:00" ExpirationDate="2018-01-29T00:00:00" RateType="          " PlanType="0" IsMajority="0" TemplateFlag="1" CreateDate="2017-12-29T16:01:21.393" />
+  <Rate RateID="258052" CSPID="1" RateCode="NY_CONED_I_E_M2M_RO_Rate" RateDesc="DO NOT USE" EffectiveDate="2013-05-01T00:00:00" IsMajority="0" TemplateFlag="0" LDCCode="13" CreateDate="2013-06-06T22:32:24.287" RatePackageName="NY_CONED_I_E_M2M_RO_RatePackage" ServiceType="E" ActiveFlag="1" />
+  <Rate RateID="258062" CSPID="1" RateCode="NY_CONED_G_M2M_CB_RO_Rate" RateDesc="DO NOT USE" EffectiveDate="2013-05-01T00:00:00" IsMajority="0" TemplateFlag="0" LDCCode="13" CreateDate="2013-06-06T22:32:24.287" RatePackageName="NY_CONED_G_M2M_CB_RO_RatePackage" ServiceType="G" ActiveFlag="1" />
+  
+  <RateDetail RateDetID="2106766" RateID="575188" CategoryID="1" RateTypeID="3002" ConsUnitID="5" RateDescID="1" EffectiveDate="2016-02-05T00:00:00" MinDetAmt="0.00" MaxDetAmt="0.00" GLAcct="               " CustType="" Progressive=" " AmountCap="N" MaxRateAmt=" " MinRateAmt=" " CategoryRollup=" " Taxable="Y" ChargeType="C" MiscData1="51" FixedCapRate="1882.00000000" Building="" Active="1" StatusID="1" BlockPriceIndicator="0" CreateDate="2016-02-03T11:37:37.783" MeterMultiplierFlag="0" />
+  <RateDetail RateDetID="2576685" RateID="705661" CategoryID="1" RateTypeID="3002" ConsUnitID="9" RateDescID="2" EffectiveDate="2017-12-15T00:00:00" MinDetAmt="0.00" MaxDetAmt="0.00" GLAcct="               " CustType="" Progressive=" " AmountCap="N" MaxRateAmt=" " MinRateAmt=" " CategoryRollup=" " Taxable="Y" ChargeType="C" MiscData1="51" FixedCapRate="2280.00000000" Building="" Active="1" StatusID="1" BlockPriceIndicator="0" CreateDate="2017-12-14T15:47:19.287" MeterMultiplierFlag="0" />
+  <RateDetail RateDetID="2589125" RateID="710804" CategoryID="1" RateTypeID="3002" ConsUnitID="5" RateDescID="1" EffectiveDate="2017-12-29T00:00:00" ExpirationDate="2018-01-08T00:00:00" RateAmt="0.07880000" MinDetAmt="0.00" MaxDetAmt="0.00" GLAcct="               " CustType="" Progressive=" " AmountCap="N" MaxRateAmt=" " MinRateAmt=" " CategoryRollup=" " Taxable="Y" ChargeType="C" MiscData1="51" FixedCapRate="1882.00000000" TemplateRateDetID="2106766" Building="" TaxCategoryID="0" Active="0" StatusID="1" BlockPriceIndicator="0" RateTransitionId="2251392" CreateDate="2017-12-29T16:01:04.560" MeterMultiplierFlag="0" TOUTemplateRegisterName="" />
+  <RateDetail RateDetID="2589126" RateID="710805" CategoryID="1" RateTypeID="3002" ConsUnitID="9" RateDescID="2" EffectiveDate="2017-12-29T00:00:00" ExpirationDate="2018-01-29T00:00:00" RateAmt="0.39800000" MinDetAmt="0.00" MaxDetAmt="0.00" GLAcct="               " CustType="" Progressive=" " AmountCap="N" MaxRateAmt=" " MinRateAmt=" " CategoryRollup=" " Taxable="Y" ChargeType="C" MiscData1="51" FixedCapRate="2280.00000000" TemplateRateDetID="2576685" Building="" TaxCategoryID="0" Active="1" StatusID="1" BlockPriceIndicator="0" RateTransitionId="2251393" CreateDate="2017-12-29T16:01:05.320" MeterMultiplierFlag="0" TOUTemplateRegisterName="" />
+  <RateDetail RateDetID="2590199" RateID="710804" CategoryID="1" RateTypeID="3002" ConsUnitID="5" RateDescID="1" EffectiveDate="2018-01-09T00:00:00" ExpirationDate="2018-02-07T00:00:00" RateAmt="0.07880000" MinDetAmt="0.00" MaxDetAmt="0.00" GLAcct="               " CustType="" Progressive=" " AmountCap="N" MaxRateAmt=" " MinRateAmt=" " CategoryRollup=" " Taxable="Y" ChargeType="C" MiscData1="51" FixedCapRate="1882.00000000" TemplateRateDetID="2106766" Building="" TaxCategoryID="0" Active="1" StatusID="1" BlockPriceIndicator="0" RateTransitionId="2251392" CreateDate="2018-01-01T17:07:36.017" MeterMultiplierFlag="0" TOUTemplateRegisterName="" />
+  <RateDetail RateDetID="2620331" RateID="710804" CategoryID="1" RateTypeID="3002" ConsUnitID="5" RateDescID="1" EffectiveDate="2018-02-08T00:00:00" ExpirationDate="2020-02-08T00:00:00" RateAmt="0.07880000" MinDetAmt="0.00" MaxDetAmt="0.00" GLAcct="               " CustType="" Progressive=" " AmountCap="N" MaxRateAmt=" " MinRateAmt=" " CategoryRollup=" " Taxable="Y" ChargeType="C" MiscData1="51" FixedCapRate="1882.00000000" TemplateRateDetID="2106766" Building="" TaxCategoryID="0" Active="1" StatusID="1" BlockPriceIndicator="0" RateTransitionId="2251392" CreateDate="2018-02-01T21:51:42.427" MeterMultiplierFlag="0" TOUTemplateRegisterName="" />
+  <RateDetail RateDetID="565629" RateID="258052" CategoryID="1" RateTypeID="3001" ConsUnitID="5" RateDescID="1" EffectiveDate="2013-05-01T00:00:00" MinDetAmt="0.00" MaxDetAmt="0.00" AmountCap="N" Taxable="Y" ChargeType="C" MiscData1="51" FixedCapRate="268.00000000" Active="1" StatusID="1" BlockPriceIndicator="0" CreateDate="2013-06-06T22:32:24.410" MeterMultiplierFlag="0" CreatedByUserId="0" />
+  <RateDetail RateDetID="565639" RateID="258062" CategoryID="1" RateTypeID="3001" ConsUnitID="9" RateDescID="2" EffectiveDate="2013-05-01T00:00:00" MinDetAmt="0.00" MaxDetAmt="0.00" AmountCap="N" Taxable="Y" ChargeType="C" MiscData1="51" FixedCapRate="278.00000000" Active="1" StatusID="1" BlockPriceIndicator="0" CreateDate="2013-06-06T22:32:24.410" MeterMultiplierFlag="0" CreatedByUserId="0" />
+  
+  <RateTransition RateTransitionID="2251392" CustID="747109" RateID="575188" UserID="0" CreatedDate="2017-12-29T16:01:04.457" SwitchDate="2018-02-08T00:00:00" EndDate="2020-02-08T00:00:00" StatusID="2" SoldDate="2017-12-29T00:00:00" RolloverFlag="0" />
+  <RateTransition RateTransitionID="2251393" CustID="747110" RateID="705661" UserID="0" CreatedDate="2017-12-29T16:01:05.237" SwitchDate="2017-12-29T00:00:00" EndDate="2018-01-29T00:00:00" StatusID="2" SoldDate="2017-12-29T00:00:00" RolloverFlag="0" />
+
+  <Product ProductID="1895" RateID="575188" LDCCode="13" PlanType="1" TDSPTemplateID="3" Description="24 Month Fixed Rate Plan&#xD;&#xA;" BeginDate="2016-02-05T00:00:00" CustType="R" Graduated="N" ActiveFlag="1" PriceDescription="24 Month Fixed Rate" ConsUnitID="5" Default="0" ServiceType="E" CSPId="1" TermsId="24" RolloverProductId="349" CancelFeeId="2" ProductCode="NY_CONED_I_E_24MO_0.0788" RatePackageId="575180" ProductName="24 Month Fixed Rate Plan at" ProductZoneID="15" IsGreen="0" IsBestChoice="0" ActiveEnrollmentFlag="1" />
+  <Product ProductID="2285" RateID="705661" LDCCode="13" PlanType="1" TDSPTemplateID="3" Description="Cash Back Rewards&#xD;&#xA;" BeginDate="2017-12-15T00:00:00" CustType="R" Graduated="N" ActiveFlag="1" PriceDescription="2% Cash Back Rewards" ConsUnitID="9" Default="0" ServiceType="G" CSPId="1" TermsId="1" RolloverProductId="359" ProductCode="NY_CONED_G_M2M_CB_0.398" RatePackageId="705660" ProductName="2% Cash Back Rewards Rate Plan at" ProductZoneID="9" IsGreen="0" IsBestChoice="0" ActiveEnrollmentFlag="0" />
+  <Product ProductID="349" RateID="258052" LDCCode="13" PlanType="2" TDSPTemplateID="3" Description="DO NOT USE" BeginDate="2013-05-01T00:00:00" CustType="R" Graduated="N" ActiveFlag="1" PriceDescription="DO NOT USE" ConsUnitID="5" Default="0" ServiceType="E" CSPId="1" RolloverProductId="349" ProductCode="NY_CONED_I_E_M2M_RO" RatePackageId="258022" ProductName="DO NOT USE" ProductZoneID="15" IsGreen="0" IsBestChoice="0" ActiveEnrollmentFlag="1" />
+  <Product ProductID="359" RateID="258062" LDCCode="13" PlanType="2" TDSPTemplateID="3" Description="DO NOT USE" BeginDate="2013-05-01T00:00:00" CustType="R" Graduated="N" ActiveFlag="1" PriceDescription="2% Cash Back Rewards Rollover" ConsUnitID="9" Default="0" ServiceType="G" CSPId="1" RolloverProductId="359" ProductCode="NY_CONED_G_M2M_CB_RO" RatePackageId="258032" ProductName="DO NOT USE" ProductZoneID="9" IsGreen="0" IsBestChoice="0" ActiveEnrollmentFlag="1" />
+
+  <RateIndexRange RateIndexRangeID="4618" RateIndexTypeID="1882" DateFrom="2016-02-05T00:00:00" DateTo="2021-02-05T00:00:00" IndexRate="0.07880000" />
+  <RateIndexRange RateIndexRangeID="6359" RateIndexTypeID="2280" DateFrom="2017-12-15T00:00:00" DateTo="2018-12-14T00:00:00" IndexRate="0.39800000" />
+  <RateIndexRange RateIndexRangeID="776" RateIndexTypeID="278" DateFrom="2013-08-14T00:00:00" DateTo="2013-09-13T00:00:00" IndexRate="0.53800000" />
+  <RateIndexRange RateIndexRangeID="815" RateIndexTypeID="278" DateFrom="2013-09-13T00:00:00" DateTo="2013-10-24T00:00:00" IndexRate="0.52400000" />
+  <RateIndexRange RateIndexRangeID="892" RateIndexTypeID="278" DateFrom="2013-10-24T00:00:00" DateTo="2013-11-19T00:00:00" IndexRate="0.58900000" />
+  <RateIndexRange RateIndexRangeID="993" RateIndexTypeID="278" DateFrom="2013-11-19T00:00:00" DateTo="2013-12-17T00:00:00" IndexRate="0.55800000" />
+  <RateIndexRange RateIndexRangeID="1067" RateIndexTypeID="278" DateFrom="2013-12-17T00:00:00" DateTo="2014-01-22T00:00:00" IndexRate="0.58300000" />
+  <RateIndexRange RateIndexRangeID="1127" RateIndexTypeID="278" DateFrom="2014-01-22T00:00:00" DateTo="2014-02-20T00:00:00" IndexRate="0.61000000" />
+  <RateIndexRange RateIndexRangeID="1204" RateIndexTypeID="278" DateFrom="2014-02-20T00:00:00" DateTo="2014-03-14T00:00:00" IndexRate="0.83000000" />
+  <RateIndexRange RateIndexRangeID="1307" RateIndexTypeID="278" DateFrom="2014-03-14T00:00:00" DateTo="2014-04-24T00:00:00" IndexRate="0.75600000" />
+  <RateIndexRange RateIndexRangeID="1372" RateIndexTypeID="278" DateFrom="2014-04-24T00:00:00" DateTo="2014-05-14T00:00:00" IndexRate="0.62300000" />
+  <RateIndexRange RateIndexRangeID="1434" RateIndexTypeID="278" DateFrom="2014-05-14T00:00:00" DateTo="2014-06-18T00:00:00" IndexRate="0.55500000" />
+  <RateIndexRange RateIndexRangeID="1545" RateIndexTypeID="278" DateFrom="2014-06-18T00:00:00" DateTo="2014-07-18T00:00:00" IndexRate="0.38900000" />
+  <RateIndexRange RateIndexRangeID="1596" RateIndexTypeID="278" DateFrom="2014-07-18T00:00:00" DateTo="2014-08-20T00:00:00" IndexRate="0.38200000" />
+  <RateIndexRange RateIndexRangeID="1654" RateIndexTypeID="278" DateFrom="2014-08-20T00:00:00" DateTo="2014-09-19T00:00:00" IndexRate="0.33200000" />
+  <RateIndexRange RateIndexRangeID="1723" RateIndexTypeID="278" DateFrom="2014-09-19T00:00:00" DateTo="2014-10-15T00:00:00" IndexRate="0.39900000" />
+  <RateIndexRange RateIndexRangeID="1772" RateIndexTypeID="278" DateFrom="2014-10-15T00:00:00" DateTo="2014-11-18T00:00:00" IndexRate="0.35000000" />
+  <RateIndexRange RateIndexRangeID="3463" RateIndexTypeID="278" DateFrom="2014-11-18T00:00:00" DateTo="2014-12-18T00:00:00" IndexRate="0.33400000" />
+  <RateIndexRange RateIndexRangeID="3720" RateIndexTypeID="278" DateFrom="2014-12-18T00:00:00" DateTo="2015-01-16T00:00:00" IndexRate="0.47600000" />
+  <RateIndexRange RateIndexRangeID="3744" RateIndexTypeID="278" DateFrom="2015-01-16T00:00:00" DateTo="2015-02-13T00:00:00" IndexRate="0.38600000" />
+  <RateIndexRange RateIndexRangeID="3796" RateIndexTypeID="278" DateFrom="2015-02-13T00:00:00" DateTo="2015-03-13T00:00:00" IndexRate="0.32300000" />
+  <RateIndexRange RateIndexRangeID="3907" RateIndexTypeID="278" DateFrom="2015-03-13T00:00:00" DateTo="2015-04-15T00:00:00" IndexRate="0.35500000" />
+  <RateIndexRange RateIndexRangeID="3928" RateIndexTypeID="278" DateFrom="2015-04-15T00:00:00" DateTo="2015-06-12T00:00:00" IndexRate="0.32000000" />
+  <RateIndexRange RateIndexRangeID="4068" RateIndexTypeID="268" DateFrom="2015-06-02T00:00:00" DateTo="2025-06-02T00:00:00" IndexRate="0.08980000" />
+  <RateIndexRange RateIndexRangeID="4136" RateIndexTypeID="278" DateFrom="2015-06-12T00:00:00" DateTo="2015-07-14T00:00:00" IndexRate="0.30000000" />
+  <RateIndexRange RateIndexRangeID="4199" RateIndexTypeID="278" DateFrom="2015-07-14T00:00:00" DateTo="2015-08-14T00:00:00" IndexRate="0.19500000" />
+  <RateIndexRange RateIndexRangeID="4287" RateIndexTypeID="278" DateFrom="2015-08-14T00:00:00" DateTo="2015-09-16T00:00:00" IndexRate="0.18400000" />
+  <RateIndexRange RateIndexRangeID="4343" RateIndexTypeID="278" DateFrom="2015-09-16T00:00:00" DateTo="2015-10-15T00:00:00" IndexRate="0.17400000" />
+  <RateIndexRange RateIndexRangeID="4395" RateIndexTypeID="278" DateFrom="2015-10-15T00:00:00" DateTo="2015-11-18T00:00:00" IndexRate="0.20700000" />
+  <RateIndexRange RateIndexRangeID="4452" RateIndexTypeID="278" DateFrom="2015-11-18T00:00:00" DateTo="2015-12-17T00:00:00" IndexRate="0.22700000" />
+  <RateIndexRange RateIndexRangeID="4528" RateIndexTypeID="278" DateFrom="2015-12-17T00:00:00" DateTo="2016-01-16T00:00:00" IndexRate="0.27400000" />
+  <RateIndexRange RateIndexRangeID="4611" RateIndexTypeID="278" DateFrom="2016-01-16T00:00:00" DateTo="2016-02-17T00:00:00" IndexRate="0.31100000" />
+  <RateIndexRange RateIndexRangeID="4670" RateIndexTypeID="278" DateFrom="2016-02-17T00:00:00" DateTo="2016-03-16T00:00:00" IndexRate="0.32400000" />
+  <RateIndexRange RateIndexRangeID="4729" RateIndexTypeID="278" DateFrom="2016-03-16T00:00:00" DateTo="2016-04-15T00:00:00" IndexRate="0.29300000" />
+  <RateIndexRange RateIndexRangeID="4786" RateIndexTypeID="278" DateFrom="2016-04-15T00:00:00" DateTo="2016-05-17T00:00:00" IndexRate="0.26800000" />
+  <RateIndexRange RateIndexRangeID="4834" RateIndexTypeID="278" DateFrom="2016-05-17T00:00:00" DateTo="2016-06-15T00:00:00" IndexRate="0.30500000" />
+  <RateIndexRange RateIndexRangeID="4922" RateIndexTypeID="278" DateFrom="2016-06-15T00:00:00" DateTo="2016-07-15T00:00:00" IndexRate="0.29900000" />
+  <RateIndexRange RateIndexRangeID="4979" RateIndexTypeID="278" DateFrom="2016-07-15T00:00:00" DateTo="2016-08-23T00:00:00" IndexRate="0.34100000" />
+  <RateIndexRange RateIndexRangeID="5048" RateIndexTypeID="278" DateFrom="2016-08-23T00:00:00" DateTo="2016-09-16T00:00:00" IndexRate="0.29600000" />
+  <RateIndexRange RateIndexRangeID="5102" RateIndexTypeID="278" DateFrom="2016-09-16T00:00:00" DateTo="2016-10-14T00:00:00" IndexRate="0.28900000" />
+  <RateIndexRange RateIndexRangeID="5173" RateIndexTypeID="278" DateFrom="2016-10-14T00:00:00" DateTo="2016-11-17T00:00:00" IndexRate="0.31500000" />
+  <RateIndexRange RateIndexRangeID="5233" RateIndexTypeID="278" DateFrom="2016-11-17T00:00:00" DateTo="2016-12-16T00:00:00" IndexRate="0.31200000" />
+  <RateIndexRange RateIndexRangeID="5311" RateIndexTypeID="278" DateFrom="2016-12-16T00:00:00" DateTo="2017-01-17T00:00:00" IndexRate="0.38900000" />
+  <RateIndexRange RateIndexRangeID="5405" RateIndexTypeID="278" DateFrom="2017-01-17T00:00:00" DateTo="2017-02-16T00:00:00" IndexRate="0.43900000" />
+  <RateIndexRange RateIndexRangeID="5457" RateIndexTypeID="278" DateFrom="2017-02-16T00:00:00" DateTo="2017-03-16T00:00:00" IndexRate="0.58100000" />
+  <RateIndexRange RateIndexRangeID="5561" RateIndexTypeID="278" DateFrom="2017-03-16T00:00:00" DateTo="2017-04-18T00:00:00" IndexRate="0.50700000" />
+  <RateIndexRange RateIndexRangeID="5645" RateIndexTypeID="278" DateFrom="2017-04-18T00:00:00" DateTo="2017-05-16T00:00:00" IndexRate="0.52700000" />
+  <RateIndexRange RateIndexRangeID="5799" RateIndexTypeID="278" DateFrom="2017-05-16T00:00:00" DateTo="2017-06-16T00:00:00" IndexRate="0.57700000" />
+  <RateIndexRange RateIndexRangeID="5891" RateIndexTypeID="278" DateFrom="2017-06-16T00:00:00" DateTo="2017-07-18T00:00:00" IndexRate="0.59000000" />
+  <RateIndexRange RateIndexRangeID="5977" RateIndexTypeID="278" DateFrom="2017-07-18T00:00:00" DateTo="2017-08-18T00:00:00" IndexRate="0.50300000" />
+  <RateIndexRange RateIndexRangeID="6033" RateIndexTypeID="278" DateFrom="2017-08-18T00:00:00" DateTo="2017-09-19T00:00:00" IndexRate="0.51100000" />
+  <RateIndexRange RateIndexRangeID="6108" RateIndexTypeID="278" DateFrom="2017-09-19T00:00:00" DateTo="2017-10-17T00:00:00" IndexRate="0.42700000" />
+  <RateIndexRange RateIndexRangeID="6210" RateIndexTypeID="278" DateFrom="2017-10-17T00:00:00" DateTo="2017-11-17T00:00:00" IndexRate="0.34200000" />
+  <RateIndexRange RateIndexRangeID="6275" RateIndexTypeID="278" DateFrom="2017-11-17T00:00:00" DateTo="2017-12-15T00:00:00" IndexRate="0.36000000" />
+  <RateIndexRange RateIndexRangeID="6352" RateIndexTypeID="278" DateFrom="2017-12-15T00:00:00" DateTo="2018-01-19T00:00:00" IndexRate="0.39800000" />
+  <RateIndexRange RateIndexRangeID="7579" RateIndexTypeID="278" DateFrom="2018-01-19T00:00:00" DateTo="2032-01-15T00:00:00" IndexRate="0.40500000" />
+  
+  <RateIndexType RateIndexTypeID="1882" RateIndexType="NY_CONED_I_E_24MO_0.0788" Active="1" />
+  <RateIndexType RateIndexTypeID="2280" RateIndexType="NY_CONED_G_M2M_CB_0.398" Active="1" />
+  <RateIndexType RateIndexTypeID="268" RateIndexType="NY_CONED_I_E_M2M_RO" Active="1" />
+  <RateIndexType RateIndexTypeID="278" RateIndexType="NY_CONED_G_M2M_CB_RO" Active="1" />
+  
+  <EnrollCustomer EnrollCustID="621209" CustType="R" CustName="John Williams" LastName="Williams" FirstName="John" DBA="John Williams" BillingContact="John Williams" BillingAddress1="75 N Kensico Ave" BillingAddress2="Apt 2" BillingCity="White Plains" BillingState="NY" BillingZip="10604" BillingEmail="johnwilliams@gmail.com" Taxable="N" LifeSupport="N" SpanishBill="N" Status="1" EnrollmentSentFlag="1" EnrollmentSentDate="2017-12-29T16:01:48.573" CreateUserID="289" CreateDate="2017-12-29T13:56:01.943" CsrCustID="747110" NotificationWaiver="0" LidaDiscount="0" CsaFlag="0" CustomerAccountNumber="8000621209" HasLocationMasterFlag="0" TaxExemptionCertificateOnFileFlag="0" PrimaryPhone="9144507873" SalesSourceID="4" IndependentAgentID="415139" QCDateTimeStamp="2017-12-29T00:00:00" EnrollStatusID="29" Last4SSN="6322" CallEmailAuthFlag="0" ReferralFlag="0" SwitchAuthFlag="0" TermsDisclosureFlag="0" ReferralDetails="Other" AlternatePhone="9144507873" PORFlag="0" ModifiedDate="2017-12-29T16:01:21.867" SSN="Uv708ZYd1s9ylp/tt8o8Cg==" AutoPayBill="0" ServiceAccount="R" ServiceState="NY" DepositAmount="0.0000" DeliveryTypeID="1" CreditScoreCommercial="0" TCPAAuthorization="NA" MobilePhone="9144507873" />
+  
+  <EnrollCustomerPremise EnrollPremiseID="697998" EnrollCustID="621209" EsiId="544523097500007" Addr1="75 N Kensico Ave" Addr2="2" City="White Plains" State="NY" Zip="10604" TDSP="13" TdspDuns="006982359" EnrollType="1" TaxAssessment="0" PremType="E" CsrPremID="847415" Status="0" CSPDUNSID="7" UsageClassId="0" EspDuns="965351781" Qeze="0" PowerMove="0" LBMPID="0" CustID="747109" GasLossID="0" BillingAccountNumber="C2219500" GasSupplyServiceOption=" " ProductID="1895" SoldDate="2017-12-29T00:00:00" DeletedFlag="0" ProductRate="0.07880000" LDC_UnMeteredAcct="0" OverrideZonalRequirements="0" CustomerAccountNumber="3001697998" SmartMeterInd="0" MoveInDate="2017-12-29" CustomerServiceFee="0.00" TurnOnTimeID="1" CurrentActiveServiceAtPremise="0" />
+  <EnrollCustomerPremise EnrollPremiseID="697999" EnrollCustID="621209" EsiId="544523097500007" Addr1="75 N Kensico Ave" Addr2="2" City="White Plains" State="NY" Zip="10604" TDSP="13" TdspDuns="006982359" EnrollType="1" TaxAssessment="0" PremType="G" CsrPremID="835314" Status="0" CSPDUNSID="7" UsageClassId="0" EspDuns="965351781" Qeze="0" PowerMove="0" LBMPID="0" CustID="747110" GasLossID="0" BillingAccountNumber="G2024724" GasSupplyServiceOption=" " ProductID="2285" SoldDate="2017-12-29T00:00:00" DeletedFlag="0" ProductRate="0.39800000" LDC_UnMeteredAcct="0" OverrideZonalRequirements="0" CustomerAccountNumber="3001697999" SmartMeterInd="0" MoveInDate="2017-12-29" CustomerServiceFee="0.00" TurnOnTimeID="1" CurrentActiveServiceAtPremise="0" />
+
+  <EnrollCustomerNote EnrollCustomerNoteID="4032125" EnrollCustomerNoteTypeID="12" EnrollCustID="621209" Notes="API Result Success = True&#xD;&#xA;API Executed = True&#xD;&#xA;API Type = DuplicatePremiseVerification&#xD;&#xA;Result Code = &#xD;&#xA;Tracking Number = Internal Check&#xD;&#xA; EnrollPremiseId: 697998&#xD;&#xA;" CreateUserID="289" CreateDate="2017-12-29T13:56:02.367" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4032126" EnrollCustomerNoteTypeID="12" EnrollCustID="621209" Notes="API Result Success = True&#xD;&#xA;API Executed = True&#xD;&#xA;API Type = DuplicatePremiseVerification&#xD;&#xA;Result Code = &#xD;&#xA;Tracking Number = Internal Check&#xD;&#xA; EnrollPremiseId: 697999&#xD;&#xA;" CreateUserID="289" CreateDate="2017-12-29T13:56:02.380" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4032127" EnrollCustomerNoteTypeID="5" EnrollCustID="621209" Notes="API Result Success = True&#xD;&#xA;API Executed = True&#xD;&#xA;API Type = BadDebtVerification&#xD;&#xA;Result Code = No Bad Debt&#xD;&#xA;Tracking Number = There is no Bad Debt&#xD;&#xA;" CreateUserID="289" CreateDate="2017-12-29T13:56:02.413" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4032128" EnrollCustomerNoteTypeID="5" EnrollCustID="621209" Notes="API Result Success = True&#xD;&#xA;API Executed = True&#xD;&#xA;API Type = BadDebtVerification&#xD;&#xA;Result Code = No Bad Debt&#xD;&#xA;Tracking Number = There is no Bad Debt&#xD;&#xA;" CreateUserID="289" CreateDate="2017-12-29T13:56:07.840" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4032129" EnrollCustomerNoteTypeID="5" EnrollCustID="621209" Notes="API Result Success = True&#xD;&#xA;API Executed = True&#xD;&#xA;API Type = BadDebtVerification&#xD;&#xA;Result Code = No Bad Debt&#xD;&#xA;Tracking Number = There is no Bad Debt&#xD;&#xA;" CreateUserID="289" CreateDate="2017-12-29T13:56:07.890" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4032130" EnrollCustomerNoteTypeID="5" EnrollCustID="621209" Notes="API Result Success = True&#xD;&#xA;API Executed = True&#xD;&#xA;API Type = BadDebtVerification&#xD;&#xA;Result Code = No Bad Debt&#xD;&#xA;Tracking Number = There is no Bad Debt&#xD;&#xA;" CreateUserID="289" CreateDate="2017-12-29T13:56:08.153" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4032131" EnrollCustomerNoteTypeID="5" EnrollCustID="621209" Notes="API Result Success = True&#xD;&#xA;API Executed = True&#xD;&#xA;API Type = BadDebtVerification&#xD;&#xA;Result Code = No Bad Debt&#xD;&#xA;Tracking Number = There is no Bad Debt&#xD;&#xA;" CreateUserID="289" CreateDate="2017-12-29T13:56:08.170" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4032132" EnrollCustomerNoteTypeID="5" EnrollCustID="621209" Notes="API Result Success = True&#xD;&#xA;API Executed = True&#xD;&#xA;API Type = BadDebtVerification&#xD;&#xA;Result Code = No Bad Debt&#xD;&#xA;Tracking Number = There is no Bad Debt&#xD;&#xA;" CreateUserID="289" CreateDate="2017-12-29T13:56:08.963" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4032133" EnrollCustomerNoteTypeID="5" EnrollCustID="621209" Notes="API Result Success = True&#xD;&#xA;API Executed = True&#xD;&#xA;API Type = BadDebtVerification&#xD;&#xA;Result Code = No Bad Debt&#xD;&#xA;Tracking Number = There is no Bad Debt&#xD;&#xA;" CreateUserID="289" CreateDate="2017-12-29T13:56:09.260" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4032143" EnrollCustomerNoteTypeID="5" EnrollCustID="621209" Notes="API Result Success = True&#xD;&#xA;API Executed = True&#xD;&#xA;API Type = BadDebtVerification&#xD;&#xA;Result Code = No Bad Debt&#xD;&#xA;Tracking Number = There is no Bad Debt&#xD;&#xA;" CreateUserID="289" CreateDate="2017-12-29T13:56:36.903" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4032144" EnrollCustomerNoteTypeID="5" EnrollCustID="621209" Notes="API Result Success = True&#xD;&#xA;API Executed = True&#xD;&#xA;API Type = BadDebtVerification&#xD;&#xA;Result Code = No Bad Debt&#xD;&#xA;Tracking Number = There is no Bad Debt&#xD;&#xA;" CreateUserID="289" CreateDate="2017-12-29T13:56:37.013" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4032145" EnrollCustomerNoteTypeID="5" EnrollCustID="621209" Notes="API Result Success = True&#xD;&#xA;API Executed = True&#xD;&#xA;API Type = BadDebtVerification&#xD;&#xA;Result Code = No Bad Debt&#xD;&#xA;Tracking Number = There is no Bad Debt&#xD;&#xA;" CreateUserID="289" CreateDate="2017-12-29T13:56:37.170" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4032146" EnrollCustomerNoteTypeID="5" EnrollCustID="621209" Notes="API Result Success = True&#xD;&#xA;API Executed = True&#xD;&#xA;API Type = BadDebtVerification&#xD;&#xA;Result Code = No Bad Debt&#xD;&#xA;Tracking Number = There is no Bad Debt&#xD;&#xA;" CreateUserID="289" CreateDate="2017-12-29T13:56:37.310" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4032147" EnrollCustomerNoteTypeID="5" EnrollCustID="621209" Notes="API Result Success = True&#xD;&#xA;API Executed = True&#xD;&#xA;API Type = BadDebtVerification&#xD;&#xA;Result Code = No Bad Debt&#xD;&#xA;Tracking Number = There is no Bad Debt&#xD;&#xA;" CreateUserID="289" CreateDate="2017-12-29T13:56:38.120" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4032148" EnrollCustomerNoteTypeID="5" EnrollCustID="621209" Notes="API Result Success = True&#xD;&#xA;API Executed = True&#xD;&#xA;API Type = BadDebtVerification&#xD;&#xA;Result Code = No Bad Debt&#xD;&#xA;Tracking Number = There is no Bad Debt&#xD;&#xA;" CreateUserID="289" CreateDate="2017-12-29T13:56:38.543" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4032161" EnrollCustomerNoteTypeID="5" EnrollCustID="621209" Notes="API Result Success = True&#xD;&#xA;API Executed = True&#xD;&#xA;API Type = BadDebtVerification&#xD;&#xA;Result Code = No Bad Debt&#xD;&#xA;Tracking Number = There is no Bad Debt&#xD;&#xA;" CreateUserID="289" CreateDate="2017-12-29T13:56:55.797" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4032162" EnrollCustomerNoteTypeID="5" EnrollCustID="621209" Notes="API Result Success = True&#xD;&#xA;API Executed = True&#xD;&#xA;API Type = BadDebtVerification&#xD;&#xA;Result Code = No Bad Debt&#xD;&#xA;Tracking Number = There is no Bad Debt&#xD;&#xA;" CreateUserID="289" CreateDate="2017-12-29T13:56:56.123" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4032843" EnrollCustomerNoteTypeID="5" EnrollCustID="621209" Notes="API Result Success = True&#xD;&#xA;API Executed = True&#xD;&#xA;API Type = BadDebtVerification&#xD;&#xA;Result Code = No Bad Debt&#xD;&#xA;Tracking Number = There is no Bad Debt&#xD;&#xA;" CreateUserID="405" CreateDate="2017-12-29T14:47:24.950" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4032844" EnrollCustomerNoteTypeID="2" EnrollCustID="621209" Notes="accessed account '8000621209'" CreateUserID="405" CreateDate="2017-12-29T14:47:41.320" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4032848" EnrollCustomerNoteTypeID="8" EnrollCustID="621209" Notes="IdentityCheckVerification Interface Overriden by user. Notes from User: 1196848029 : Override Date: 12/29/2017" CreateUserID="405" CreateDate="2017-12-29T14:48:05.477" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4032855" EnrollCustomerNoteTypeID="5" EnrollCustID="621209" Notes="API Result Success = True&#xD;&#xA;API Executed = True&#xD;&#xA;API Type = BadDebtVerification&#xD;&#xA;Result Code = No Bad Debt&#xD;&#xA;Tracking Number = There is no Bad Debt&#xD;&#xA;" CreateUserID="405" CreateDate="2017-12-29T14:48:10.923" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4032856" EnrollCustomerNoteTypeID="5" EnrollCustID="621209" Notes="API Result Success = True&#xD;&#xA;API Executed = True&#xD;&#xA;API Type = BadDebtVerification&#xD;&#xA;Result Code = No Bad Debt&#xD;&#xA;Tracking Number = There is no Bad Debt&#xD;&#xA;" CreateUserID="405" CreateDate="2017-12-29T14:48:11.017" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4032857" EnrollCustomerNoteTypeID="5" EnrollCustID="621209" Notes="API Result Success = True&#xD;&#xA;API Executed = True&#xD;&#xA;API Type = BadDebtVerification&#xD;&#xA;Result Code = No Bad Debt&#xD;&#xA;Tracking Number = There is no Bad Debt&#xD;&#xA;" CreateUserID="405" CreateDate="2017-12-29T14:48:11.110" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4159471" EnrollCustomerNoteTypeID="2" EnrollCustID="621209" Notes="accessed account '8000621209'" CreateUserID="3116" CreateDate="2018-01-29T14:40:14.027" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4183954" EnrollCustomerNoteTypeID="2" EnrollCustID="621209" Notes="accessed account '8000621209'" CreateUserID="479" CreateDate="2018-02-01T14:31:14.623" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4202117" EnrollCustomerNoteTypeID="2" EnrollCustID="621209" Notes="accessed account '8000621209'" CreateUserID="3046" CreateDate="2018-02-05T13:38:31.843" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4208460" EnrollCustomerNoteTypeID="2" EnrollCustID="621209" Notes="accessed account '8000621209'" CreateUserID="2942" CreateDate="2018-02-06T12:31:00.813" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4209750" EnrollCustomerNoteTypeID="2" EnrollCustID="621209" Notes="accessed account '8000621209'" CreateUserID="2761" CreateDate="2018-02-06T14:44:37.407" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4209915" EnrollCustomerNoteTypeID="2" EnrollCustID="621209" Notes="accessed account '8000621209'" CreateUserID="479" CreateDate="2018-02-06T14:59:00.083" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4222014" EnrollCustomerNoteTypeID="2" EnrollCustID="621209" Notes="accessed account '8000621209'" CreateUserID="399" CreateDate="2018-02-08T12:53:56.260" />
+
+  <EnrollCustomerEnrollStatusHistory EnrollCustomerEnrollStatusHistoryID="2779058" EnrollCustID="621209" OldValue="0" NewValue="25" CreatedDate="2017-12-29T13:56:18.663" />
+  <EnrollCustomerEnrollStatusHistory EnrollCustomerEnrollStatusHistoryID="2779059" EnrollCustID="621209" OldValue="25" NewValue="26" CreatedDate="2017-12-29T13:56:18.800" />
+  <EnrollCustomerEnrollStatusHistory EnrollCustomerEnrollStatusHistoryID="2779236" EnrollCustID="621209" OldValue="26" NewValue="28" CreatedDate="2017-12-29T14:48:27.403" />
+  <EnrollCustomerEnrollStatusHistory EnrollCustomerEnrollStatusHistoryID="2779421" EnrollCustID="621209" OldValue="28" NewValue="34" CreatedDate="2017-12-29T16:01:09.193" />
+  <EnrollCustomerEnrollStatusHistory EnrollCustomerEnrollStatusHistoryID="2779422" EnrollCustID="621209" OldValue="34" NewValue="29" CreatedDate="2017-12-29T16:01:21.877" />
+  
+  <CustomerTransactionRequest RequestID="33399238" CustID="747109" PremID="835313" TransactionType="814" ActionCode="E" TransactionDate="2017-12-29T00:00:00" Direction="0" RequestDate="2017-12-29T00:00:00" ServiceActionCode="E" SourceID="7080313" TransactionNumber="12021680" ESIID="544523097500007" ProcessFlag="1" ProcessDate="2017-12-29T16:01:15.660" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="39" CreateDate="2017-12-29T16:01:20.667" />
+  <CustomerTransactionRequest RequestID="33399239" CustID="747109" PremID="835313" TransactionType="814" ActionCode="HU" TransactionDate="2017-12-29T00:00:00" Direction="0" RequestDate="2017-12-29T00:00:00" SourceID="7080314" TransactionNumber="12021681" ESIID="544523097500007" ProcessFlag="1" ProcessDate="2017-12-29T16:01:16.027" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="44" CreateDate="2017-12-29T16:01:20.680" />
+  <CustomerTransactionRequest RequestID="33399240" CustID="747110" PremID="835314" TransactionType="814" ActionCode="E" TransactionDate="2017-12-29T00:00:00" Direction="0" RequestDate="2017-12-29T00:00:00" ServiceActionCode="E" SourceID="7080315" TransactionNumber="12021682" ESIID="544523097500007" ProcessFlag="1" ProcessDate="2017-12-29T16:01:16.377" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="39" CreateDate="2017-12-29T16:01:21.493" />
+  <CustomerTransactionRequest RequestID="33399241" CustID="747110" PremID="835314" TransactionType="814" ActionCode="HU" TransactionDate="2017-12-29T00:00:00" Direction="0" RequestDate="2017-12-29T00:00:00" SourceID="7080316" TransactionNumber="12021683" ESIID="544523097500007" ProcessFlag="1" ProcessDate="2017-12-29T16:01:16.510" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="44" CreateDate="2017-12-29T16:01:21.500" />
+  <CustomerTransactionRequest RequestID="33417172" CustID="747110" PremID="835314" TransactionType="814" ActionCode="HU" TransactionDate="2017-12-30T00:00:00" Direction="1" ServiceActionCode="R" ServiceAction="S" StatusCode="A13" StatusReason="Account Not Active" SourceID="7090535" TransactionNumber="148327654_0000006" ReferenceSourceID="0" ReferenceNumber="12021683" ESIID="544523097500007" ProcessFlag="0" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="50" CreateDate="2017-12-30T11:08:40.870" />
+  <CustomerTransactionRequest RequestID="33420597" CustID="747110" PremID="835314" TransactionType="814" ActionCode="E" TransactionDate="2017-12-30T00:00:00" Direction="1" ServiceActionCode="R" ServiceAction="S" StatusCode="A91" StatusReason="Not a Gas Account" SourceID="7093600" TransactionNumber="148333046_000001" ReferenceSourceID="0" ReferenceNumber="12021682" ESIID="544523097500007" ProcessFlag="0" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="48" CreateDate="2017-12-30T16:07:08.953" />
+  <CustomerTransactionRequest RequestID="33479932" CustID="747109" PremID="835313" TransactionType="814" ActionCode="E" TransactionDate="2018-01-01T00:00:00" Direction="1" RequestDate="2018-01-09T00:00:00" ServiceActionCode="A" ServiceAction="S" SourceID="7102155" TransactionNumber="148373262_0000016" ReferenceSourceID="0" ReferenceNumber="12021680" ESIID="544523097500007" ProcessFlag="0" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="47" CreateDate="2018-01-01T16:40:12.790" />
+  <CustomerTransactionRequest RequestID="33544091" CustID="747109" PremID="835313" TransactionType="814" ActionCode="HU" TransactionDate="2018-01-05T00:00:00" Direction="1" ServiceActionCode="A" ServiceAction="S" SourceID="7113352" TransactionNumber="148595346_0000015" ReferenceSourceID="0" ReferenceNumber="12021681" ESIID="544523097500007" ProcessFlag="0" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="49" CreateDate="2018-01-05T09:30:24.213" />
+  <CustomerTransactionRequest RequestID="33544122" CustID="747109" PremID="835313" TransactionType="867" ActionCode="02" TransactionDate="2018-01-05T09:34:18.243" Direction="1" RequestDate="2018-01-05T00:00:00" ServiceAction="52" SourceID="12793498" TransactionNumber="148595358_8-HU" ReferenceSourceID="0" ReferenceNumber="148595358_8" ESIID="544523097500007" ProcessFlag="0" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="22" CreateDate="2018-01-05T09:34:29.587" />
+  <CustomerTransactionRequest RequestID="33601293" CustID="747109" PremID="835313" TransactionType="814" ActionCode="D" TransactionDate="2018-01-08T00:00:00" Direction="1" RequestDate="2018-01-08T00:00:00" ServiceActionCode="7" ServiceAction="Q" StatusCode="A13" StatusReason="Customer requested drop." SourceID="7126655" TransactionNumber="148732128_0000005" ReferenceSourceID="0" ESIID="544523097500007" ProcessFlag="0" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="43" CreateDate="2018-01-08T17:27:11.717" />
+  <CustomerTransactionRequest RequestID="34008146" UserID="2909" CustID="747109" PremID="835313" TransactionType="814" ActionCode="E" TransactionDate="2018-01-31T00:00:00" Direction="0" ServiceActionCode="7" SourceID="7247600" TransactionNumber="12192462" ESIID="544523097500007" ProcessFlag="1" ProcessDate="2018-01-31T15:01:19.537" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="39" CreateDate="2018-01-31T14:58:59.910" />
+  <CustomerTransactionRequest RequestID="34081169" UserID="479" CustID="747110" PremID="835314" TransactionType="814" ActionCode="E" TransactionDate="2018-02-01T00:00:00" Direction="0" ServiceActionCode="7" SourceID="7250069" TransactionNumber="12198397" ESIID="544523097500007" ProcessFlag="1" ProcessDate="2018-02-01T15:08:58.343" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="39" CreateDate="2018-02-01T14:33:13.353" />
+  <CustomerTransactionRequest RequestID="34082336" CustID="747109" PremID="835313" TransactionType="814" ActionCode="E" TransactionDate="2018-02-01T00:00:00" Direction="1" RequestDate="2018-02-08T00:00:00" ServiceActionCode="A" ServiceAction="S" SourceID="7250806" TransactionNumber="150124682_0000016" ReferenceSourceID="0" ReferenceNumber="12192462" ESIID="544523097500007" ProcessFlag="0" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="47" CreateDate="2018-02-01T19:04:24.190" />
+  <CustomerTransactionRequest RequestID="34098218" CustID="747110" PremID="835314" TransactionType="814" ActionCode="E" TransactionDate="2018-02-02T00:00:00" Direction="1" ServiceActionCode="R" ServiceAction="S" StatusCode="A91" StatusReason="Not a Gas Account" SourceID="7254961" TransactionNumber="150182368_0000007" ReferenceSourceID="0" ReferenceNumber="12198397" ESIID="544523097500007" ProcessFlag="0" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="48" CreateDate="2018-02-02T15:48:36.947" />
+  <CustomerTransactionRequest RequestID="34114301" UserID="3046" CustID="747109" PremID="835313" TransactionType="814" ActionCode="D" TransactionDate="2018-02-05T00:00:00" Direction="0" ServiceActionCode="Q" StatusCode="B38" StatusReason="B38 - Dropped" SourceID="7259349" TransactionNumber="12224759" ESIID="544523097500007" ProcessFlag="1" ProcessDate="2018-02-05T13:41:08.083" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="43" CreateDate="2018-02-05T13:40:09.857" />
+  <CustomerTransactionRequest RequestID="34140879" UserID="2942" CustID="747109" PremID="847415" TransactionType="814" ActionCode="E" TransactionDate="2018-02-06T00:00:00" Direction="0" ServiceActionCode="7" SourceID="7261852" TransactionNumber="12237335" ESIID="544523097500007" ProcessFlag="1" ProcessDate="2018-02-06T12:35:39.503" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="39" CreateDate="2018-02-06T12:32:28.047" />
+  <CustomerTransactionRequest RequestID="34147113" UserID="479" CustID="747109" PremID="847485" TransactionType="814" ActionCode="E" TransactionDate="2018-02-06T00:00:00" Direction="0" ServiceActionCode="7" SourceID="7262073" TransactionNumber="12243385" ESIID="544523097500007" ProcessFlag="1" ProcessDate="2018-02-06T15:01:15.080" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="39" CreateDate="2018-02-06T15:00:41.220" />
+  <!--reflag-->
+  <CustomerTransactionRequest RequestID="34178244" UserID="2883" CustID="747110" PremID="835314" TransactionType="814" ActionCode="E" TransactionDate="2018-02-08T00:00:00" Direction="0" ServiceActionCode="7" SourceID="7266075" TransactionNumber="12251532" ESIID="544523097500007" ProcessFlag="0" EventCleared="0" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="39" CreateDate="2018-02-08T08:23:48.600" />
+  <!--CustomerTransactionRequest RequestID="34188642" CustID="747110" PremID="835314" TransactionType="814" ActionCode="E" TransactionDate="2018-02-08T00:00:00" Direction="1" ServiceActionCode="R" ServiceAction="S" StatusCode="A91" StatusReason="Not a Gas Account" SourceID="7266771" TransactionNumber="150471656_0000007" ReferenceSourceID="0" ReferenceNumber="12251532" ESIID="544523097500007" ProcessFlag="0" EventCleared="1" EventValidated="0" DelayedEventValidated="0" ConditionalEventValidated="0" TransactionTypeID="48" CreateDate="2018-02-08T16:26:50.087" /-->
+  
+  
+  <!--
+  /*retrieve data, remove csrCustId, csrPremId, CustId, email, update dates, set EnrollmentSentFlag = 0*/
+use paes_Stream
+DECLARE @CustIds TABLE (CustId INT)
+INSERT INTO @CustIds VALUES  (747109), (747110), (747111)
+
+DECLARE @PremIds TABLE (PremId INT)
+INSERT INTO @PremIds 
+SELECT PremId FROM Premise WHERE CustId IN (SELECT CustId FROM @CustIds)
+
+DECLARE @EnrollCustIds TABLE (EnrollCustId INT)
+INSERT INTO @EnrollCustIds 
+SELECT EnrollCustId FROM EnrollCustomer WHERE CsrCustId IN (SELECT CustId FROM @CustIds)
+
+DECLARE @AcctsRecIDs TABLE (AcctsRecID INT)
+INSERT INTO @AcctsRecIDs
+SELECT AcctsRecID FROM Customer WHERE CustId IN (SELECT CustId FROM @CustIds)
+
+
+SELECT * FROM Customer WHERE CustId IN (SELECT CustId FROM @CustIds) ORDER BY 1 FOR XML AUTO
+SELECT * FROM Premise WHERE CustId IN (SELECT CustId FROM @CustIds) ORDER BY 1 FOR XML AUTO
+SELECT * FROM CustomerAdditionalInfo WHERE CustId IN (SELECT CustId FROM @CustIds) FOR XML AUTO
+SELECT * FROM AccountsReceivable WHERE AcctsRecID IN (SELECT AcctsRecId FROM @AcctsRecIDs) FOR XML AUTO
+SELECT * FROM Meter WHERE PremId IN (SELECT PremId FROM @PremIds) ORDER BY 1 FOR XML AUTO
+
+SELECT * FROM Address WHERE AddrId IN (
+	    SELECT SiteAddrId			FROM Customer WHERE CustID IN (SELECT CustId FROM @CustIds)
+        UNION
+        SELECT MailAddrId			FROM Customer WHERE CustID IN (SELECT CustId FROM @CustIds)
+        UNION
+        SELECT CorrAddrId			FROM Customer WHERE CustID IN (SELECT CustId FROM @CustIds)
+        UNION
+        SELECT SpecialNeedsAddrId	FROM Customer WHERE CustID IN (SELECT CustId FROM @CustIds)
+        UNION
+        SELECT PowerOutageAddrId	FROM Customer WHERE CustID IN (SELECT CustId FROM @CustIds)
+        UNION
+        SELECT AddrId				FROM Premise WHERE CustID IN (SELECT CustId FROM @CustIds)
+    ) 
+ORDER BY 1 FOR XML AUTO
+
+SELECT * FROM Rate WHERE RateId IN (
+SELECT RateId FROM Customer WHERE CustId IN (SELECT CustId FROM @CustIds)
+UNION
+SELECT RateId FROM RateTransition WHERE CustId IN (SELECT CustId FROM @CustIds)
+UNION
+SELECT RateId FROM Product WHERE ProductID IN (SELECT ProductID FROM EnrollCustomerPremise WHERE EnrollCustID IN (SELECT EnrollCustId FROM @EnrollCustIds))
+) 
+ORDER BY 1 FOR XML AUTO
+
+SELECT * FROM RateDetail WHERE RateId IN (
+SELECT RateId from Customer where CustId IN (SELECT CustId FROM @CustIds)
+UNION
+SELECT RateId from RateTransition WHERE CustId IN (SELECT CustId FROM @CustIds)
+UNION
+SELECT RateId FROM Product WHERE ProductID IN (SELECT ProductID FROM EnrollCustomerPremise WHERE EnrollCustID IN (SELECT EnrollCustId FROM @EnrollCustIds))
+) 
+ORDER BY 1 FOR XML AUTO
+
+SELECT * FROM RateTransition WHERE CustId IN (SELECT CustId FROM @CustIds)  ORDER BY 1 FOR XML AUTO
+
+SELECT * FROM Product WHERE
+ RateId IN (SELECT RateId from RateTransition WHERE CustId IN (SELECT CustId FROM @CustIds)) 
+ OR ProductID IN (SELECT ProductID FROM EnrollCustomerPremise WHERE EnrollCustID IN (SELECT EnrollCustId FROM @EnrollCustIds)) 
+ORDER BY 1 FOR XML AUTO
+
+SELECT * FROM RateIndexRange WHERE RateIndexTypeID IN (SELECT CAST(FixedCapRate as INT) FROM RateDetail WHERE RateID IN (
+SELECT RateId from Customer where CustId IN (SELECT CustId FROM @CustIds)
+UNION
+SELECT RateId from RateTransition WHERE CustId IN (SELECT CustId FROM @CustIds)
+UNION
+SELECT RateId FROM Product WHERE ProductID IN (SELECT ProductID FROM EnrollCustomerPremise WHERE EnrollCustID IN (SELECT EnrollCustId FROM @EnrollCustIds))
+)) 
+ORDER BY 1 FOR XML AUTO
+
+SELECT * FROM RateIndexType WHERE RateIndexTypeId IN (SELECT CAST(FixedCapRate as INT) FROM RateDetail WHERE RateID IN (
+SELECT RateId from Customer where CustId IN (SELECT CustId FROM @CustIds)
+UNION
+SELECT RateId from RateTransition WHERE CustId IN (SELECT CustId FROM @CustIds)
+UNION
+SELECT RateId FROM Product WHERE ProductID IN (SELECT ProductID FROM EnrollCustomerPremise WHERE EnrollCustID IN (SELECT EnrollCustId FROM @EnrollCustIds))
+)) 
+ORDER BY 1 FOR XML AUTO
+
+SELECT * FROM CustomerTransactionRequest WHERE CustID IN (SELECT CustId FROM @CustIds) ORDER BY 1 FOR XML AUTO
+
+SELECT * FROM EnrollCustomer WHERE EnrollCustID IN (SELECT EnrollCustId FROM @EnrollCustIds) ORDER BY 1 FOR XML AUTO
+SELECT * FROM EnrollCustomerPremise WHERE EnrollCustID IN (SELECT EnrollCustId FROM @EnrollCustIds) ORDER BY 1 FOR XML AUTO
+SELECT * FROM EnrollCustomerDocuments WHERE EnrollCustID IN (SELECT EnrollCustId FROM @EnrollCustIds) ORDER BY 1 FOR XML AUTO
+SELECT * FROM EnrollCustomerNote WHERE EnrollCustID IN (SELECT EnrollCustId FROM @EnrollCustIds) ORDER BY 1 FOR XML AUTO
+SELECT * FROM EnrollCustomerPremiseDeposit WHERE EnrollCustID IN (SELECT EnrollCustId FROM @EnrollCustIds) ORDER BY 1 FOR XML AUTO
+SELECT * FROM EnrollCustomerPremiseTaxPercentage WHERE EnrollPremiseId IN (SELECT EnrollPremiseID FROM EnrollCustomerPremise WHERE EnrollCustID IN (SELECT EnrollCustId FROM @EnrollCustIds)) ORDER BY 1 FOR XML AUTO
+SELECT * FROM EnrollCustomerEnrollStatusHistory WHERE EnrollCustId IN (SELECT EnrollCustId FROM @EnrollCustIds) ORDER BY 1 FOR XML AUTO
+SELECT * FROM Consumption WHERE MeterId IN (SELECT MeterId FROM Meter WHERE PremId IN (SELECT PremId FROM @PremIds))  ORDER BY 1 FOR XML AUTO
+SELECT * FROM Invoice Where CustId IN (SELECT CustId FROM @CustIds) ORDER BY 1 FOR XML AUTO
+SELECT InvoiceXMLID, InvoiceID, '<hint>NoNeedForThisTestCase</hint>' as InvoiceXML, CreateDate, PrintFormatID, PrintStatusID, PhysicalFile, PDFContent, HasPDF, MachineName 
+FROM InvoiceXML WHERE InvoiceId IN (SELECT InvoiceId FROM Invoice WHERE CustId IN (SELECT CustId FROM @CustIds)) ORDER BY 1 FOR XML AUTO
+
+SELECT * FROM InvoiceLog WHERE InvLogId IN (SELECT InvLogId from Invoice Where CustId IN (SELECT CustId FROM @CustIds))  ORDER BY 1 FOR XML AUTO
+SELECT * FROM AccountsReceivableHistory WHERE CustId IN (SELECT CustId FROM @CustIds)  ORDER BY 1 FOR XML AUTO
+SELECT * FROM InvoiceDetail WHERE InvoiceID IN (SELECT InvoiceId from Invoice Where CustId IN (SELECT CustId FROM @CustIds))  ORDER BY 1 FOR XML AUTO
+
+SELECT * FROM ConsumptionDetail WHERE ConsDetId IN (SELECT ConsDetID FROM InvoiceDetail WHERE InvoiceID IN (SELECT InvoiceId from Invoice Where CustId IN (SELECT CustId FROM @CustIds)) )  ORDER BY 1 FOR XML AUTO
+SELECT * FROM TdspInvoice WHERE InvoiceId IN (SELECT InvoiceId from Invoice Where CustId IN (SELECT CustId FROM @CustIds)) AND RequestID IN (SELECT RequestID FROM CustomerTransactionRequest WHERE CustID IN (SELECT CustId FROM @CustIds))  ORDER BY 1 FOR XML AUTO
+
+
+SELECT * FROM Product WHERE ProductId IN (349, 359) FOR XML AUTO
+
+SELECT * FROM Rate WHERE RateId IN (
+SELECT RateId FROM Product WHERE ProductID IN (349, 359)
+) 
+ORDER BY 1 FOR XML AUTO
+
+SELECT * FROM RateDetail WHERE RateId IN (
+SELECT RateId FROM Product WHERE ProductID IN (349, 359)
+) 
+ORDER BY 1 FOR XML AUTO
+
+SELECT * FROM RateIndexRange WHERE RateIndexTypeID IN (SELECT CAST(FixedCapRate as INT) FROM RateDetail WHERE RateID IN (
+SELECT RateId FROM Product WHERE ProductID IN (349, 359)
+)) 
+ORDER BY 1 FOR XML AUTO
+
+SELECT * FROM RateIndexType WHERE RateIndexTypeId IN (SELECT CAST(FixedCapRate as INT) FROM RateDetail WHERE RateID IN (
+SELECT RateId FROM Product WHERE ProductID IN (349, 359)
+)) 
+ORDER BY 1 FOR XML AUTO
+
+  -->
+</root>

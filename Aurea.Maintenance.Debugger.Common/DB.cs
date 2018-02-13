@@ -1,4 +1,6 @@
-﻿namespace Aurea.Maintenance.Debugger.Common
+﻿using Aurea.Logging;
+
+namespace Aurea.Maintenance.Debugger.Common
 {
     using System;
     using System.Collections.Generic;
@@ -59,6 +61,56 @@
         public static void ExecuteQuery(string commandText, string connectionString)
         {
             SqlHelper.ExecuteNonQuery(connectionString, CommandType.Text, commandText);
+        }
+
+        public static DataSet GetDataSets(string commandText, string connectionString)
+        {
+            return SqlHelper.ExecuteDataset(connectionString, CommandType.Text, commandText);
+        }
+
+        public static void ExportResultsToFile(string commandText, string connectionString, string path, bool isXML)
+        {
+            var results = GetDataSets(commandText, connectionString);
+            var sb = new StringBuilder();
+            if (isXML)
+            {
+                sb.AppendLine("<?xml version=\"1.0\" encoding=\"utf-8\" ?>");
+                sb.AppendLine("<root>");
+            }
+            foreach (DataTable table in results.Tables)
+            {
+                foreach (DataRow row in table.Rows)
+                {
+
+                    var res = row[0];
+                    sb.AppendLine(res.ToString());
+                }
+            }
+            if (isXML)
+            {
+                sb.AppendLine("</root>");
+            }
+            File.WriteAllText(path, sb.ToString());
+        }
+
+        public static void ImportRecordsFromQuery(string commandText, string connectionString, string sourceDbName,
+            string destDbName, string tempPath)
+        {
+            var fileName = Path.ChangeExtension(Path.GetRandomFileName(), "xml");
+            try
+            {
+                ExportResultsToFile(commandText, connectionString.Replace(destDbName, sourceDbName), Path.Combine(tempPath, fileName), true);
+
+                ImportFiles(tempPath, Path.GetFileNameWithoutExtension(fileName), connectionString);
+            }
+            finally
+            {
+                if (File.Exists(fileName))
+                {
+                    File.Delete(fileName);
+                }
+            }
+
         }
 
         public static IEnumerable<string> ReadAsLines(string filename)
