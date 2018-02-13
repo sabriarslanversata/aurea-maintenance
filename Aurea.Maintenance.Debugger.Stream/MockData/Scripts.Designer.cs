@@ -61,7 +61,9 @@ namespace Aurea.Maintenance.Debugger.Stream.MockData {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to DECLARE @CustId INT = {0}
+        ///   Looks up a localized string similar to 
+        ///DECLARE @CustId INT = {0}
+        ///DECLARE @MAX_DEPTH INT = {1}
         ///
         ///DECLARE @PremIds TABLE (PremId INT)
         ///INSERT INTO @PremIds 
@@ -76,12 +78,11 @@ namespace Aurea.Maintenance.Debugger.Stream.MockData {
         ///SELECT AcctsRecID FROM Customer WHERE CustId = @CustID
         ///
         ///
-        ///SELECT * FROM Customer WHERE CustId = @CustID ORDER BY 1 FOR XML AUTO
-        ///SELECT * FROM Premise [rest of string was truncated]&quot;;.
+        ///SELECT CAST((SELECT * FROM Customer WHERE CustId = @CustID O [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string CustomerExportString {
+        internal static string CustomerExportScript {
             get {
-                return ResourceManager.GetString("CustomerExportString", resourceCulture);
+                return ResourceManager.GetString("CustomerExportScript", resourceCulture);
             }
         }
     }

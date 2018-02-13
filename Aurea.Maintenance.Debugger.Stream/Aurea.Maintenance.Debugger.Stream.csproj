@@ -164,10 +164,7 @@
     <Content Include="MockData\AESCIS-19713\TodaySoldDate.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="MockData\AESCIS-20523\AESCIS-200523-C1.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\SqlScripts\CustomerExportString.sql" />
+    <Content Include="MockData\SqlScripts\CustomerExportScript.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

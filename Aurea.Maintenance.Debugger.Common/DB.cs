@@ -68,7 +68,8 @@ namespace Aurea.Maintenance.Debugger.Common
             return SqlHelper.ExecuteDataset(connectionString, CommandType.Text, commandText);
         }
 
-        public static void ExportResultsToFile(string commandText, string connectionString, string path, bool isXML)
+        public static void ExportResultsToFile(string commandText, string connectionString, string path,
+            string sourceDbName, string destDbName, bool isXML)
         {
             var results = GetDataSets(commandText, connectionString);
             var sb = new StringBuilder();
@@ -81,16 +82,56 @@ namespace Aurea.Maintenance.Debugger.Common
             {
                 foreach (DataRow row in table.Rows)
                 {
-
                     var res = row[0];
-                    sb.AppendLine(res.ToString());
+                    if (res is string s)
+                    {
+                        sb.AppendLine(s.Replace(destDbName, sourceDbName));
+                    }
                 }
             }
             if (isXML)
             {
                 sb.AppendLine("</root>");
             }
-            File.WriteAllText(path, sb.ToString());
+            var xmlDoc = new XmlDocument();
+            xmlDoc.LoadXml(sb.ToString());
+
+            File.WriteAllText(path, XmlBeautify(xmlDoc));
+        }
+
+        private static string XmlBeautify(XmlDocument doc)
+        {
+            string strRetValue;
+            Encoding enc = Encoding.UTF8;
+
+            var xmlWriterSettings = new XmlWriterSettings
+            {
+                Encoding = enc,
+                Indent = true,
+                IndentChars = "    ",
+                NewLineChars = "\r\n",
+                NewLineHandling = NewLineHandling.Replace,
+                ConformanceLevel = ConformanceLevel.Document
+            };
+            using (MemoryStream ms = new MemoryStream())
+            {
+                using (XmlWriter writer = XmlWriter.Create(ms, xmlWriterSettings))
+                {
+                    doc.Save(writer);
+                    writer.Flush();
+                    ms.Flush();
+                    writer.Close();
+                }
+                ms.Position = 0;
+                using (var sr = new StreamReader(ms, enc))
+                {
+                    strRetValue = sr.ReadToEnd();
+                    sr.Close();
+                }
+
+                ms.Close();
+            }
+            return strRetValue;
         }
 
         public static void ImportRecordsFromQuery(string commandText, string connectionString, string sourceDbName,
@@ -99,7 +140,7 @@ namespace Aurea.Maintenance.Debugger.Common
             var fileName = Path.ChangeExtension(Path.GetRandomFileName(), "xml");
             try
             {
-                ExportResultsToFile(commandText, connectionString.Replace(destDbName, sourceDbName), Path.Combine(tempPath, fileName), true);
+                ExportResultsToFile(commandText, connectionString.Replace(destDbName, sourceDbName), Path.Combine(tempPath, fileName), sourceDbName, destDbName, true);
 
                 ImportFiles(tempPath, Path.GetFileNameWithoutExtension(fileName), connectionString);
             }
@@ -107,7 +148,7 @@ namespace Aurea.Maintenance.Debugger.Common
             {
                 if (File.Exists(fileName))
                 {
-                    File.Delete(fileName);
+                    try{File.Delete(fileName);}catch{}
                 }
             }
 

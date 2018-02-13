@@ -75,8 +75,24 @@ namespace Aurea.Maintenance.Debugger.Stream
 
             //Simulate_AESCIS_19713();
             //Simulate_AESCIS_19713_2();
-            var sql = string.Format(MockData.Scripts.CustomerExportString, 759151);
-            DB.ImportRecordsFromQuery(sql, _appConfig.ConnectionCsr, "saes_", "daes_", _appDir);
+
+            //copy customers from saes
+            var saesCustIds = new List<int> { 759150, 759141, 759134, 759130, 759122, 759114, 759110, 759106, 759100, 759085 };
+            saesCustIds.ForEach((custId) =>
+            {
+                var sql = string.Format(MockData.Scripts.CustomerExportScript, custId, 5);
+                DB.ImportRecordsFromQuery(sql, _appConfig.ConnectionCsr, "saes_", "daes_", _appDir);
+            });
+
+            // copy customers from paes
+            var paesCustIds = new List<int> { 762712, 762706, 762701, 762694, 762687, 762681, 762677, 762673, 762664, 762660 };
+            paesCustIds.ForEach((custId) =>
+            {
+                var sql = string.Format(MockData.Scripts.CustomerExportScript, custId, 5);
+                DB.ImportRecordsFromQuery(sql, _appConfig.ConnectionCsr, "paes_", "daes_", _appDir);
+            });
+
+
 
 
             _logger.Info("Debug session has ended");
