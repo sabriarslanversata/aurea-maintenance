@@ -69,34 +69,60 @@ namespace Aurea.Maintenance.Debugger.Stream
             CreateMockData();
             SimulateInbound814E();
             Simulate_AESCIS_11221();
+            Simulate_AESCIS_19713();
+            
+
+            // copy customers from paes
+            var paesCustIds = new List<int> { 762940, 762939, 762931, 762928, 762894, 762885, 762884, 762872, 762865, 762863 };
+            CopyCustomerFromProd(paesCustIds);
+
+            
+
+            //copy customers from saes
+            var saesCustIds = new List<int> { 762884, 762872, 762865, 762706, 762664, 697013, 696563, 695975, 695962, 695922 };
+            CopyCustomerFromUA(saesCustIds);
+
+
              */
             #endregion
 
 
-            //Simulate_AESCIS_19713();
-            //Simulate_AESCIS_19713_2();
 
-            //copy customers from saes
-            var saesCustIds = new List<int> { 759150, 759141, 759134, 759130, 759122, 759114, 759110, 759106, 759100, 759085 };
-            saesCustIds.ForEach((custId) =>
-            {
-                var sql = string.Format(MockData.Scripts.CustomerExportScript, custId, 5);
-                DB.ImportRecordsFromQuery(sql, _appConfig.ConnectionCsr, "saes_", "daes_", _appDir);
-            });
-
-            // copy customers from paes
-            var paesCustIds = new List<int> { 762712, 762706, 762701, 762694, 762687, 762681, 762677, 762673, 762664, 762660 };
-            paesCustIds.ForEach((custId) =>
-            {
-                var sql = string.Format(MockData.Scripts.CustomerExportScript, custId, 5);
-                DB.ImportRecordsFromQuery(sql, _appConfig.ConnectionCsr, "paes_", "daes_", _appDir);
-            });
+            Simulate_AESCIS_19713_2();
 
 
 
 
             _logger.Info("Debug session has ended");
             Console.ReadLine();
+        }
+
+        private static void CopyCustomerFromProd(List<int> custIds)
+        {
+            custIds.ForEach((custId) =>
+            {
+                var sql = string.Format(MockData.Scripts.CustomerExportScript, custId, 5);
+                DB.ImportRecordsFromQuery(
+                    sql,
+                    _appConfig.ConnectionCsr
+                        .Replace("daes_", "paes_")
+                        .Replace("SGISUSEUAV01.aesua.local", "SGISUSEPRV01.aesprod.local"),
+                    _appConfig.ConnectionCsr,
+                    _appDir);
+            });
+        }
+
+        private static void CopyCustomerFromUA(List<int> custIds)
+        {
+            custIds.ForEach((custId) =>
+            {
+                var sql = string.Format(MockData.Scripts.CustomerExportScript, custId, 5);
+                DB.ImportRecordsFromQuery(
+                    sql,
+                    _appConfig.ConnectionCsr.Replace("daes_", "saes_"),
+                    _appConfig.ConnectionCsr,
+                    _appDir);
+            });
         }
 
         private static void Simulate_AESCIS_19713_2()

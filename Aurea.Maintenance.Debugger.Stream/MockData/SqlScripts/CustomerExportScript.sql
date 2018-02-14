@@ -20,6 +20,8 @@ SELECT CAST((SELECT * FROM Premise WHERE CustId = @CustID ORDER BY 1 FOR XML AUT
 SELECT CAST((SELECT * FROM CustomerAdditionalInfo WHERE CustId = @CustID FOR XML AUTO) as varchar(MAX))
 SELECT CAST((SELECT * FROM AccountsReceivable WHERE AcctsRecID IN (SELECT AcctsRecId FROM @AcctsRecIDs) FOR XML AUTO) as varchar(MAX))
 SELECT CAST((SELECT * FROM Meter WHERE PremId IN (SELECT PremId FROM @PremIds) ORDER BY 1 FOR XML AUTO) as varchar(MAX))
+SELECT CAST((SELECT * FROM EdiLoadProfile WHERE EdiLoadProfileId IN (SELECT EdiLoadProfileId FROM Meter WHERE PremId IN (SELECT PremId FROM @PremIds)) ORDER BY 1 FOR XML AUTO) as varchar(MAX))
+SELECT CAST((SELECT * FROM EdiRateClass WHERE EdiRateClassId IN (SELECT EdiRateClassId FROM Meter WHERE PremId IN (SELECT PremId FROM @PremIds)) ORDER BY 1 FOR XML AUTO) as varchar(MAX))
 
 SELECT CAST((SELECT * FROM Address WHERE AddrId IN (
 	    SELECT SiteAddrId			FROM Customer WHERE CustID = @CustID

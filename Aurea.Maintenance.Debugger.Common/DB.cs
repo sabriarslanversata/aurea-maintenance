@@ -1,4 +1,5 @@
-﻿using Aurea.Logging;
+﻿using System.Text.RegularExpressions;
+using Aurea.Logging;
 
 namespace Aurea.Maintenance.Debugger.Common
 {
@@ -68,9 +69,29 @@ namespace Aurea.Maintenance.Debugger.Common
             return SqlHelper.ExecuteDataset(connectionString, CommandType.Text, commandText);
         }
 
-        public static void ExportResultsToFile(string commandText, string connectionString, string path,
-            string sourceDbName, string destDbName, bool isXML)
+        /// <summary>
+        /// check if sql does not contaion any DML senctences, current limitation is insert into able check on same line, if there is line break it can't detect
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <returns>true if sql is safe</returns>
+        public static bool IsSqlSafe(string sql)
         {
+            var rm = new Regex(@"(?:\bupdate\b|\bdelete\b|\btruncate\b|\balter\b).+", RegexOptions.IgnoreCase);
+            var rm2 = new Regex(@"(?:\b(insert)\b(.*?)\b(into)\b([^#@][a-zA-Z0-9])).+", RegexOptions.IgnoreCase);
+
+            //private string _strRegex = @"(?i)(?s)\b(select)\b(.*?)\b(from)\b|\b(insert)\b(.*?)\b(into)\b|\b(update)\b(.*?)\b(set)\b|\b(delete)(.*?)\b(from)\b";
+            var m1 = rm.Matches(sql).Count;
+            var m2 = rm2.Matches(sql).Count;
+            return m1 == 0 && m2 == 0;
+        }
+
+        public static void ExportResultsToFile(string commandText, string connectionString, string path, bool isXML)
+        {
+            if (!IsSqlSafe(commandText))
+            {
+                return;
+            }
+
             var results = GetDataSets(commandText, connectionString);
             var sb = new StringBuilder();
             if (isXML)
@@ -85,7 +106,7 @@ namespace Aurea.Maintenance.Debugger.Common
                     var res = row[0];
                     if (res is string s)
                     {
-                        sb.AppendLine(s.Replace(destDbName, sourceDbName));
+                        sb.AppendLine(s.Replace("paes_", "daes_").Replace("saes_", "daes_")); //always insert to daes
                     }
                 }
             }
@@ -134,15 +155,14 @@ namespace Aurea.Maintenance.Debugger.Common
             return strRetValue;
         }
 
-        public static void ImportRecordsFromQuery(string commandText, string connectionString, string sourceDbName,
-            string destDbName, string tempPath)
+        public static void ImportRecordsFromQuery(string commandText, string sourceConnectionString, string destConnectionString, string tempPath)
         {
             var fileName = Path.ChangeExtension(Path.GetRandomFileName(), "xml");
             try
             {
-                ExportResultsToFile(commandText, connectionString.Replace(destDbName, sourceDbName), Path.Combine(tempPath, fileName), sourceDbName, destDbName, true);
+                ExportResultsToFile(commandText, sourceConnectionString, Path.Combine(tempPath, fileName), true);
 
-                ImportFiles(tempPath, Path.GetFileNameWithoutExtension(fileName), connectionString);
+                ImportFiles(tempPath, Path.GetFileNameWithoutExtension(fileName), destConnectionString);
             }
             finally
             {
