@@ -71,11 +71,6 @@ namespace Aurea.Maintenance.Debugger.Stream
             Simulate_AESCIS_11221();
             Simulate_AESCIS_19713();
             
-
-            // copy customers from paes
-            var paesCustIds = new List<int> { 762940, 762939, 762931, 762928, 762894, 762885, 762884, 762872, 762865, 762863 };
-            CopyCustomerFromProd(paesCustIds);
-
             
 
             //copy customers from saes
@@ -86,15 +81,25 @@ namespace Aurea.Maintenance.Debugger.Stream
              */
             #endregion
 
+            // copy customers from paes
+            var paesCustIds = new List<int> { 623195, 733080, 735369, 736663, 741765, 762049, 762364, 758937, 756677, 759294, 755203, 755444, 760289, 760715 };
+            CopyCustomerFromProd(paesCustIds);
 
-
-            Simulate_AESCIS_19713_2();
-
-
-
-
+            Simulate_AESCIS_20523();
+            
             _logger.Info("Debug session has ended");
             Console.ReadLine();
+        }
+
+        private static void Simulate_AESCIS_20523()
+        {
+            var myExport = new MyExport(_appConfig.ConnectionMarket, _appConfig.ConnectionCsr, _clientConfig.ConnectionBillingAdmin);
+
+            GenerateEvents(new List<int> { 10 });
+            ProcessEvents();
+
+            // export 814
+            myExport.MyCreateMarket814();
         }
 
         private static void CopyCustomerFromProd(List<int> custIds)
@@ -102,13 +107,7 @@ namespace Aurea.Maintenance.Debugger.Stream
             custIds.ForEach((custId) =>
             {
                 var sql = string.Format(MockData.Scripts.CustomerExportScript, custId, 5);
-                DB.ImportRecordsFromQuery(
-                    sql,
-                    _appConfig.ConnectionCsr
-                        .Replace("daes_", "paes_")
-                        .Replace("SGISUSEUAV01.aesua.local", "SGISUSEPRV01.aesprod.local"),
-                    _appConfig.ConnectionCsr,
-                    _appDir);
+                DB.ImportQueryResultsFromProduction(sql, _appConfig.ConnectionCsr, _appDir);
             });
         }
 
@@ -117,24 +116,8 @@ namespace Aurea.Maintenance.Debugger.Stream
             custIds.ForEach((custId) =>
             {
                 var sql = string.Format(MockData.Scripts.CustomerExportScript, custId, 5);
-                DB.ImportRecordsFromQuery(
-                    sql,
-                    _appConfig.ConnectionCsr.Replace("daes_", "saes_"),
-                    _appConfig.ConnectionCsr,
-                    _appDir);
+                DB.ImportQueryResultsFromUA( sql, _appConfig.ConnectionCsr, _appDir);
             });
-        }
-
-        private static void Simulate_AESCIS_19713_2()
-        {
-            var myExport = new MyExport(_appConfig.ConnectionMarket, _appConfig.ConnectionCsr, _clientConfig.ConnectionBillingAdmin);
-            DB.ImportFiles(_mockDataDir, "New-C1", _appConfig.ConnectionCsr);
-
-            GenerateEvents(new List<int> { 10 });
-            ProcessEvents();
-
-            // export 814
-            myExport.MyCreateMarket814();
         }
 
         private static void Simulate_AESCIS_19713()
@@ -157,7 +140,6 @@ namespace Aurea.Maintenance.Debugger.Stream
             enrollmentPromotion.ProcessEnrollments();
         }
 
-
         private static void GenerateEvents(List<int> eventTypeIds)
         {
             var list = CIS.Element.Core.Event.EventTypeList.Load(_clientConfig.ClientId);
@@ -169,7 +151,6 @@ namespace Aurea.Maintenance.Debugger.Stream
                 new CIS.Engine.Event.EventGenerator().GenerateEvent(_clientConfig.ClientId, htParams, _clientConfig.Client, _appConfig.ConnectionCsr, _clientConfig.ConnectionBillingAdmin, _event.AssemblyName, _event.ClassName);
             });
         }
-
 
         private static void ProcessEvents()
         {

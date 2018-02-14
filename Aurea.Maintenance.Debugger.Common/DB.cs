@@ -85,6 +85,26 @@ namespace Aurea.Maintenance.Debugger.Common
             return m1 == 0 && m2 == 0;
         }
 
+        public static void ImportQueryResultsFromProduction(string sql, string connectionString, string tempPath)
+        {
+            ImportRecordsFromQuery(
+                sql,
+                connectionString
+                    .Replace("daes_", "paes_")
+                    .Replace("SGISUSEUAV01.aesua.local", "SGISUSEPRV01.aesprod.local"),
+                connectionString,
+                tempPath);
+        }
+
+        public static void ImportQueryResultsFromUA(string sql, string connectionString, string tempPath)
+        {
+            ImportRecordsFromQuery(
+                sql,
+                connectionString.Replace("daes_", "saes_"),
+                connectionString,
+                tempPath);
+        }
+
         public static void ExportResultsToFile(string commandText, string connectionString, string path, bool isXML)
         {
             if (!IsSqlSafe(commandText))
