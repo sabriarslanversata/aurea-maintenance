@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using CIS.Framework.Data;
+﻿
+using Aurea.Maintenance.Debugger.Common.Extensions;
 
 namespace Aurea.Maintenance.Debugger.Texpo
 {
@@ -20,6 +20,10 @@ namespace Aurea.Maintenance.Debugger.Texpo
     using CIS.Enum.Enrollment;
     using CIS.Web.Services.Clients.Texpo;
     using CIS.Clients.Texpo;
+    using CIS.BusinessComponent;
+    using System.Collections.Generic;
+    using CIS.Framework.Data;
+    using Util = CIS.Framework.Data.Utility;
 
     public class Program
     {
@@ -45,6 +49,8 @@ namespace Aurea.Maintenance.Debugger.Texpo
         private static ClientEnvironmentConfiguration _clientConfig;
         private static GlobalApplicationConfigurationDS.GlobalApplicationConfiguration _appConfig;
         private static ILogger _logger = new Logger();
+        private static readonly string _appDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+        private static readonly string _mockDataDir = Path.Combine(_appDir, "MockData");
 
         public class MyExport : CIS.Clients.Texpo.Export.MainProcess//CIS.Export.BaseExport
         {
@@ -246,15 +252,6 @@ b1x3zeE1G4Q4
 
             SimulateWSEnrollment();
 
-			*/
-
-
-
-
-            #endregion
-
-            //SimulateWSEnrollment();
-
             var notification = Notification.NewNotification();
 
             var emailParams = new Hashtable
@@ -271,11 +268,125 @@ b1x3zeE1G4Q4
 
             notification.SendEmailJob(37, emailParams);
 
-
-
             Simulate_AESCIS_8679();
+
+			*/
+            #endregion
+
+
+            Simulate_AESCIS_11082();
+
             _logger.Info("Debug session has ended");
             Console.ReadLine();
+        }
+
+        private static void Simulate_AESCIS_11082()
+        {
+            DB.ImportFiles(_mockDataDir, "CnclCons", _appConfig.ConnectionCsr);
+            var customerId = 13502;
+            var invoiceBeginDate = new DateTime(2018, 1, 12);
+            var invoicEndDate = new DateTime(2018, 1, 22);
+            var invoiceDate = new DateTime(2018,1,23);
+            //var consId = 5816763;
+            //var sql = $"UPDATE Consumption SET Processed='N', ProcessDate = NULL, DoNotProcess = 0, RequestId = NULL, ValidateFlag = 0, ValidatedDate = NULL WHERE ConsId = {consId}";
+            //DB.ExecuteQuery(sql, _appConfig.ConnectionCsr);
+
+            // delete consumptions
+            var header_key = 5466809;
+            var sql = $@"
+DECLARE @RequestId INT = (select RequestId from CustomerTransactionRequest where TransactionType = '867' AND Direction = 1 AND SourceId = {header_key})
+DECLARE @InvoiceId INT = (select InvoiceId from Consumption WHERE Source = 'NonIntervalDetail' AND RequestId = @RequestId)
+DECLARE @BatchId INT = (select BatchId from BatchDetail WHERE InvoiceId = @InvoiceId)
+
+IF (ISNULL(@BatchId,0)>0)
+BEGIN
+DELETE FROM Batch WHERE BatchId = @BatchId
+DELETE FROM BatchDetail WHERE BatchId = @BatchId
+DELETE FROM InvoiceTax WHERE InvDetId IN (SELECT InvDetId FROM InvoiceDetail WHERE InvoiceId = @InvoiceId)
+DELETE FROM InvoiceDetail WHERE InvoiceId = @InvoiceId
+DELETE FROM InvoiceXML WHERE InvoiceId = @InvoiceId
+DELETE FROM Invoice WHERE InvoiceId = @InvoiceId
+END
+
+DELETE FROM ConsumptionDetail WHERE ConsId IN (SELECT ConsId FROM Consumption WHERE Source = 'NonIntervalDetail' AND RequestId = @RequestId)
+DELETE FROM Consumption WHERE Source = 'NonIntervalDetail' AND RequestId = @RequestId
+DELETE FROM CustomerTransactionRequest WHERE RequestId = @RequestId 
+
+";
+            DB.ExecuteQuery(sql, _appConfig.ConnectionCsr);
+
+            SimulateImportConsumption();
+
+            //create invoice
+            var batchId = CreateInvoiceBatch(customerId, invoiceBeginDate, invoicEndDate, invoiceDate);
+            var invoiceId = SimulateCreateInvoice(customerId, invoiceBeginDate, invoicEndDate, invoiceDate);
+            UpdateBatchDetail(invoiceId, batchId);
+
+
+            //SimulateImportTransactionQueue();
+
+            //GenerateEvents();
+            //ProcessEvents();
+            //GenerateEvents();
+            //ProcessEvents();
+        }
+
+        private static int SimulateCreateInvoice(int customerId, DateTime beginDate, DateTime endDate,
+            DateTime invoiceDate)
+        {
+            var invoice = new CIS.Clients.Texpo.Invoice(_appConfig.ConnectionCsr)
+            {
+                ConnectionAdmin = _clientConfig.ConnectionBillingAdmin,
+                ClientID = Clients.Texpo.Id(),
+                UserId = 370379
+            };
+
+            if (invoice.GenerateStandardInvoice(customerId, beginDate, endDate, invoiceDate))
+            {
+                return invoice.InvoiceID;
+            }
+
+            throw new Exception("Error occurred when generating invoice");
+        }
+
+        private static int CreateInvoiceBatch(int customerId, DateTime beginDate, DateTime endDate,
+            DateTime invoiceDate)
+        {
+            var arrParms = new SqlParameter[5];
+            arrParms[0] = new SqlParameter("@CustID", SqlDbType.Int)
+            {
+                Value = customerId
+            };
+            arrParms[1] = new SqlParameter("@RangeBeginDate", SqlDbType.DateTime)
+            {
+                Value = beginDate
+            };
+            arrParms[2] = new SqlParameter("@RangeEndDate", SqlDbType.DateTime)
+            {
+                Value = endDate
+            };
+            arrParms[3] = new SqlParameter("@InvoiceDate", SqlDbType.DateTime)
+            {
+                Value = invoiceDate
+            };
+            arrParms[4] = new SqlParameter("@BatchID", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Output
+            };
+
+            SqlHelper.ExecuteDataset(_appConfig.ConnectionCsr, CommandType.StoredProcedure,
+                "cspBatchCreateByCustomer", arrParms);
+            return Util.ToInt32(arrParms[4].Value);
+        }
+
+        private static void UpdateBatchDetail(int invoiceId, int batchId)
+        {
+            var arrParms = new SqlParameter[2];
+            arrParms[0] = new SqlParameter("@BatchID", SqlDbType.Int);
+            arrParms[0].Value = batchId;
+            arrParms[1] = new SqlParameter("@InvoiceID", SqlDbType.Int);
+            arrParms[1].Value = invoiceId;
+            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.StoredProcedure, "cspBatchDetailUpdateInvoiceByCustomer", arrParms);
         }
 
         private static void Simulate_AESCIS_8679()
@@ -376,10 +487,55 @@ b1x3zeE1G4Q4
             //    null});
         }
 
+        private static void SimulateImportConsumption()
+        {
+            try
+            {
+                bool bSuccess = false;
+                /*CISRFC-783 Implements Market Gap*/
+                CIS.Import.Billing.ConsumptionImportService consImpService = CreateConsumptionImportService();
+                if (consImpService != null)
+                {
+                    bSuccess = consImpService.ImportConsumption();
+                }
+
+                
+                CIS.Import.Billing.DailyConsumption dc = CreateDailyConsumptionImporter();
+                if (dc != null)
+                {
+                    bSuccess = dc.Import();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex,"Error Ocurred when importing consumptions");
+            }
+
+        }
+
+        private static CIS.Import.Billing.ConsumptionImportService CreateConsumptionImportService()
+        {
+            return new CIS.Import.Billing.ConsumptionImportService(_appConfig.ConnectionMarket, _appConfig.ConnectionCsr, _logger);
+        }
+
+        private static CIS.Import.Billing.DailyConsumption CreateDailyConsumptionImporter()
+        {
+            //If DailyRead Process is enabled, we will import the Daily Reads as consumption
+            ProcessConfigurationDS.ProcessConfigurationPivot pc = ProcessConfigurationBC.LoadPivot(_clientConfig.ConnectionBillingAdmin, _clientConfig.Client, "DailyRead");
+            bool isImportDailyReadEnabled = Util.GetBool(pc, "IsEnabled");
+            int batchSize = Util.GetInt32(pc, "BatchSize", 1000);
+
+            if (isImportDailyReadEnabled)
+                return new CIS.Import.Billing.DailyConsumption(_appConfig.ConnectionMarket, _appConfig.ConnectionCsr, batchSize);
+
+            return null;
+        }
+
         private static void SimulateImportTransactionQueue()
         {
-            var queue = new CIS.Import.Billing.Transaction.Queue(_clientConfig.Client, _appConfig.ConnectionMarket, _appConfig.ConnectionCsr, _appConfig.ConnectionTdsp, _clientConfig.ConnectionBillingAdmin);
-            queue.Import(_logger);
+            var queue = new CIS.Import.Billing.Transaction.Queue(_clientConfig.Client, _appConfig.ConnectionMarket,
+                _appConfig.ConnectionCsr, _appConfig.ConnectionTdsp, _clientConfig.ConnectionBillingAdmin, _logger);
+            queue.Import();
         }
 
         private static void SimulateImportMassEnrollment(string fileName)
@@ -625,6 +781,18 @@ DELETE FROM CustomerDisconnect WHERE CustId = @CustID
 DELETE FROM MethodLog WHERE MethodId IN (310, 311, 314, 339, 341, 340, 313, 348, 9000, 9010, 6000, 6001)";
 
             DB.ExecuteQuery(sql, _appConfig.ConnectionCsr);
+        }
+
+        private static void GenerateEvents(List<int> eventTypeIds)
+        {
+            var list = CIS.Element.Core.Event.EventTypeList.Load(_clientConfig.ClientId);
+
+            eventTypeIds.ForEach(id =>
+            {
+                var htParams = new Hashtable { { "EventTypeID", id } };
+                var _event = list.SingleOrDefault(x => x.EventTypeID == id);
+                new CIS.Engine.Event.EventGenerator().GenerateEvent(_clientConfig.ClientId, htParams, _clientConfig.Client, _appConfig.ConnectionCsr, _clientConfig.ConnectionBillingAdmin, _event.AssemblyName, _event.ClassName);
+            });
         }
 
         private static void GenerateEvents()

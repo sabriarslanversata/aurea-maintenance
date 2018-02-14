@@ -33,65 +33,89 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Aurea">
-      <HintPath>..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\Aurea.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\Aurea.dll</HintPath>
     </Reference>
     <Reference Include="Aurea.TaskToaster">
-      <HintPath>..\..\aurea-aes-cis\Legacy\Deployment\Debug\TaskToaster\Aurea.TaskToaster.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\TaskToaster\Aurea.TaskToaster.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.BusinessComponent, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.BusinessComponent.dll</HintPath>
     </Reference>
     <Reference Include="CIS.BusinessEntity, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.BusinessEntity.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.BusinessEntity.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Clients, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\aurea-aes-cis\Clients\Texpo\Deployment\Debug\bin\CIS.Clients.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Clients.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Clients.Texpo, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\aurea-aes-cis\Clients\Texpo\Deployment\Debug\bin\CIS.Clients.Texpo.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Clients.Texpo.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Components, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Components.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Components.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Components.Invoice, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Components.Invoice.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Components.Maintenance, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Components.Maintenance.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Components.Maintenance.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Element, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Element.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Element.Core, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Element.Core.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Engine.Event, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Engine.Event.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Engine.Event.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Enum, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Enum.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Enum.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Export, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Export.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Export.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Framework, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Framework.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Framework.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Framework.Event.EventGenerator">
-      <HintPath>..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Framework.Event.EventGenerator.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Framework.Event.EventGenerator.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Framework.Event.EventGeneratorBase, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Framework.Event.EventGeneratorBase.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Framework.Event.EventGeneratorBase.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Import, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Import.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Import.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Import.Billing.Consumption, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Import.Billing.Consumption.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Import.Billing.Tdsp, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\bin\CIS.Import.Billing.Tdsp.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Import.Billing.Transaction, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Import.Billing.Transaction.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Import.Billing.Transaction.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Library.Cryptography, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Library.Cryptography.dll</HintPath>
+      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Library.Cryptography.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Web.Services.Clients.Texpo">
       <HintPath>..\..\AureaCIS\Clients\Texpo\Deployment\Debug\Web\services.ista-billing.com\bin\CIS.Web.Services.Clients.Texpo.dll</HintPath>
@@ -196,6 +220,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="MockData\AESCIS-11082\CnclCons.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="MockData\AESCIS-8679.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<root>
+  <EnrollCustomer EnrollCustID="628099" CustType="R" CustName="Yidy Neiderman" LastName="Neiderman" FirstName="Yidy" DBA="Yidy Neiderman" BillingContact="Yidy Neiderman" BillingAddress1="957 Bedford Ave" BillingCity="Brooklyn" BillingState="NY" BillingZip="11205" BillingEmail="" Taxable="N" LifeSupport="N" SpanishBill="N" Status="1" EnrollmentSentFlag="0" CreateUserID="289" CreateDate="2018-01-24T16:03:54.087" NotificationWaiver="0" LidaDiscount="0" CsaFlag="0" CustomerAccountNumber="8000628109" HasLocationMasterFlag="0" TaxExemptionCertificateOnFileFlag="0" PrimaryPhone="7185991130" SalesSourceID="4" IndependentAgentID="423959" QCDateTimeStamp="2018-01-23T00:00:00" EnrollStatusID="28" Last4SSN="9011" CallEmailAuthFlag="0" ReferralFlag="0" SwitchAuthFlag="0" TermsDisclosureFlag="0" ReferralDetails="Other" AlternatePhone="7185991130" PORFlag="0" ModifiedDate="2018-01-24T17:31:13.053" SSN="07BG4wwtHugG6teob250qA==" AutoPayBill="0" ServiceAccount="R" ServiceState="NY" DepositAmount="0.0000" DeliveryTypeID="1" CreditScoreCommercial="0" TCPAAuthorization="NA" MobilePhone="7185991130" />
+  <EnrollCustomerPremise EnrollPremiseID="705381" EnrollCustID="628099" EsiId="644042093800109" Addr1="957 BEDFORD AVE" City="Brooklyn" State="NY" Zip="11206" TDSP="13" TdspDuns="006982359" EnrollType="1" TaxAssessment="0" PremType="E" Status="0" CSPDUNSID="7" UsageClassId="0" EspDuns="965351989" Qeze="0" PowerMove="0" LBMPID="0" GasLossID="0" BillingAccountNumber="C2999429" GasSupplyServiceOption=" " ProductID="3340" SoldDate="2018-01-24T00:00:00" DeletedFlag="0" ProductRate="0.10340000" LDC_UnMeteredAcct="0" OverrideZonalRequirements="0" CustomerAccountNumber="3001706379" SmartMeterInd="0" MoveInDate="2018-01-23" CustomerServiceFee="0.00" TurnOnTimeID="1" CurrentActiveServiceAtPremise="0" />
+  <EnrollCustomerNote EnrollCustomerNoteID="4129779" EnrollCustomerNoteTypeID="12" EnrollCustID="628099" Notes="API Result Success = True&#xD;&#xA;API Executed = True&#xD;&#xA;API Type = DuplicatePremiseVerification&#xD;&#xA;Result Code = &#xD;&#xA;Tracking Number = Internal Check&#xD;&#xA; EnrollPremiseId: 705379&#xD;&#xA;" CreateUserID="289" CreateDate="2018-01-23T16:03:54.677" />
+  
+  <Product ProductID="3340" RateID="715076" LDCCode="13" PlanType="2" TDSPTemplateID="3" Description="Cash Back Rewards&#xD;&#xA;" BeginDate="2018-01-19T00:00:00" CustType="R" Graduated="N" ActiveFlag="1" PriceDescription="2% Cash Back Rewards" ConsUnitID="5" Default="0" ServiceType="E" CSPId="1" TermsId="1" RolloverProductId="347" ProductCode="NY_CONED_I_E_M2M_CB_0.1034" RatePackageId="715073" ProductName="2% Cash Back Rewards Rate Plan at" ProductZoneID="15" IsGreen="0" IsBestChoice="0" ActiveEnrollmentFlag="1" />
+  <Rate RateID="715076" CSPID="1" RateCode="NY_CONED_I_E_M2M_CB_0.1034" RateDesc="2% Cash Back Rewards" EffectiveDate="2018-01-19T00:00:00" IsMajority="0" TemplateFlag="0" LDCCode="13" CreateDate="2018-01-17T10:44:58.703" RatePackageName="NY_CONED_I_E_M2M_CB_0.1034_RATEPACKAGE" CustType="R" ServiceType="E" DivisionCode="SGENormal" ConsUnitId="5" ActiveFlag="1" />
+  <RateDetail RateDetID="2603847" RateID="715076" CategoryID="1" RateTypeID="3002" ConsUnitID="5" RateDescID="1" EffectiveDate="2018-01-19T00:00:00" MinDetAmt="0.00" MaxDetAmt="0.00" GLAcct="               " CustType="" Progressive=" " AmountCap="N" MaxRateAmt=" " MinRateAmt=" " CategoryRollup=" " Taxable="Y" ChargeType="C" MiscData1="51" FixedCapRate="3335.00000000" Building="" Active="1" StatusID="1" BlockPriceIndicator="0" CreateDate="2018-01-17T10:44:59" MeterMultiplierFlag="0" />
+  <RateIndexRange RateIndexRangeID="7510" RateIndexTypeID="3335" DateFrom="2018-01-19T00:00:00" DateTo="2019-01-17T00:00:00" IndexRate="0.10340000" />
+  <RateIndexType RateIndexTypeID="3335" RateIndexType="NY_CONED_I_E_M2M_CB_0.1034" Active="1" />
+  <EnrollCustomerEnrollStatusHistory EnrollCustomerEnrollStatusHistoryID="2803817" EnrollCustID="628099" OldValue="0" NewValue="25" CreatedDate="2018-01-23T16:04:06.570" />
+  <EnrollCustomerEnrollStatusHistory EnrollCustomerEnrollStatusHistoryID="2803818" EnrollCustID="628099" OldValue="25" NewValue="26" CreatedDate="2018-01-23T16:04:06.697" />
+  <EnrollCustomerEnrollStatusHistory EnrollCustomerEnrollStatusHistoryID="2803859" EnrollCustID="628099" OldValue="26" NewValue="28" CreatedDate="2018-01-23T16:28:29.263" />
+  <!--
+  /*retrieve data, remove csrCustId, csrPremId, CustId, email, update dates, set EnrollmentSentFlag = 0*/
+  
+DECLARE @EnrollCustId INT = 628096
+SELECT * FROM EnrollCustomer WHERE EnrollCustID = @EnrollCustId FOR XML AUTO
+SELECT * FROM EnrollCustomerPremise WHERE EnrollCustID = @EnrollCustId FOR XML AUTO
+SELECT * FROM EnrollCustomerDocuments WHERE EnrollCustID = @EnrollCustId FOR XML AUTO
+SELECT * FROM EnrollCustomerNote WHERE EnrollCustID = @EnrollCustId FOR XML AUTO
+SELECT * FROM EnrollCustomerPremiseDeposit WHERE EnrollCustID = @EnrollCustId FOR XML AUTO
+SELECT * FROM EnrollCustomerPremiseTaxPercentage WHERE EnrollPremiseId IN (SELECT EnrollPremiseID FROM EnrollCustomerPremise WHERE EnrollCustID = @EnrollCustId) FOR XML AUTO
+SELECT * FROM Product WHERE ProductID IN (SELECT ProductID FROM EnrollCustomerPremise WHERE EnrollCustID = @EnrollCustId) FOR XML AUTO
+SELECT * FROM Rate WHERE RateID IN (SELECT RateId FROM Product WHERE ProductID IN (SELECT ProductID FROM EnrollCustomerPremise WHERE EnrollCustID = @EnrollCustId)) FOR XML AUTO
+SELECT * FROM RateDetail WHERE RateID IN (SELECT RateId FROM Product WHERE ProductID IN (SELECT ProductID FROM EnrollCustomerPremise WHERE EnrollCustID = @EnrollCustId)) FOR XML AUTO
+SELECT * FROM RateIndexRange WHERE RateIndexTypeID IN (SELECT CAST(FixedCapRate as INT) FROM RateDetail WHERE RateID IN (SELECT RateId FROM Product WHERE ProductID IN (SELECT ProductID FROM EnrollCustomerPremise WHERE EnrollCustID = @EnrollCustId))) FOR XML AUTO
+SELECT * FROM RateIndexType WHERE RateIndexTypeId IN (SELECT CAST(FixedCapRate as INT) FROM RateDetail WHERE RateID IN (SELECT RateId FROM Product WHERE ProductID IN (SELECT ProductID FROM EnrollCustomerPremise WHERE EnrollCustID = @EnrollCustId))) FOR XML AUTO
+SELECT * FROM EnrollCustomerEnrollStatusHistory WHERE EnrollCustId = @EnrollCustId FOR XML AUTO
+
+  -->
+</root>

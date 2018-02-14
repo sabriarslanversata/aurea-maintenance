@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aurea.Maintenance.Jira", "A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aurea.Maintenance.Debugger.Accent", "Aurea.Maintenance.Debugger.Accent\Aurea.Maintenance.Debugger.Accent.csproj", "{7E5710C2-8E21-4EBE-95AC-D386D9442661}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aurea.Maintenance.CashPCI", "Aurea.Maintenance.CashPCI\Aurea.Maintenance.CashPCI.csproj", "{E8960A1A-4FEF-4981-809F-8B104DF6AEBB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,6 +58,10 @@ Global
 		{7E5710C2-8E21-4EBE-95AC-D386D9442661}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E5710C2-8E21-4EBE-95AC-D386D9442661}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7E5710C2-8E21-4EBE-95AC-D386D9442661}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8960A1A-4FEF-4981-809F-8B104DF6AEBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8960A1A-4FEF-4981-809F-8B104DF6AEBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8960A1A-4FEF-4981-809F-8B104DF6AEBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8960A1A-4FEF-4981-809F-8B104DF6AEBB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

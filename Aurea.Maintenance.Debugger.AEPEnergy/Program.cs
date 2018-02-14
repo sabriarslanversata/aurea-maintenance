@@ -253,8 +253,8 @@ UPDATE CustomerTransactionRequest SET ProcessFlag = 1, ProcessDate=GetDate(), Ev
 
         private static void ExecuteImportTransactionQueue()
         {
-            CIS.Import.Billing.Transaction.Queue q = new CIS.Import.Billing.Transaction.Queue(Clients.AEP.Abbreviation(), _appConfig.ConnectionMarket, _appConfig.ConnectionCsr, _appConfig.ConnectionTdsp, _clientConfig.ConnectionBillingAdmin);
-            q.Import(_logger);
+            //CIS.Import.Billing.Transaction.Queue q = new CIS.Import.Billing.Transaction.Queue(Clients.AEP.Abbreviation(), _appConfig.ConnectionMarket, _appConfig.ConnectionCsr, _appConfig.ConnectionTdsp, _clientConfig.ConnectionBillingAdmin);
+            //q.Import(_logger);
         }
 
         private static void ExecuteImportChangeRequests()

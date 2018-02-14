@@ -233,6 +233,8 @@ b1x3zeE1G4Q4
         private static ClientEnvironmentConfiguration _clientConfig;
         private static GlobalApplicationConfigurationDS.GlobalApplicationConfiguration _appConfig;
         private static ILogger _logger = new Logger();
+        private static string appDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+        private static string mockDataDir = Path.Combine(appDir, "MockData");
 
         static void Main(string[] args)
         {
@@ -254,24 +256,62 @@ b1x3zeE1G4Q4
 
         private static void simulateEnrollmentViaWS()
         {
-            string productCode = "ETTXU24FIXED00ZZ00RPROMO1TRC199NESTTHERMOSTAT";
+            Common.DB.ImportFiles(mockDataDir, "PriceToLdc", _appConfig.ConnectionCsr);
+            string enrollmentProductCode = "ETTXU36FIXED00QQ00RPROMO1";
             var rand = new Random().Next(1, 1000);
-            long accountNo = 10443721204064914 + rand;
+            long enrollmentAccountNo = 10443720001711154 + rand;
+            DateTime enrollmentEndDate = DateTime.Parse("2021-01-04 00:00:00.000")
+                , enrollmentSignedDate = DateTime.Parse("2018-01-03 20:50:10.140")
+                , enrollmentSpecialReadDate = DateTime.Parse("2018-01-03 00:00:00.000")
+                , enrollmentSwitchDate = DateTime.Parse("2018-01-03 00:00:00.000")
+                , enrollmentBeginDate = DateTime.Parse("2018-01-04 00:00:00.000");
+
+            string enrollmentCity = "Tarrant"
+                , enrollmentState = "TX"
+                , enrollmentAccountManager = "60 - IGS D2D"
+                , enrollmentEspDuns = "133305370"
+                , enrollmentTdspCode = "TXU";
+
+            CustomerType enrollmentCustomerType = CustomerType.Residential;
+            int enrollmentZip = 76148;
+
+            int marketFileId = 28176012;
+            string marketFileProcessDate = "2018-01-04 06:30:59.570"
+                , marketFileCreateDate = "2018-01-04 06:31:11.563"
+                , marketFileName = "ACT_TX_183529049_814.20180104062337.211564654.txt";
 
             var sql = "UPDATE daes_Accent..CustomerTransactionRequest SET processflag = 1, processdate = getdate(), EventCleared = 1 " +
                       "WHERE TransactionType = '814' AND ActionCode = '16' AND Direction = 0 AND ProcessFlag <> 1";
             SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
 
-            //CopyProductAndRate(productCode: productCode, maxDepth: 5);
-            (string message, int enrollCustId) = EnrollCustomerWithPaymentInfo(CreateEnrollmentDataWithPaymentInfoData(productCode, accountNo, rand));
+            CopyProductAndRate(productCode: enrollmentProductCode, maxDepth: 5);
+
+            (string message, int enrollCustId) = EnrollCustomerWithPaymentInfo(
+                CreateEnrollmentDataWithPaymentInfoData(
+                    enrollmentProductCode, 
+                    enrollmentAccountNo,
+                    rand,
+                    enrollmentEndDate,
+                    enrollmentSignedDate,
+                    enrollmentSpecialReadDate,
+                    enrollmentSwitchDate,
+                    enrollmentBeginDate,
+                    enrollmentCity,
+                    enrollmentState,
+                    enrollmentAccountManager,
+                    enrollmentEspDuns,
+                    enrollmentCustomerType,
+                    enrollmentZip,
+                    enrollmentTdspCode));
             EnrollCustomers();
             
             Execute814Export();
             GenerateEvents(new List<int> { 10, 18});
             ProcessEvents();
-
-            MakeCTRAccepted(enrollCustId);
             
+            MakeCTRAccepted(enrollCustId, marketFileId, marketFileProcessDate, marketFileCreateDate, marketFileName);
+
+
             GenerateEvents(new List<int> { 10, 18 });
             ProcessEvents();
             Execute814Import();
@@ -279,31 +319,25 @@ b1x3zeE1G4Q4
             ProcessEvents();
         }
 
-        private static EnrollmentDataWithPaymentInfo CreateEnrollmentDataWithPaymentInfoData(string productCode, long accountNo, int rand)
+        private static EnrollmentDataWithPaymentInfo CreateEnrollmentDataWithPaymentInfoData(string productCode, long accountNo, int rand, 
+            DateTime endDate, DateTime signedDate, DateTime specialReadDate, DateTime switchDate, DateTime beginDate, string city, string state,
+            string accountManager, string espDuns, CustomerType customerType, int zip, string tdspCode)
         {
-            string firstName = $"Sabri{rand}"
-                ,lastName = $"Lion{rand}"
-                ,address1 = "7440 La Vista Dr"
+            string firstName = $"Sabri2{rand}"
+                ,lastName = $"Lion2{rand}"
+                ,address1 = "7442-2 La Vista Dr"
                 ,address2 = $"Apt {rand}"
-                ,city = "Dallas"
-                ,state = "TX"
                 ,email = $"lionsabri{rand}@lions.com"
-                ,phone = $"515-551-{rand:D4}"
-                //,productCode = "ETTXU24FIXED00ZZ00RPROMO1TRC199NESTTHERMOSTAT"
+                ,phone = $"525-552-{rand:D4}"
                 ;
-            int zip = 75214;
-            //long accountNo = 10443720004064914;
-            DateTime endDate = DateTime.Parse("2019-08-07T00:00:00"),
-                signedDate = DateTime.Parse("2017-08-05T05:46:17"),
-                specialReadDate = DateTime.Parse("2017-08-17T01:00:00"),
-                switchDate = DateTime.Parse("2017-08-17T01:00:00");
+
             return new CIS.Clients.Accent.EnrollmentManager.EnrollmentDataWithPaymentInfo()
             {
-                AccountManager = "IGS",
+                AccountManager = accountManager,
                 ACHAccountType = ACHAccountTypes.CHECKING,
                 AnnualTolerance = 0,
                 AutoRenewFlag = true,
-                BeginDate = DateTime.Parse("2017-08-07T00:00:00"),
+                BeginDate = beginDate,
                 BillingAddress1 = address1,
                 BillingAddress2 = address2,
                 BillingCity = city,
@@ -318,7 +352,7 @@ b1x3zeE1G4Q4
                 County = city,
                 CustomerCharge = 0,
                 CustomerName = $"{firstName} {lastName}",
-                CustomerType = CustomerType.Residential,
+                CustomerType = customerType,
                 Dba = $"{firstName} {lastName}",
                 DepositAddress1 = address1,
                 DepositAddress2 = address2,
@@ -334,9 +368,9 @@ b1x3zeE1G4Q4
                 DoNotDisconnect = false,
                 Email = email,
                 EndDate = endDate,
-                EnergyCharge = 0.09m,
+                EnergyCharge = 0.091m,
                 EnrollType = EnrollTypeEnum.MoveIn,
-                EspDuns = "133305370",
+                EspDuns = espDuns,
                 FirstName = firstName,
                 IndexPriceAdder = 0,
                 LastName = lastName,
@@ -368,7 +402,7 @@ b1x3zeE1G4Q4
                 StateTaxExempt = false,
                 SwitchDate = switchDate,
                 Taxable = true,
-                TdspCode = "TXU",
+                TdspCode = tdspCode,
                 Terms = 24,
                 TolerancePct = 0,
                 TXUtilityTaxExempt = false,
@@ -585,7 +619,7 @@ DECLARE @Rates TABLE (RateId INT);
 
 WHILE @CTR < @MAX_DEPTH
 BEGIN
-	SELECT @RATE_ID = RateId, @CURR_PRODUCT_ID = RollOverProductId FROM Product WHERE ProductId = @PREV_PRODUCT_ID;
+	SELECT @RATE_ID = RateId, @CURR_PRODUCT_ID = RollOverProductId FROM  saes_Accent..Product WHERE ProductId = @PREV_PRODUCT_ID;
 	INSERT INTO @Rates VALUES (@RATE_ID)
 	
 	IF @CURR_PRODUCT_ID = @PREV_PRODUCT_ID --if there
@@ -660,7 +694,7 @@ WHERE
 SET IDENTITY_INSERT daes_Accent..PriceToLDC OFF
 
 ";
-            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
+            Common.DB.ExecuteQuery(sql, _appConfig.ConnectionCsr);
         }
 
         private static void Execute814Export()
@@ -723,11 +757,15 @@ DELETE FROM daes_AccentMarket..tbl_814_Header WHERE [814_Key] = @EightFourteenKe
 DELETE FROM daes_Accent..CustomerTransactionRequest WHERE RequestId = @SourceId
 
 ";
-            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
+            Common.DB.ExecuteQuery(sql, _appConfig.ConnectionCsr);
         }
 
-        // ReSharper disable once InconsistentNaming
-        private static void MakeCTRAccepted(int enrollCustId)
+        private static void MakeCTRAccepted(int enrollCustId, int martketFileId, string marketFileProcessDate, string marketFileCreateDate, string marketFileName,
+            string transactionDateShort = "20180104", string transactionDate = "2018-01-04 00:00:00.000", string requestDate = "2018-01-04 00:00:00.000",
+            string transactionNbr = "167528458620170807094645133305", string tdspDuns = "1039940674000", string tdspName = "ONCOR", string crDuns = "133305370",
+            string crName = "ACCENT ENERGY TEXAS LP DBA IGS ENERGY (LSE)", string meterCycle = "04", string meterNumber = "114577934LG", string meterType = "KHMON",
+            string loadProfile = "RESHIWR_NCENT_IDR_WS_NOTOU", string rateClass = "00", string rateSubClass = "NULL", string serviceType3 = "HU",
+            string serviceTypeCode4 = "NULL", string serviceType4 = "NULL", string stationId = "BRCRK", string specialReadSwitchDate = "20180104")
         {
             ClearOldCtr(enrollCustId);
             var sql = $@"
@@ -744,7 +782,7 @@ DECLARE @MeterKey INT
 DECLARE @ESIID VARCHAR(50)
 SELECT @RefSourceId = SourceId, @RefNumber = TransactionNumber, @ESIID = ESIID FROM daes_Accent..CustomerTransactionRequest WHERE CustId = @CustId AND TransactionType = '814' AND ActionCode = '16' AND Direction = 0
 --fetch original marketFileId
-SELECT @MarketFileId = MarketFileID FROM saes_AccentMarket..tbl_814_Header WHERE [814_key] = (SELECT SourceID FROM saes_Accent..CustomerTransactionRequest WHERE CustId = 1260473 AND TransactionType = '814' AND ActionCode = '05' AND Direction = 1)
+SELECT @MarketFileId = {martketFileId}
 
 IF NOT EXISTS(SELECT 1 FROM daes_AccentMarket..tblMarketFile WHERE MarketFileId = @MarketFileId)
 BEGIN
@@ -752,8 +790,8 @@ BEGIN
     INSERT INTO tblMarketFile ( [MarketFileId], [FileName], [FileType], [ProcessStatus], [ProcessDate], [ProcessError], [SenderTranNum], [DirectionFlag], [Status], [LDCID], [CSPDUNSID], [RefMarketFileId],
       [CreateDate], [CspDunsTradingPartnerID], [TransactionCount])
     VALUES (
-     @MarketFileId, 'ACT_TX_183529049_814.20170807094914.201843962.txt'/*[FileName]*/, NULL/*[FileType]*/, 'N'/*[ProcessStatus]*/, '2017-08-07 10:01:19.673'/*[ProcessDate]*/, NULL/*[ProcessError]*/,
-     NULL/*[SenderTranNum]*/, 1/*[DirectionFlag]*/, 3/*[Status]*/, 0/*[LDCID]*/, 0/*[CSPDUNSID]*/, NULL/*[RefMarketFileId]*/, '2017-08-07 10:01:41.563'/*[CreateDate]*/, NULL/*[CspDunsTradingPartnerID]*/,
+     @MarketFileId, '{marketFileName}'/*[FileName]*/, NULL/*[FileType]*/, 'N'/*[ProcessStatus]*/, '{marketFileProcessDate}'/*[ProcessDate]*/, NULL/*[ProcessError]*/,
+     NULL/*[SenderTranNum]*/, 1/*[DirectionFlag]*/, 3/*[Status]*/, 0/*[LDCID]*/, 0/*[CSPDUNSID]*/, NULL/*[RefMarketFileId]*/, '{marketFileCreateDate}'/*[CreateDate]*/, NULL/*[CspDunsTradingPartnerID]*/,
      NULL/*[TransactionCount]*/
     )
     SET IDENTITY_INSERT daes_AccentMarket..tblMarketFile OFF
@@ -767,8 +805,8 @@ INSERT INTO daes_AccentMarket..tbl_814_Header ( [MarketFileId], [TransactionSetI
  [ActionCode], [TdspDuns], [TdspName], [CrDuns], [CrName], [ProcessFlag], [ProcessDate], [Direction], [TransactionTypeID], [MarketID], [ProviderID], [POLRClass], [TransactionTime], [TransactionTimeCode], 
  [TransactionQualifier], [TransactionQueueTypeID], [CreateDate])
 VALUES (
- @MarketFileId, 5/*[TransactionSetId]*/, NULL/*[TransactionSetControlNbr]*/, '5'/*[TransactionSetPurposeCode]*/, '167528458620170807094645133305'/*[TransactionNbr]*/, '20170807'/*[TransactionDate]*/,
- @RefNumber/*[ReferenceNbr]*/, 'S'/*[ActionCode]*/, '1039940674000'/*[TdspDuns]*/, 'ONCOR'/*[TdspName]*/, '133305370'/*[CrDuns]*/, 'ACCENT ENERGY TEXAS LP DBA IGS ENERGY (LSE)'/*[CrName]*/, 0/*[ProcessFlag]*/,
+ @MarketFileId, 5/*[TransactionSetId]*/, NULL/*[TransactionSetControlNbr]*/, '5'/*[TransactionSetPurposeCode]*/, '{transactionNbr}'/*[TransactionNbr]*/, '{transactionDateShort}'/*[TransactionDate]*/,
+ @RefNumber/*[ReferenceNbr]*/, 'S'/*[ActionCode]*/, '{tdspDuns}'/*[TdspDuns]*/, '{tdspName}'/*[TdspName]*/, '{crDuns}'/*[CrDuns]*/, '{crName}'/*[CrName]*/, 0/*[ProcessFlag]*/,
  NULL/*[ProcessDate]*/, 1/*[Direction]*/, 28/*[TransactionTypeID]*/, 1/*[MarketID]*/, 1/*[ProviderID]*/, NULL/*[POLRClass]*/, NULL/*[TransactionTime]*/, NULL/*[TransactionTimeCode]*/, NULL/*[TransactionQualifier]*/,
  NULL/*[TransactionQueueTypeID]*/, GETDATE()/*[CreateDate]*/
 )
@@ -790,10 +828,10 @@ INSERT INTO daes_AccentMarket..tbl_814_Service(  [814_Key], [AssignId], [Service
  [IndustrialClassificationCode], [UtilityTaxExemptStatus], [AccountSettlementIndicator], [NypaDiscountIndicator], [UtilityDiscount], [IcapEffectiveDate], [FutureIcapEffectiveDate], [FutureIcap], [ChangeCancellationFee], 
  [CancellationFee], [MunicipalAggregation])
 VALUES (
- @SourceId/*[814_Key]*/, 1/*[AssignId]*/, 'SH'/*[ServiceTypeCode1]*/, 'EL'/*[ServiceType1]*/, 'SH'/*[ServiceTypeCode2]*/, 'CE'/*[ServiceType2]*/, 'SH'/*[ServiceTypeCode3]*/, 'MVI'/*[ServiceType3]*/, 
- 'SH'/*[ServiceTypeCode4]*/, 'HU'/*[ServiceType4]*/, 'A'/*[ActionCode]*/, NULL/*[MaintenanceTypeCode]*/, 'A'/*[DistributionLossFactorCode]*/, '01'/*[PremiseType]*/, NULL/*[BillType]*/, NULL/*[BillCalculator]*/, 
- @ESIID/*[EsiId]*/, 'WHTRK'/*[StationId]*/, NULL/*[SpecialNeedsIndicator]*/, NULL/*[PowerRegion]*/, NULL/*[EnergizedFlag]*/, NULL/*[EsiIdStartDate]*/, NULL/*[EsiIdEndDate]*/, NULL/*[EsiIdEligibilityDate]*/, 
- NULL/*[NotificationWaiver]*/, '20170817'/*[SpecialReadSwitchDate]*/, NULL/*[PriorityCode]*/, NULL/*[PermitIndicator]*/, NULL/*[RTODate]*/, NULL/*[RTOTime]*/, NULL/*[CSAFlag]*/, NULL/*[MembershipID]*/, 
+ @SourceId/*[814_Key]*/, 1/*[AssignId]*/, 'SH'/*[ServiceTypeCode1]*/, 'EL'/*[ServiceType1]*/, 'SH'/*[ServiceTypeCode2]*/, 'CE'/*[ServiceType2]*/, 'SH'/*[ServiceTypeCode3]*/, '{serviceType3}'/*[ServiceType3]*/, 
+ {serviceTypeCode4}/*[ServiceTypeCode4]*/, {serviceType4}/*[ServiceType4]*/, 'A'/*[ActionCode]*/, NULL/*[MaintenanceTypeCode]*/, 'A'/*[DistributionLossFactorCode]*/, '01'/*[PremiseType]*/, NULL/*[BillType]*/, NULL/*[BillCalculator]*/, 
+ @ESIID/*[EsiId]*/, '{stationId}'/*[StationId]*/, NULL/*[SpecialNeedsIndicator]*/, NULL/*[PowerRegion]*/, NULL/*[EnergizedFlag]*/, NULL/*[EsiIdStartDate]*/, NULL/*[EsiIdEndDate]*/, NULL/*[EsiIdEligibilityDate]*/, 
+ NULL/*[NotificationWaiver]*/, '{specialReadSwitchDate}'/*[SpecialReadSwitchDate]*/, NULL/*[PriorityCode]*/, NULL/*[PermitIndicator]*/, NULL/*[RTODate]*/, NULL/*[RTOTime]*/, NULL/*[CSAFlag]*/, NULL/*[MembershipID]*/, 
  NULL/*[ESPAccountNumber]*/, NULL/*[LDCBillingCycle]*/, NULL/*[LDCBudgetBillingCycle]*/, NULL/*[WaterHeaters]*/, NULL/*[LDCBudgetBillingStatus]*/, NULL/*[PaymentArrangement]*/, NULL/*[NextMeterReadDate]*/, 
  NULL/*[ParticipatingInterest]*/, NULL/*[EligibleLoadPercentage]*/, NULL/*[TaxExemptionPercent]*/, NULL/*[CapacityObligation]*/, NULL/*[TransmissionObligation]*/, NULL/*[TotalKWHHistory]*/, 
  NULL/*[NumberOfMonthsHistory]*/, NULL/*[PeakDemandHistory]*/, NULL/*[AirConditioners]*/, NULL/*[PreviousEsiId]*/, NULL/*[GasPoolId]*/, NULL/*[LBMPZone]*/, NULL/*[ResidentialTaxPortion]*/, NULL/*[ESPCommodityPrice]*/, 
@@ -828,8 +866,8 @@ INSERT INTO daes_AccentMarket..tbl_814_Service_Meter ( [Service_Key], [EntityIdC
  [MeterMaintenanceProviderDUNS], [MeterMaintenanceProvider], [MeterDataManagementAgentDUNS], [MeterDataManagementAgent], [SchedulingCoordinatorDUNS], [SchedulingCoordinator], [MeterInstallPending], [PackageOption], 
  [UsageCode], [MeterServiceVoltage], [LossFactor], [AMSIndicator], [SummaryInterval], [NextCycleRate], [VariableRateIndicator], [RateTerm], [RateTermDateExpirationDate])
 VALUES(
-  @ServiceKey/*[Service_Key]*/, NULL/*[EntityIdCode]*/, '125892623LG'/*[MeterNumber]*/, NULL/*[MeterCode]*/, 'KHMON'/*[MeterType]*/, 'RESHIWR_NCENT_IDR_WS_NOTOU'/*[LoadProfile]*/, '00'/*[RateClass]*/, '0000'/*[RateSubClass]*/, 
- '17'/*[MeterCycle]*/, NULL/*[MeterCycleDayOfMonth]*/, NULL/*[SpecialNeedsIndicator]*/, NULL/*[OldMeterNumber]*/, NULL/*[MeterOwnerIndicator]*/, NULL/*[EntityType]*/, NULL/*[TimeOFUse]*/, NULL/*[ESPRateCode]*/, 
+  @ServiceKey/*[Service_Key]*/, NULL/*[EntityIdCode]*/, '{meterNumber}'/*[MeterNumber]*/, NULL/*[MeterCode]*/, '{meterType}'/*[MeterType]*/, '{loadProfile}'/*[LoadProfile]*/, '{rateClass}'/*[RateClass]*/, {rateSubClass}/*[RateSubClass]*/, 
+ '{meterCycle}'/*[MeterCycle]*/, NULL/*[MeterCycleDayOfMonth]*/, NULL/*[SpecialNeedsIndicator]*/, NULL/*[OldMeterNumber]*/, NULL/*[MeterOwnerIndicator]*/, NULL/*[EntityType]*/, NULL/*[TimeOFUse]*/, NULL/*[ESPRateCode]*/, 
  NULL/*[OrganizationName]*/, NULL/*[FirstName]*/, NULL/*[MiddleName]*/, NULL/*[NamePrefix]*/, NULL/*[NameSuffix]*/, NULL/*[IdentificationCode]*/, NULL/*[EntityName2]*/, NULL/*[EntityName3]*/, NULL/*[Address1]*/, NULL/*[Address2]*/, 
  NULL/*[City]*/, NULL/*[State]*/, NULL/*[Zip]*/, NULL/*[CountryCode]*/, NULL/*[County]*/, NULL/*[PlanNumber]*/, NULL/*[ServicesReferenceNumber]*/, NULL/*[AffiliationNumber]*/, NULL/*[CostElement]*/, NULL/*[CoverageCode]*/, 
  NULL/*[LossReportNumber]*/, NULL/*[GeographicNumber]*/, NULL/*[ItemNumber]*/, NULL/*[LocationNumber]*/, NULL/*[PriceListNumber]*/, NULL/*[ProductType]*/, NULL/*[QualityInspectionArea]*/, NULL/*[ShipperCarOrderNumber]*/, 
@@ -854,13 +892,13 @@ INSERT INTO daes_Accent..CustomerTransactionRequest
  [ReferenceSourceID], [ReferenceNumber], [OriginalSourceID], [ESIID], [ResponseKey], [AlertID], [ProcessFlag], [ProcessDate], [EventCleared], [EventValidated], [DelayedEventValidated], [ConditionalEventValidated], 
  [TransactionTypeID], [CreateDate], [BulkInsertKey], [MeterAccessNote])
 VALUES (
- NULL/*[UserID]*/, @CustId, @PremID, '814'/*[TransactionType]*/, '05'/*[ActionCode]*/, '2017-08-07'/*[TransactionDate]*/, 1/*[Direction]*/, '2017-08-17'/*[RequestDate]*/, 'A'/*[ServiceActionCode]*/, 'S'/*[ServiceAction]*/, 
- NULL/*[StatusCode]*/, NULL/*[StatusReason]*/, @SourceID, '167528458620170807094645133305'/*[TransactionNumber]*/, @RefSourceId, @RefNumber, NULL/*[OriginalSourceID]*/, @ESIID/*[ESIID]*/, NULL/*[ResponseKey]*/, 
+ NULL/*[UserID]*/, @CustId, @PremID, '814'/*[TransactionType]*/, '05'/*[ActionCode]*/, '{transactionDate}'/*[TransactionDate]*/, 1/*[Direction]*/, '{requestDate}'/*[RequestDate]*/, 'A'/*[ServiceActionCode]*/, 'S'/*[ServiceAction]*/, 
+ NULL/*[StatusCode]*/, NULL/*[StatusReason]*/, @SourceID, '{transactionNbr}'/*[TransactionNumber]*/, @RefSourceId, @RefNumber, NULL/*[OriginalSourceID]*/, @ESIID/*[ESIID]*/, NULL/*[ResponseKey]*/, 
  NULL/*[AlertID]*/, 0/*[ProcessFlag]*/, NULL/*[ProcessDate]*/, 0/*[EventCleared]*/, 0/*[EventValidated]*/, 0/*[DelayedEventValidated]*/, 0/*[ConditionalEventValidated]*/, 28/*[TransactionTypeID]*/, GETDATE()/*[CreateDate]*/, 
  NULL/*[BulkInsertKey]*/, NULL/*[MeterAccessNote]*/
 )
 ";
-            SqlHelper.ExecuteNonQuery(_appConfig.ConnectionCsr, CommandType.Text, sql);
+            Common.DB.ExecuteQuery(sql, _appConfig.ConnectionCsr);
         }
 
         private static void GenerateEvents(List<int> eventTypeIds)

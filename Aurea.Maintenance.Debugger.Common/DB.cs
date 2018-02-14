@@ -1,4 +1,7 @@
-﻿namespace Aurea.Maintenance.Debugger.Common
+﻿using System.Text.RegularExpressions;
+using Aurea.Logging;
+
+namespace Aurea.Maintenance.Debugger.Common
 {
     using System;
     using System.Collections.Generic;
@@ -59,6 +62,116 @@
         public static void ExecuteQuery(string commandText, string connectionString)
         {
             SqlHelper.ExecuteNonQuery(connectionString, CommandType.Text, commandText);
+        }
+
+        public static DataSet GetDataSets(string commandText, string connectionString)
+        {
+            return SqlHelper.ExecuteDataset(connectionString, CommandType.Text, commandText);
+        }
+
+        /// <summary>
+        /// check if sql does not contaion any DML senctences, current limitation is insert into able check on same line, if there is line break it can't detect
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <returns>true if sql is safe</returns>
+        public static bool IsSqlSafe(string sql)
+        {
+            var rm = new Regex(@"(?:\bupdate\b|\bdelete\b|\btruncate\b|\balter\b).+", RegexOptions.IgnoreCase);
+            var rm2 = new Regex(@"(?:\b(insert)\b(.*?)\b(into)\b([^#@][a-zA-Z0-9])).+", RegexOptions.IgnoreCase);
+
+            //private string _strRegex = @"(?i)(?s)\b(select)\b(.*?)\b(from)\b|\b(insert)\b(.*?)\b(into)\b|\b(update)\b(.*?)\b(set)\b|\b(delete)(.*?)\b(from)\b";
+            var m1 = rm.Matches(sql).Count;
+            var m2 = rm2.Matches(sql).Count;
+            return m1 == 0 && m2 == 0;
+        }
+
+        public static void ExportResultsToFile(string commandText, string connectionString, string path, bool isXML)
+        {
+            if (!IsSqlSafe(commandText))
+            {
+                return;
+            }
+
+            var results = GetDataSets(commandText, connectionString);
+            var sb = new StringBuilder();
+            if (isXML)
+            {
+                sb.AppendLine("<?xml version=\"1.0\" encoding=\"utf-8\" ?>");
+                sb.AppendLine("<root>");
+            }
+            foreach (DataTable table in results.Tables)
+            {
+                foreach (DataRow row in table.Rows)
+                {
+                    var res = row[0];
+                    if (res is string s)
+                    {
+                        sb.AppendLine(s.Replace("paes_", "daes_").Replace("saes_", "daes_")); //always insert to daes
+                    }
+                }
+            }
+            if (isXML)
+            {
+                sb.AppendLine("</root>");
+            }
+            var xmlDoc = new XmlDocument();
+            xmlDoc.LoadXml(sb.ToString());
+
+            File.WriteAllText(path, XmlBeautify(xmlDoc));
+        }
+
+        private static string XmlBeautify(XmlDocument doc)
+        {
+            string strRetValue;
+            Encoding enc = Encoding.UTF8;
+
+            var xmlWriterSettings = new XmlWriterSettings
+            {
+                Encoding = enc,
+                Indent = true,
+                IndentChars = "    ",
+                NewLineChars = "\r\n",
+                NewLineHandling = NewLineHandling.Replace,
+                ConformanceLevel = ConformanceLevel.Document
+            };
+            using (MemoryStream ms = new MemoryStream())
+            {
+                using (XmlWriter writer = XmlWriter.Create(ms, xmlWriterSettings))
+                {
+                    doc.Save(writer);
+                    writer.Flush();
+                    ms.Flush();
+                    writer.Close();
+                }
+                ms.Position = 0;
+                using (var sr = new StreamReader(ms, enc))
+                {
+                    strRetValue = sr.ReadToEnd();
+                    sr.Close();
+                }
+
+                ms.Close();
+            }
+            return strRetValue;
+        }
+
+        public static void ImportRecordsFromQuery(string commandText, string sourceConnectionString, string destConnectionString, string tempPath)
+        {
+            var fileName = Path.ChangeExtension(Path.GetRandomFileName(), "xml");
+            try
+            {
+                ExportResultsToFile(commandText, sourceConnectionString, Path.Combine(tempPath, fileName), true);
+
+                ImportFiles(tempPath, Path.GetFileNameWithoutExtension(fileName), destConnectionString);
+            }
+            finally
+            {
+                if (File.Exists(fileName))
+                {
+                    try{File.Delete(fileName);}catch{}
+                }
+            }
+
         }
 
         public static IEnumerable<string> ReadAsLines(string filename)
@@ -286,10 +399,10 @@
                             else
                             {
                                 string primaryKeyName = dataHeaders.First();
-                                primaryKeyColumn = (DataColumn)
+                                primaryKeyColumn = (DataColumn)(
                                     from DataColumn c in ds.Tables[0].Columns
                                     where c.ColumnName.Equals(primaryKeyName, StringComparison.InvariantCultureIgnoreCase)
-                                    select c;
+                                    select c).SingleOrDefault();
                             }
                             
                             var primaryKeyIndex = dataHeaders.FindIndex(x => x.Equals(primaryKeyColumn.ColumnName, StringComparison.InvariantCultureIgnoreCase));

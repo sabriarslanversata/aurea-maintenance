@@ -1,6 +1,7 @@
 ﻿// ReSharper disable InconsistentNaming
 using System.Runtime.CompilerServices;
 using Aurea.Maintenance.Debugger.Common.Extensions;
+using Aurea.TaskToaster;
 
 namespace Aurea.Maintenance.Debugger.Stream
 {
@@ -32,6 +33,7 @@ namespace Aurea.Maintenance.Debugger.Stream
             : base(connectionMarket, connectionCSR, connectionAdmin)
         {
             base.Client = Clients.Stream.Abbreviation();
+            base.ClientID = Clients.Stream.Id();
             base.ServiceName = Assembly.GetEntryAssembly().FullName;
         }
 
@@ -66,12 +68,113 @@ namespace Aurea.Maintenance.Debugger.Stream
             SimulatePostEnrollmentEvent(clientConfiguration);
             CreateMockData();
             SimulateInbound814E();
+            Simulate_AESCIS_11221();
+            Simulate_AESCIS_19713();
+            
+
+            // copy customers from paes
+            var paesCustIds = new List<int> { 762940, 762939, 762931, 762928, 762894, 762885, 762884, 762872, 762865, 762863 };
+            CopyCustomerFromProd(paesCustIds);
+
+            
+
+            //copy customers from saes
+            var saesCustIds = new List<int> { 762884, 762872, 762865, 762706, 762664, 697013, 696563, 695975, 695962, 695922 };
+            CopyCustomerFromUA(saesCustIds);
+
+
              */
             #endregion
 
-            Simulate_AESCIS_11221();
+
+
+            Simulate_AESCIS_19713_2();
+
+
+
+
             _logger.Info("Debug session has ended");
             Console.ReadLine();
+        }
+
+        private static void CopyCustomerFromProd(List<int> custIds)
+        {
+            custIds.ForEach((custId) =>
+            {
+                var sql = string.Format(MockData.Scripts.CustomerExportScript, custId, 5);
+                DB.ImportRecordsFromQuery(
+                    sql,
+                    _appConfig.ConnectionCsr
+                        .Replace("daes_", "paes_")
+                        .Replace("SGISUSEUAV01.aesua.local", "SGISUSEPRV01.aesprod.local"),
+                    _appConfig.ConnectionCsr,
+                    _appDir);
+            });
+        }
+
+        private static void CopyCustomerFromUA(List<int> custIds)
+        {
+            custIds.ForEach((custId) =>
+            {
+                var sql = string.Format(MockData.Scripts.CustomerExportScript, custId, 5);
+                DB.ImportRecordsFromQuery(
+                    sql,
+                    _appConfig.ConnectionCsr.Replace("daes_", "saes_"),
+                    _appConfig.ConnectionCsr,
+                    _appDir);
+            });
+        }
+
+        private static void Simulate_AESCIS_19713_2()
+        {
+            var myExport = new MyExport(_appConfig.ConnectionMarket, _appConfig.ConnectionCsr, _clientConfig.ConnectionBillingAdmin);
+            DB.ImportFiles(_mockDataDir, "New-C1", _appConfig.ConnectionCsr);
+
+            GenerateEvents(new List<int> { 10 });
+            ProcessEvents();
+
+            // export 814
+            myExport.MyCreateMarket814();
+        }
+
+        private static void Simulate_AESCIS_19713()
+        {
+            var myExport = new MyExport(_appConfig.ConnectionMarket, _appConfig.ConnectionCsr, _clientConfig.ConnectionBillingAdmin);
+            DB.ImportFiles(_mockDataDir, "New-C1", _appConfig.ConnectionCsr);
+
+            PromoteEnrollCustomers();
+
+            GenerateEvents(new List<int> {10});
+            ProcessEvents();
+
+            // export 814
+            myExport.MyCreateMarket814();
+        }
+
+        private static void PromoteEnrollCustomers()
+        {
+            CIS.Clients.Stream.MaintenanceHandlers.Enrollment enrollmentPromotion = new CIS.Clients.Stream.MaintenanceHandlers.Enrollment(_appConfig.ConnectionCsr);
+            enrollmentPromotion.ProcessEnrollments();
+        }
+
+
+        private static void GenerateEvents(List<int> eventTypeIds)
+        {
+            var list = CIS.Element.Core.Event.EventTypeList.Load(_clientConfig.ClientId);
+
+            eventTypeIds.ForEach(id =>
+            {
+                var htParams = new Hashtable { { "EventTypeID", id } };
+                var _event = list.SingleOrDefault(x => x.EventTypeID == id);
+                new CIS.Engine.Event.EventGenerator().GenerateEvent(_clientConfig.ClientId, htParams, _clientConfig.Client, _appConfig.ConnectionCsr, _clientConfig.ConnectionBillingAdmin, _event.AssemblyName, _event.ClassName);
+            });
+        }
+
+
+        private static void ProcessEvents()
+        {
+            var engine = new CIS.Engine.Event.Queue(_clientConfig.ConnectionBillingAdmin);
+            engine.ProcessEventQueue(_appConfig.ClientID, _appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _appConfig.ClientAbbreviation);
         }
 
         private static void Simulate_AESCIS_11221()
