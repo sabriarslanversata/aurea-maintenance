@@ -77,16 +77,23 @@ namespace Aurea.Maintenance.Debugger.Stream
             var saesCustIds = new List<int> { 762884, 762872, 762865, 762706, 762664, 697013, 696563, 695975, 695962, 695922 };
             CopyCustomerFromUA(saesCustIds);
 
-
              */
             #endregion
 
-            // copy customers from paes
-            var paesCustIds = new List<int> { 623195, 733080, 735369, 736663, 741765, 762049, 762364, 758937, 756677, 759294, 755203, 755444, 760289, 760715 };
-            CopyCustomerFromProd(paesCustIds);
 
-            Simulate_AESCIS_20523();
-            
+
+
+            // copy customers from paes
+            var paesCustIds = new List<int> { 755694, 755515, 759529 };
+            CopyCustomerFromProd(paesCustIds);
+            var resp = "Y";
+            while ("Y".Equals(resp,StringComparison.InvariantCultureIgnoreCase))
+            {
+                Simulate_AESCIS_20523();
+                Console.WriteLine("do you want to Repeat call");
+                resp = Console.ReadLine().Trim();
+            }
+
             _logger.Info("Debug session has ended");
             Console.ReadLine();
         }
