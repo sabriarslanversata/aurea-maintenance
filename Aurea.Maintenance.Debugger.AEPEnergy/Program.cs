@@ -78,10 +78,28 @@
             //Simulate_AESCIS16615("AESCIS-16615-C4", 116549, 605, DateTime.Parse("2017-12-24T05:18:12-06:00"), "N", DateTime.Today.Date);
             //Simulate_AESCIS16615_AfterRateTransitionSkipImport();
             //prepData2Simulate_AESCIS_16615_onUA();
-            Simulate_AESCIS16615_AfterRateTransitionDoImport("14");
+            //Simulate_AESCIS16615_AfterRateTransitionDoImport("14");
+            Simulate_AESCIS_16615_From814CAccept(131679);
 
             _logger.Info("Debug Session has ended");
             Console.ReadKey();
+        }
+
+        private static void Simulate_AESCIS_16615_From814CAccept(int custId)
+        {
+            var sql = string.Format(MockData.ExportScripts.ExportCustomer4Simulate814CAccept, custId);
+            DB.ImportQueryResultsFromProduction(sql, _appConfig.ConnectionCsr, _appDirectory,
+                (path, connectionString) =>
+                {
+                    // manipulate ChangeRequest, RateTransition + 12 month
+
+                    //disable triggers on ChangeRequest table
+                    DB.ExecuteQuery("ALTER TABLE ChangeRequest DISABLE TRIGGER ALL", connectionString);
+                },
+                connectionString =>
+                {
+                    DB.ExecuteQuery("ALTER TABLE ChangeRequest ENABLE TRIGGER ALL", connectionString);
+                });
         }
 
         private static void simulate_AESCIS16615_WS()

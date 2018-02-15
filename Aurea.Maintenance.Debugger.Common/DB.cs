@@ -17,11 +17,14 @@ namespace Aurea.Maintenance.Debugger.Common
 
     public static class DB
     {
-        private static readonly Dictionary<string, string> insertSqlCache = new Dictionary<string, string>();
-        private static readonly Dictionary<string, string> updateSqlCache = new Dictionary<string, string>();
-        private static readonly Dictionary<string, DataSet> metaDataCache = new Dictionary<string, DataSet>();
-        private static readonly List<string> constrainCheckDisabledTables = new List<string>();
-        private static readonly List<string> identityInsertCheckClosedTables = new List<string>();
+        private static readonly Dictionary<string, string> InsertSqlCache = new Dictionary<string, string>();
+        private static readonly Dictionary<string, string> UpdateSqlCache = new Dictionary<string, string>();
+        private static readonly Dictionary<string, DataSet> MetaDataCache = new Dictionary<string, DataSet>();
+        private static readonly List<string> ConstrainCheckDisabledTables = new List<string>();
+        private static readonly List<string> IdentityInsertCheckClosedTables = new List<string>();
+
+        public delegate void BeforeImportDelegate(string xmlPath, string connectionString);
+        public delegate void AfterImportDelegate(string connectionString);
 
         public static T ReadSingleValue<T>(string commandText, string connectionString, int columnNumber = 0)
         {
@@ -83,26 +86,6 @@ namespace Aurea.Maintenance.Debugger.Common
             var m1 = rm.Matches(sql).Count;
             var m2 = rm2.Matches(sql).Count;
             return m1 == 0 && m2 == 0;
-        }
-
-        public static void ImportQueryResultsFromProduction(string sql, string connectionString, string tempPath)
-        {
-            ImportRecordsFromQuery(
-                sql,
-                connectionString
-                    .Replace("daes_", "paes_")
-                    .Replace("SGISUSEUAV01.aesua.local", "SGISUSEPRV01.aesprod.local"),
-                connectionString,
-                tempPath);
-        }
-
-        public static void ImportQueryResultsFromUA(string sql, string connectionString, string tempPath)
-        {
-            ImportRecordsFromQuery(
-                sql,
-                connectionString.Replace("daes_", "saes_"),
-                connectionString,
-                tempPath);
         }
 
         public static void ExportResultsToFile(string commandText, string connectionString, string path, bool isXML)
@@ -175,14 +158,47 @@ namespace Aurea.Maintenance.Debugger.Common
             return strRetValue;
         }
 
-        public static void ImportRecordsFromQuery(string commandText, string sourceConnectionString, string destConnectionString, string tempPath)
+        public static void ImportQueryResultsFromProduction(string sql, string connectionString, string tempPath,
+            BeforeImportDelegate beforeImport = null, AfterImportDelegate afterImport = null)
+        {
+            ImportRecordsFromQuery(
+                sql,
+                connectionString
+                    .Replace("daes_", "paes_")
+                    .Replace("SGISUSEUAV01.aesua.local", "SGISUSEPRV01.aesprod.local"),
+                connectionString,
+                tempPath,
+                beforeImport,
+                afterImport);
+        }
+
+        public static void ImportQueryResultsFromUa(string sql, string connectionString, string tempPath,
+            BeforeImportDelegate beforeImport = null, AfterImportDelegate afterImport = null)
+        {
+            ImportRecordsFromQuery(
+                sql,
+                connectionString.Replace("daes_", "saes_"),
+                connectionString,
+                tempPath,
+                beforeImport,
+                afterImport);
+        }
+
+        public static void ImportRecordsFromQuery(string commandText, string sourceConnectionString,
+            string destConnectionString, string tempPath, BeforeImportDelegate beforeImport = null,
+            AfterImportDelegate afterImport = null)
         {
             var fileName = Path.ChangeExtension(Path.GetRandomFileName(), "xml");
             try
             {
-                ExportResultsToFile(commandText, sourceConnectionString, Path.Combine(tempPath, fileName), true);
+                var xmlPath = Path.Combine(tempPath, fileName);
+                ExportResultsToFile(commandText, sourceConnectionString, xmlPath, true);
+
+                beforeImport?.Invoke(xmlPath, destConnectionString);
 
                 ImportFiles(tempPath, Path.GetFileNameWithoutExtension(fileName), destConnectionString);
+
+                afterImport?.Invoke(destConnectionString);
             }
             finally
             {
@@ -232,16 +248,16 @@ namespace Aurea.Maintenance.Debugger.Common
                 }
             );
 
-            if (constrainCheckDisabledTables.Count > 0)
+            if (ConstrainCheckDisabledTables.Count > 0)
             {
                 var sqlBatch = new StringBuilder();
-                constrainCheckDisabledTables.ForEach(tableName =>
+                ConstrainCheckDisabledTables.ForEach(tableName =>
                 {
                     sqlBatch.AppendLine($"ALTER TABLE {tableName} WITH CHECK CHECK CONSTRAINT ALL");
                 });
 
                 SqlHelper.ExecuteNonQuery(connectionString, CommandType.Text, sqlBatch.ToString());
-                constrainCheckDisabledTables.Clear();
+                ConstrainCheckDisabledTables.Clear();
             }
         }
 
@@ -258,10 +274,10 @@ namespace Aurea.Maintenance.Debugger.Common
                 var sqlBatch = new StringBuilder();
 
                 var tableName = reader.First();
-                if (constrainCheckDisabledTables.IndexOf(tableName) < 0)
+                if (ConstrainCheckDisabledTables.IndexOf(tableName) < 0)
                 {
                     sqlBatch.AppendLine($"ALTER TABLE {tableName} NOCHECK CONSTRAINT ALL");
-                    constrainCheckDisabledTables.Add(tableName);
+                    ConstrainCheckDisabledTables.Add(tableName);
                 }
 
                 var headers = reader
@@ -276,7 +292,7 @@ namespace Aurea.Maintenance.Debugger.Common
                     return;
 
                 DataSet ds;
-                if (!metaDataCache.Any(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase))) 
+                if (!MetaDataCache.Any(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase))) 
                 {
                     var sql = $"SELECT * FROM {tableName} WHERE 1 = 0";//used for getting meta data only
 
@@ -284,11 +300,11 @@ namespace Aurea.Maintenance.Debugger.Common
                     ds = new DataSet(tableName);
                     dataAdapter.FillSchema(ds, SchemaType.Source, tableName);
                     dataAdapter.Fill(ds, tableName);
-                    metaDataCache.Add(tableName, ds);
+                    MetaDataCache.Add(tableName, ds);
                 }
                 else
                 {
-                    ds = metaDataCache.SingleOrDefault(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)).Value;
+                    ds = MetaDataCache.SingleOrDefault(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)).Value;
                 }
 
                 var hasPrimaryKey = ds.Tables[0].PrimaryKey.Any();
@@ -330,10 +346,10 @@ namespace Aurea.Maintenance.Debugger.Common
                     }
                 }
 
-                if (identityInsertCheckClosedTables.Any(x => x.Equals(tableName, StringComparison.InvariantCultureIgnoreCase))) 
+                if (IdentityInsertCheckClosedTables.Any(x => x.Equals(tableName, StringComparison.InvariantCultureIgnoreCase))) 
                 {
                     sqlBatch.AppendLine($"SET IDENTITY_INSERT {tableName} OFF ");
-                    identityInsertCheckClosedTables.RemoveAll(x => x.Equals(tableName, StringComparison.InvariantCultureIgnoreCase));
+                    IdentityInsertCheckClosedTables.RemoveAll(x => x.Equals(tableName, StringComparison.InvariantCultureIgnoreCase));
                 }
 
                 SqlHelper.ExecuteNonQuery(connectionString, CommandType.Text, sqlBatch.ToString());
@@ -395,7 +411,7 @@ namespace Aurea.Maintenance.Debugger.Common
                             }
 
                             DataSet ds;
-                            if (!metaDataCache.Any(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)))
+                            if (!MetaDataCache.Any(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)))
                             {
                                 var sql = $"SELECT * FROM {tableName} WHERE 1 = 0";//used for getting meta data only
 
@@ -403,11 +419,11 @@ namespace Aurea.Maintenance.Debugger.Common
                                 ds = new DataSet(tableName);
                                 dataAdapter.FillSchema(ds, SchemaType.Source, tableName);
                                 dataAdapter.Fill(ds, tableName);
-                                metaDataCache.Add(tableName, ds);
+                                MetaDataCache.Add(tableName, ds);
                             }
                             else
                             {
-                                ds = metaDataCache.SingleOrDefault(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)).Value;
+                                ds = MetaDataCache.SingleOrDefault(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)).Value;
                             }
 
                             DataColumn primaryKeyColumn;
@@ -473,10 +489,10 @@ namespace Aurea.Maintenance.Debugger.Common
                         continue;
                     }
 
-                    if (!constrainCheckDisabledTables.Any(x => x.Equals(tableName, StringComparison.InvariantCultureIgnoreCase))) 
+                    if (!ConstrainCheckDisabledTables.Any(x => x.Equals(tableName, StringComparison.InvariantCultureIgnoreCase))) 
                     {
                         sqlBatch.AppendLine($"ALTER TABLE {tableName} NOCHECK CONSTRAINT ALL");
-                        constrainCheckDisabledTables.Add(tableName);
+                        ConstrainCheckDisabledTables.Add(tableName);
                     }
 
                     if (XNode.ReadFrom(reader) is XElement el)
@@ -490,7 +506,7 @@ namespace Aurea.Maintenance.Debugger.Common
                             }
 
                             DataSet ds;
-                            if (!metaDataCache.Any(x=>x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)))
+                            if (!MetaDataCache.Any(x=>x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)))
                             {
                                 var sql = $"SELECT * FROM {tableName} WHERE 1 = 0";//used for getting meta data only
 
@@ -498,11 +514,11 @@ namespace Aurea.Maintenance.Debugger.Common
                                 ds = new DataSet(tableName);
                                 dataAdapter.FillSchema(ds, SchemaType.Source, tableName);
                                 dataAdapter.Fill(ds, tableName);
-                                metaDataCache.Add(tableName, ds);
+                                MetaDataCache.Add(tableName, ds);
                             }
                             else
                             {
-                                ds = metaDataCache.SingleOrDefault(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)).Value;
+                                ds = MetaDataCache.SingleOrDefault(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)).Value;
                             }
 
                             var hasPrimaryKey = ds.Tables[0].PrimaryKey.Any() && ds.Tables[0].PrimaryKey[0].AutoIncrement;
@@ -554,10 +570,10 @@ namespace Aurea.Maintenance.Debugger.Common
                                 sqlBatch.AppendLine(CreateUpdateSql(tableName, ds.Tables[0].Columns, dbHeaders, dbValues.ToArray(), primaryKeyColumn.ColumnName, primaryKeyValue));
                             }
 
-                            if (identityInsertCheckClosedTables.Any(x=>x.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)))
+                            if (IdentityInsertCheckClosedTables.Any(x=>x.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)))
                             {
                                 sqlBatch.AppendLine($"SET IDENTITY_INSERT {tableName} OFF ");
-                                identityInsertCheckClosedTables.RemoveAll(x => x.Equals(tableName, StringComparison.InvariantCultureIgnoreCase));
+                                IdentityInsertCheckClosedTables.RemoveAll(x => x.Equals(tableName, StringComparison.InvariantCultureIgnoreCase));
                             }
                         }
                         finally
@@ -642,21 +658,21 @@ namespace Aurea.Maintenance.Debugger.Common
         private static string CreateInsertSql(string tableName, DataColumnCollection columns, List<string> columnNames, string[] values, bool isPrimaryKeysHasValue, bool hasPrimaryKey)
         {
             var sql = new StringBuilder();
-            if (hasPrimaryKey && isPrimaryKeysHasValue && !identityInsertCheckClosedTables.Any(x => x.Equals(tableName, StringComparison.InvariantCultureIgnoreCase))) 
+            if (hasPrimaryKey && isPrimaryKeysHasValue && !IdentityInsertCheckClosedTables.Any(x => x.Equals(tableName, StringComparison.InvariantCultureIgnoreCase))) 
             {
                 sql.AppendLine($"SET IDENTITY_INSERT {tableName} ON ");
-                identityInsertCheckClosedTables.Add(tableName);
+                IdentityInsertCheckClosedTables.Add(tableName);
             }
 
             string insertSqlHeader;
-            if (!insertSqlCache.Any(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)))
+            if (!InsertSqlCache.Any(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)))
             {
                 insertSqlHeader = $"INSERT INTO {tableName} ( [{string.Join("],[", columnNames)}] ) SELECT ";
-                insertSqlCache.Add(tableName, insertSqlHeader);
+                InsertSqlCache.Add(tableName, insertSqlHeader);
             }
             else
             {
-                insertSqlHeader = insertSqlCache.SingleOrDefault(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)).Value;
+                insertSqlHeader = InsertSqlCache.SingleOrDefault(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)).Value;
             }
 
             sql.AppendLine(insertSqlHeader);
@@ -683,14 +699,14 @@ namespace Aurea.Maintenance.Debugger.Common
         {
             var sql = new StringBuilder();
             string updateSqlHeader;
-            if (!updateSqlCache.Any(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)))
+            if (!UpdateSqlCache.Any(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)))
             {
                 updateSqlHeader = $"UPDATE {tableName} SET ";
-                updateSqlCache.Add(tableName, updateSqlHeader);
+                UpdateSqlCache.Add(tableName, updateSqlHeader);
             }
             else
             {
-                updateSqlHeader = updateSqlCache.SingleOrDefault(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)).Value;
+                updateSqlHeader = UpdateSqlCache.SingleOrDefault(x => x.Key.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)).Value;
             }
             sql.AppendLine(updateSqlHeader);
 

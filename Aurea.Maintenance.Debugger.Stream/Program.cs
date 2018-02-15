@@ -123,7 +123,7 @@ namespace Aurea.Maintenance.Debugger.Stream
             custIds.ForEach((custId) =>
             {
                 var sql = string.Format(MockData.Scripts.CustomerExportScript, custId, 5);
-                DB.ImportQueryResultsFromUA( sql, _appConfig.ConnectionCsr, _appDir);
+                DB.ImportQueryResultsFromUa( sql, _appConfig.ConnectionCsr, _appDir);
             });
         }
 

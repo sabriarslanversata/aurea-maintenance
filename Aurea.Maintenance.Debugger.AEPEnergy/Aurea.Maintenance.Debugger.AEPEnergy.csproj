@@ -110,6 +110,16 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
+    <Compile Include="MockData\ExportScripts.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ExportScripts.resx</DependentUpon>
+    </Compile>
+    <Compile Include="MockData\MockDataXMLs.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MockDataXMLs.resx</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -158,60 +168,25 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="MockData\AESCIS-16615-BasicTC-05-Current.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\AESCIS-16615-BasicTC-14-Next2.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\AESCIS-16615-TC-14-814Accept.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\AESCIS-16615-TC-13-814Accept.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\AESCIS-16615-BasicTC-13-Next.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\AESCIS-16615-TC-11-814Accept.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\AESCIS-16615-BasicTC-02.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\AESCIS-16615-TC-05-814Accept.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\AESCIS-16615-BasicTC-01.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\AESCIS-16615-BasicTC-03.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\AESCIS-16615-BasicTC-04.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\AESCIS-16615-BasicTC-07.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\AESCIS-16615-BasicTC-06.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\AESCIS-16615-BasicTC-08.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\AESCIS-16615-BasicTC-12.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\AESCIS-16615-BasicTC-09.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\AESCIS-16615-BasicTC-10.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\AESCIS-16615-TC-11-RateTransitionOK.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <None Include="MockData\AESCIS-16615-BasicTC-05-Current.xml" />
+    <None Include="MockData\AESCIS-16615-BasicTC-14-Next2.xml" />
+    <None Include="MockData\AESCIS-16615-TC-14-814Accept.xml" />
+    <None Include="MockData\AESCIS-16615-TC-13-814Accept.xml" />
+    <None Include="MockData\AESCIS-16615-BasicTC-13-Next.xml" />
+    <None Include="MockData\AESCIS-16615-TC-11-814Accept.xml" />
+    <None Include="MockData\AESCIS-16615-BasicTC-02.xml" />
+    <None Include="MockData\AESCIS-16615-TC-05-814Accept.xml" />
+    <None Include="MockData\AESCIS-16615-BasicTC-01.xml" />
+    <None Include="MockData\AESCIS-16615-BasicTC-03.xml" />
+    <None Include="MockData\AESCIS-16615-BasicTC-04.xml" />
+    <None Include="MockData\AESCIS-16615-BasicTC-07.xml" />
+    <None Include="MockData\AESCIS-16615-BasicTC-06.xml" />
+    <None Include="MockData\AESCIS-16615-BasicTC-08.xml" />
+    <None Include="MockData\AESCIS-16615-BasicTC-12.xml" />
+    <None Include="MockData\AESCIS-16615-BasicTC-09.xml" />
+    <None Include="MockData\AESCIS-16615-BasicTC-10.xml" />
+    <None Include="MockData\AESCIS-16615-TC-11-RateTransitionOK.xml" />
+    <Content Include="MockData\ExportCustomer4Simulate814CAccept.sql" />
     <None Include="Connected Services\AEPEnroll\Metadata.disco" />
     <None Include="Connected Services\AEPEnroll\configuration91.svcinfo" />
     <None Include="Connected Services\AEPEnroll\configuration.svcinfo" />
@@ -219,54 +194,7 @@
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
-    <Content Include="MockData\MockTextFiles\03-AESCIS-16615-Products.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\MockTextFiles\02-AESCIS-16615-RateDetails.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\MockTextFiles\01-AESCIS-16615-Rates.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\MockTextFiles\04-AESCIS-16615-RateTransition.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\MockTextFiles\05-AESCIS-16615-Premise.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\MockTextFiles\06-AESCIS-16615-Customer.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\MockTextFiles\07-AESCIS-16615-Address.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\MockTextFiles\08-AESCIS-16615-AccountsReceivable.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\MockTextFiles\09-AESCIS-16615-CustomerAdditionalInfo.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\MockTextFiles\10-AESCIS-16615-Meter.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\MockTextFiles\11-AESCIS-16615-Consumption.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\MockTextFiles\12-AESCIS-16615-Invoice.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\MockTextFiles\13-AESCIS-16615-InvoiceXml.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\MockTextFiles\14-AESCIS-16615-InvoiceLog.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\MockTextFiles\15-AESCIS-16615-AccountsReceivableHistory.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MockData\AESCIS-16615-BasicTC-11.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <None Include="MockData\AESCIS-16615-BasicTC-11.xml" />
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\..\AureaCIS\Clients\AEPEnergy\Deployment\Debug\bin\CIS.Components.dll" />
@@ -276,6 +204,16 @@
   </ItemGroup>
   <ItemGroup>
     <WCFMetadataStorage Include="Connected Services\AEPEnroll\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="MockData\ExportScripts.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ExportScripts.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MockData\MockDataXMLs.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>MockDataXMLs.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
