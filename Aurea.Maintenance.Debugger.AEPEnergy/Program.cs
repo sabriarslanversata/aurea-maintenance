@@ -1,4 +1,6 @@
-﻿namespace Aurea.Maintenance.Debugger.AEPEnergy
+﻿using System.Xml;
+
+namespace Aurea.Maintenance.Debugger.AEPEnergy
 {
     using System;
     using System.Collections.Generic;
@@ -91,15 +93,60 @@
             DB.ImportQueryResultsFromProduction(sql, _appConfig.ConnectionCsr, _appDirectory,
                 (path, connectionString) =>
                 {
-                    // manipulate ChangeRequest, RateTransition + 12 month
+                    // manipulate ChangeRequest, RateTransition + 12 month, delete CustomerTransactionRequest aftrer 814_C last inbound
+                    var doc = new XmlDocument();
+                    doc.Load(path);
+                    
+                    //create prefix<->namespace mappings (if any) 
+                    XmlNamespaceManager nsMgr = new XmlNamespaceManager(doc.NameTable);
+                    var rootNode = doc.SelectSingleNode("root", nsMgr);
+
+                    //Query the document 
+                    var changeRequest = doc.SelectSingleNode("(//ChangeRequest)[last()]", nsMgr);
+                    changeRequest.Attributes["StatusID"].Value = "8";
+
+                    var lastRateTransition = doc.SelectSingleNode("(//RateTransition)[last()]", nsMgr);
+                    lastRateTransition.Attributes["StatusID"].Value = "1";
+                    var lastRtSwitchDate = DateTime.Parse(lastRateTransition.Attributes["SwitchDate"].Value);
+                    lastRateTransition.Attributes["EndDate"].Value = lastRtSwitchDate.AddMonths(12).ToString("yyyy-MM-ddT00:00:00");
+
+                    var lastCTR = doc.SelectSingleNode("(//CustomerTransactionRequest)[last()]", nsMgr);
+                    while (lastCTR.Attributes["TransactionType"].Value == "814" &&
+                           lastCTR.Attributes["ActionCode"].Value != "C") 
+                    {
+                        rootNode.RemoveChild(lastCTR);
+                        lastCTR = doc.SelectSingleNode("(//CustomerTransactionRequest)[last()]", nsMgr);
+                    }
+
+                    //rootNode.RemoveChild(lastCTR);
+                    lastCTR = doc.SelectSingleNode("(//CustomerTransactionRequest)[last()]", nsMgr);
+                    while (lastCTR.Attributes["TransactionType"].Value == "814" &&
+                           lastCTR.Attributes["ActionCode"].Value == "C" &&
+                           lastCTR.Attributes["Direction"].Value == "1") 
+                    {
+                        rootNode.RemoveChild(lastCTR);
+                        lastCTR = doc.SelectSingleNode("(//CustomerTransactionRequest)[last()]", nsMgr);
+                    }
+                    var last814C = doc.SelectSingleNode("(//daes_AEPEnergyMarket..tbl_814_header)[last()]", nsMgr);
+                    last814C.Attributes["ProcessFlag"].Value = "0";
+                    last814C.Attributes.Remove(last814C.Attributes["ProcessDate"]);
+                    doc.Save(path);
 
                     //disable triggers on ChangeRequest table
-                    DB.ExecuteQuery("ALTER TABLE ChangeRequest DISABLE TRIGGER ALL", connectionString);
+                    //DB.ExecuteQuery("ALTER TABLE ChangeRequest DISABLE TRIGGER ALL", connectionString);
                 },
                 connectionString =>
                 {
-                    DB.ExecuteQuery("ALTER TABLE ChangeRequest ENABLE TRIGGER ALL", connectionString);
+                    //DB.ExecuteQuery("ALTER TABLE ChangeRequest ENABLE TRIGGER ALL", connectionString);
+                    //DB.ExecuteQuery("UPDATE daes_AEPEnergy..EventEvaluationQueue SET Status = 0 WHERE EventEvaluationQueueId = (SELECT TOP 1 EventEvaluationQueueID FROM daes_AEPEnergy..EventEvaluationQueue ORDER BY 1 DESC)", connectionString);
                 });
+
+            ExecuteImportChangeRequests();
+
+            GenerateEvents(new List<int> { 27 });//ChangeRequestEvaluation
+            ProcessEvents();
+            GenerateEvents(new List<int> { 27 });//ChangeRequestEvaluation
+            ProcessEvents();
         }
 
         private static void simulate_AESCIS16615_WS()
