@@ -121,4 +121,7 @@
   <data name="ExportCustomer4Simulate814CAccept" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>exportcustomer4simulate814caccept.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="ExportCustomer4SimulateRollover814CAccept" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>exportcustomer4simulaterollover814caccept.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>

@@ -186,6 +186,7 @@
     <None Include="MockData\AESCIS-16615-BasicTC-09.xml" />
     <None Include="MockData\AESCIS-16615-BasicTC-10.xml" />
     <None Include="MockData\AESCIS-16615-TC-11-RateTransitionOK.xml" />
+    <Content Include="MockData\ExportCustomer4SimulateRollover814CAccept.sql" />
     <Content Include="MockData\ExportCustomer4Simulate814CAccept.sql" />
     <None Include="Connected Services\AEPEnroll\Metadata.disco" />
     <None Include="Connected Services\AEPEnroll\configuration91.svcinfo" />

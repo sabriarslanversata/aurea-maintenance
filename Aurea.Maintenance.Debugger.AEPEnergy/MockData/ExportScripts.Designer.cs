@@ -61,11 +61,32 @@ namespace Aurea.Maintenance.Debugger.AEPEnergy.MockData {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to DECLARE @CustId INT = {0}
+        ///DECLARE @PremId INT = (SELECT PremId FROM Premise WHERE CustId = @CustId)
+        ///DECLARE @AcctsRecID INT = (SELECT AcctsRecID FROM Customer WHERE CustId = @CustId)
+        ///DECLARE @RateTransitionIdToSimulate INT = (SELECT RateTransitionId FROM RateTransition WHERE CustId = @CustId AND UserId = 289)
+        ///DECLARE @ChangeRequestIdToInvoke INT = (SELECT ChangeRequestId FROM ChangeRequest WHERE ElementId = 6 AND ElementPrimaryKey = @RateTransitionIdToSimulate)
+        ///
+        ///SELECT CAST((SELECT * FROM Customer WHE [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ExportCustomer4Simulate814CAccept {
             get {
                 return ResourceManager.GetString("ExportCustomer4Simulate814CAccept", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @CustId INT = {0}
+        ///DECLARE @PremId INT = (SELECT PremId FROM Premise WHERE CustId = @CustId)
+        ///DECLARE @AcctsRecID INT = (SELECT AcctsRecID FROM Customer WHERE CustId = @CustId)
+        ///DECLARE @RateTransitionIdToSimulate INT = (SELECT RateTransitionId FROM RateTransition WHERE CustId = @CustId AND UserId = 289)
+        ///DECLARE @ChangeRequestIdToInvoke INT = (SELECT ChangeRequestId FROM ChangeRequest WHERE ElementId = 6 AND ElementPrimaryKey = @RateTransitionIdToSimulate)
+        ///
+        ///SELECT CAST((SELECT * FROM Customer WHE [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ExportCustomer4SimulateRollover814CAccept {
+            get {
+                return ResourceManager.GetString("ExportCustomer4SimulateRollover814CAccept", resourceCulture);
             }
         }
     }
