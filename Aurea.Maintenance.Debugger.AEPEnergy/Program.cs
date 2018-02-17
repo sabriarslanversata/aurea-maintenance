@@ -74,16 +74,28 @@ namespace Aurea.Maintenance.Debugger.AEPEnergy
 
         static void Main(string[] args)
         {
-            //Simulate_AESCIS17193("4184386");
-            //simulate_AESCIS16615_WS();
-            //Simulate_AESCIS16615("AESCIS-16615-Basic", 19981, 543, DateTime.Parse("2017-12-05T23:31:41-06:00"), "N", DateTime.Today.Date);
-            //Simulate_AESCIS16615("AESCIS-16615-C4", 116549, 605, DateTime.Parse("2017-12-24T05:18:12-06:00"), "N", DateTime.Today.Date);
-            //Simulate_AESCIS16615_AfterRateTransitionSkipImport();
-            //prepData2Simulate_AESCIS_16615_onUA();
-            //Simulate_AESCIS16615_AfterRateTransitionDoImport("14");
+            #region old cases
+            /*
 
-            //SimulateChangeProductRequest_AESCIS_16615_From814CAccept(131679);
-            SimulateRollover_AESCIS_16615_From814CAccept(125489);
+            Simulate_AESCIS17193("4184386");
+            simulate_AESCIS16615_WS();
+            Simulate_AESCIS16615("AESCIS-16615-Basic", 19981, 543, DateTime.Parse("2017-12-05T23:31:41-06:00"), "N", DateTime.Today.Date);
+            Simulate_AESCIS16615("AESCIS-16615-C4", 116549, 605, DateTime.Parse("2017-12-24T05:18:12-06:00"), "N", DateTime.Today.Date);
+            Simulate_AESCIS16615_AfterRateTransitionSkipImport();
+            prepData2Simulate_AESCIS_16615_onUA();
+            Simulate_AESCIS16615_AfterRateTransitionDoImport("14");
+            */
+            #endregion
+
+            var resp = "Y";
+            while ("Y".Equals(resp, StringComparison.InvariantCultureIgnoreCase))
+            {
+                //SimulateRollover_AESCIS_16615_From814CAccept(125489);
+                SimulateChangeProductRequest_AESCIS_16615_From814CAccept(131679);
+                
+                Console.WriteLine("Do you want to repeat scenario (Y/N)");
+                resp = Console.ReadLine().Trim();
+            }
 
             _logger.Info("Debug Session has ended");
             Console.ReadKey();
@@ -272,6 +284,19 @@ UPDATE EventEvaluationQueue SET Status = 1
                     //rollovered products usually has 1 month Terms
                     lastRateTransition.Attributes["EndDate"].Value = lastRtSwitchDate.AddMonths(1).ToString("yyyy-MM-ddT00:00:00");
 
+                    var allRateTransitions = doc.SelectNodes("(//RateTransition)");
+                    foreach (XmlNode rateTransition in allRateTransitions)
+                    {
+                        if (rateTransition.Attributes["UserID"].Value == "289")
+                        {
+                            //update the dates according 1 year term
+                            var rtSwitchDate = DateTime.Parse(rateTransition.Attributes["SwitchDate"].Value);
+
+                            //rollovered products usually has 1 month Terms
+                            rateTransition.Attributes["EndDate"].Value = rtSwitchDate.AddMonths(12).ToString("yyyy-MM-ddT00:00:00");
+                            rateTransition.Attributes["StatusID"].Value = "5";
+                        }
+                    }
 
                     var lastCTR = doc.SelectSingleNode("(//CustomerTransactionRequest)[last()]", nsMgr);
                     while (lastCTR.Attributes["TransactionType"].Value != "814"
