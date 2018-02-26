@@ -84,7 +84,7 @@ namespace Aurea.Maintenance.Debugger.Stream
 
 
             // copy customers from paes
-            var paesCustIds = new List<int> { 755694, 755515, 759529 };
+            var paesCustIds = new List<int> { 766783, 766775, 765715, 759617 };
             CopyCustomerFromProd(paesCustIds);
             var resp = "Y";
             while ("Y".Equals(resp,StringComparison.InvariantCultureIgnoreCase))
