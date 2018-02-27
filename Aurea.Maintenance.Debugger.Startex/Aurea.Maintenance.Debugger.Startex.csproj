@@ -34,38 +34,38 @@
   <ItemGroup>
     <Reference Include="Aspose.Cells, Version=4.4.0.0, Culture=neutral, PublicKeyToken=9a40d5a4b59e5256, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\AureaCIS\Resources\GACAssembliesDependencies\Aspose17.9\Aspose.Cells.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Resources\GACAssembliesDependencies\Aspose17.9\Aspose.Cells.dll</HintPath>
     </Reference>
     <Reference Include="Aspose.Email">
-      <HintPath>..\..\AureaCIS\Resources\GACAssembliesDependencies\Aspose17.9\Aspose.Email.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Resources\GACAssembliesDependencies\Aspose17.9\Aspose.Email.dll</HintPath>
     </Reference>
     <Reference Include="Aspose.Pdf, Version=4.1.2.0, Culture=neutral, PublicKeyToken=716fcc553a201e56, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\AureaCIS\Resources\GACAssembliesDependencies\Aspose17.9\Aspose.Pdf.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Resources\GACAssembliesDependencies\Aspose17.9\Aspose.Pdf.dll</HintPath>
     </Reference>
     <Reference Include="Aspose.Words, Version=13.7.0.0, Culture=neutral, PublicKeyToken=716fcc553a201e56, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\AureaCIS\Resources\GACAssembliesDependencies\Aspose17.9\Aspose.Words.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Resources\GACAssembliesDependencies\Aspose17.9\Aspose.Words.dll</HintPath>
     </Reference>
     <Reference Include="CIS.BusinessEntity">
-      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.BusinessEntity.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.BusinessEntity.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Clients.StarTex">
-      <HintPath>..\..\AureaCIS\Clients\Startex\Deployment\Debug\bin\CIS.Clients.StarTex.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Clients\Startex\Deployment\Debug\bin\CIS.Clients.StarTex.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Components">
-      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Components.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Components.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Components.Invoice">
-      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Components.Invoice.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Components.Invoice.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Correspondence.Core, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Correspondence.Core.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Correspondence.Core.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Correspondence.Services.Client, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\AureaCIS\Legacy\Deployment\Debug\Product\CIS.Correspondence.Services.Client.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Legacy\Deployment\Debug\Product\CIS.Correspondence.Services.Client.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -78,6 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Domain\Invoice\InvoiceDebugger.cs" />
+    <Compile Include="Domain\Invoice\InvoiceGenerationInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -1,42 +1,39 @@
 ﻿namespace Aurea.Maintenance.Debugger.Spark
 {
     using System;
+    using System.IO;
     using System.Diagnostics;
+    using System.Reflection;
     using CIS.BusinessEntity;
     using CIS.Clients.StarTex;
-    using Aurea.Maintenance.Debugger.Common.Models;
-    using System.IO;
-    using System.Reflection;
     using CIS.Correspondence.Core;
     using CIS.Correspondence.Services.Client;
+    using Aurea.Maintenance.Debugger.Common.Models;
+    using Aurea.Maintenance.Debugger.Startex.Domain.Invoice;
 
     public static class InvoiceDebugger
     {
         public static bool InvoiceGeneration(
             GlobalApplicationConfigurationDS.GlobalApplicationConfiguration applicationConfig,
-            ClientEnvironmentConfiguration clientConfig)
+            ClientEnvironmentConfiguration clientConfig,
+            InvoiceGenerationInfo invoiceGenerationInfo)
         {
-            // Setup - Update values of the variables below to debug your case.
-            var customerId = 368083;
-            var startDate = new DateTime(2017, 6, 30);
-            var endDate = new DateTime(2017, 7, 31);
-            var invoiceDate = DateTime.Now;
-
-            // Initialize and setup invoice.
-            Invoice invoice = new Invoice(applicationConfig.ConnectionCsr);
-            invoice.ConnectionAdmin = clientConfig.ConnectionBillingAdmin;
-            invoice.ClientID = clientConfig.ClientId;
-
-            // Generate standart invoice. Set break to alert debugger!
+            var invoice = new Invoice(applicationConfig.ConnectionCsr)
+            {
+                ConnectionAdmin = clientConfig.ConnectionBillingAdmin,
+                ClientID = clientConfig.ClientId
+            };
 #if DEBUG
             if (Debugger.IsAttached)
             {
                 Debugger.Break();
             }
 #endif
-            var isSuccess = invoice.GenerateStandardInvoice(customerId, startDate, endDate, invoiceDate);
-
-            return isSuccess;
+            return invoice.GenerateStandardInvoice(
+                invoiceGenerationInfo.CustomerId,
+                invoiceGenerationInfo.StartDate,
+                invoiceGenerationInfo.EndDate,
+                invoiceGenerationInfo.InvoiceDate);
         }
 
         public static bool InvoiceXmlGeneration(
@@ -44,29 +41,22 @@
             ClientEnvironmentConfiguration clientConfig,
             int invoiceId)
         {
-            // Setup - Update values of the variables below to debug your case.
-            
-
-            // Initialize and setup invoice.
-            Invoice invoice = new Invoice(applicationConfig.ConnectionCsr);
-            invoice.ConnectionAdmin = clientConfig.ConnectionBillingAdmin;
-            invoice.ClientID = clientConfig.ClientId;
-
-            // Generate standart invoice XML. Set break to alert debugger!
+            var invoice = new Invoice(applicationConfig.ConnectionCsr)
+            {
+                ConnectionAdmin = clientConfig.ConnectionBillingAdmin,
+                ClientID = clientConfig.ClientId
+            };
 #if DEBUG
             if (Debugger.IsAttached)
             {
                 Debugger.Break();
             }
 #endif
-            var isSuccess = invoice.GenerateInvoiceXml(invoiceId, true);
-
-            return isSuccess;
+            return invoice.GenerateInvoiceXml(invoiceId, true);
         }
 
         public static bool InvoicePdfGeneration(int invoiceId)
         {
-            // Generate standart invoice PDF. Set break to alert debugger!
 #if DEBUG
             if (Debugger.IsAttached)
             {
@@ -88,6 +78,6 @@
             return true;
         }
 
-        
+
     }
 }

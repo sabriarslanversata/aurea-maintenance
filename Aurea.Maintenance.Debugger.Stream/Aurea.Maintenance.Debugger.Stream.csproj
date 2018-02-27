@@ -33,7 +33,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Aurea">
-      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\Aurea.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Clients\Stream\Deployment\Debug\bin\Aurea.dll</HintPath>
     </Reference>
     <Reference Include="Aurea.TaskToaster">
       <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\TaskToaster\Aurea.TaskToaster.dll</HintPath>
@@ -42,47 +42,47 @@
       <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\TaskToaster\Aurea.TaskToaster.Client.Stream.Tasks.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Billing.BusinessObject">
-      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Billing.BusinessObject.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Clients\Stream\Deployment\Debug\bin\CIS.Billing.BusinessObject.dll</HintPath>
     </Reference>
     <Reference Include="CIS.BusinessComponent, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.BusinessComponent.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Clients\Stream\Deployment\Debug\bin\CIS.BusinessComponent.dll</HintPath>
     </Reference>
     <Reference Include="CIS.BusinessComponent.Market">
-      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.BusinessComponent.Market.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Clients\Stream\Deployment\Debug\bin\CIS.BusinessComponent.Market.dll</HintPath>
     </Reference>
     <Reference Include="CIS.BusinessEntity">
-      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.BusinessEntity.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Clients\Stream\Deployment\Debug\bin\CIS.BusinessEntity.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Clients.Stream">
-      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Clients.Stream.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Clients\Stream\Deployment\Debug\bin\CIS.Clients.Stream.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Components, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Components.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Clients\Stream\Deployment\Debug\bin\CIS.Components.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Element, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Element.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Clients\Stream\Deployment\Debug\bin\CIS.Element.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Element.Core">
       <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Element.Core.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Element.Market, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Element.Market.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Clients\Stream\Deployment\Debug\bin\CIS.Element.Market.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Engine.Event, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Engine.Event.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Clients\Stream\Deployment\Debug\bin\CIS.Engine.Event.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Enum, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Enum.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Clients\Stream\Deployment\Debug\bin\CIS.Enum.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Export, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Export.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Clients\Stream\Deployment\Debug\bin\CIS.Export.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Framework">
       <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Framework.dll</HintPath>
@@ -95,10 +95,10 @@
       <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Framework.Event.EventGeneratorBase.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Framework.Event.EventHandler">
-      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Framework.Event.EventHandler.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Clients\Stream\Deployment\Debug\bin\CIS.Framework.Event.EventHandler.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Framework.Event.EventHandlerBase">
-      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Framework.Event.EventHandlerBase.dll</HintPath>
+      <HintPath>..\..\aurea-aes-cis\Clients\Stream\Deployment\Debug\bin\CIS.Framework.Event.EventHandlerBase.dll</HintPath>
     </Reference>
     <Reference Include="Csla, Version=3.6.2.0, Culture=neutral, PublicKeyToken=93be5fdc093e4c30, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
