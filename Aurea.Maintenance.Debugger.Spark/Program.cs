@@ -1,6 +1,9 @@
 ﻿using System.IO;
 using System.Reflection;
 using System.Threading;
+using System.Xml;
+using System.Xml.Serialization;
+using Aurea.Maintenance.Debugger.Spark.MockData;
 using Aurea.TaskToaster;
 using Aurea.TaskToaster.Client.Spark.Tasks;
 using CIS.Clients.Spark.Model.Common;
@@ -81,7 +84,9 @@ namespace Aurea.Maintenance.Debugger.Spark
 
         // ReSharper disable once InconsistentNaming
         private static readonly ILogger _logger = new Logger();
-        private static string appDir = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
+        private static string appDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+        private static string mockDataDir = Path.Combine(appDir, "MockData");
+
         public static void Main(string[] args)
         {
             // Set client configuration and then the application configuration context.            
@@ -126,7 +131,16 @@ namespace Aurea.Maintenance.Debugger.Spark
             */
             #endregion
 
-            Simulate_AESCIS_20017();
+            var resp = "Y";
+            while ("y".Equals(resp,StringComparison.InvariantCultureIgnoreCase))
+            {
+
+                Simulate_AESCIS_20017("002505592");
+
+                Console.WriteLine("Do you want to repeat simulation (y/n)");
+                resp = Console.ReadLine().Trim();
+            }
+            
 
             _logger.Info("Debug session end");
             Console.ReadLine();
@@ -137,20 +151,127 @@ namespace Aurea.Maintenance.Debugger.Spark
             //
         }
 
-        private static void Simulate_AESCIS_20017()
+        private static void Simulate_AESCIS_20017(string custNo)
         {
-            DB.ExecuteQuery("DISABLE TRIGGER ALL ON ChangeRequest;", _appConfig.ConnectionCsr);
+            var prodConnectionString = _appConfig.ConnectionCsr
+                .Replace("daes_", "paes_")
+                .Replace("SGISUSEUAV01.aesua.local", "SGISUSEPRV01.aesprod.local");
+            var custId = DB.ReadSingleValue<int>( $"SELECT CustId FROM Customer (NOLOCK) WHERE CustNo = '{custNo}' ", prodConnectionString);
 
-            DB.ImportFiles(appDir, "20017-C1", _appConfig.ConnectionCsr);
+            var maxTransactionDate = DB.ReadSingleValue<DateTime>($"SELECT MAX(TransactionDate) FROM CustomerTransactionRequest WHERE CustId = {custId} AND TransactionType='814' AND ActionCode = 'C'", prodConnectionString).ToString("yyyy-MM-ddT00:00:00");
 
-            DB.ExecuteQuery("ENABLE TRIGGER ALL ON ChangeRequest;", _appConfig.ConnectionCsr);
 
-            var custId = 1527408;
-            var minTransactionDate = "2017-05-27";
-            var sql = $"DELETE FROM CustomerTransactionRequest WHERE CustId = {custId}  AND TransactionType='814' AND ActionCode = 'C' AND Direction = 1 AND TransactionDate>'{minTransactionDate}'";
+
+            DB.ImportQueryResultsFromProduction(
+                string.Format(MockSqlQueries.CustomerExportScript, custId, 10),
+                _appConfig.ConnectionCsr,
+                appDir,
+                (xmlFileName, connectionString) =>
+                {
+                    DB.ExecuteQuery("DISABLE TRIGGER ALL ON ChangeRequest;", _appConfig.ConnectionCsr);
+
+                    var doc = new XmlDocument();
+                    doc.Load(xmlFileName);
+
+                    XmlNamespaceManager nsMgr = new XmlNamespaceManager(doc.NameTable);
+                    var rootNode = doc.SelectSingleNode("root", nsMgr);
+                    if (rootNode == null)
+                    {
+                        _logger.Error("Root element not found, can't process the xml");
+                        return;
+                    }
+
+                    //delete latest RateTransitions first Rollover then ChangeProductRequest
+                    var lastRateTransition = doc.SelectSingleNode("(//RateTransition)[last()]", nsMgr);
+                    while (lastRateTransition?.Attributes?["RolloverFlag"]?.Value == "1")
+                    {
+                        rootNode.RemoveChild(lastRateTransition);
+                        var rtId = lastRateTransition.Attributes["RateTransitionID"].Value;
+                        var ccRT = doc.SelectSingleNode($"(//ClientCustomer.RateTransition[@RateTransitionID='{rtId}'])", nsMgr);
+                        if (ccRT != null)
+                        {
+                            rootNode.RemoveChild(ccRT);
+                        } 
+                        lastRateTransition = doc.SelectSingleNode("(//RateTransition)[last()]", nsMgr);
+                    }
+
+                    //delete the last RT
+                    lastRateTransition = doc.SelectSingleNode("(//RateTransition)[last()]", nsMgr);
+                    if (lastRateTransition == null)
+                    {
+                        _logger.Error("No RT left for deleting, something went wrong!");
+                        return;
+                    }
+                    rootNode.RemoveChild(lastRateTransition);
+
+
+                    lastRateTransition = doc.SelectSingleNode("(//RateTransition)[last()]", nsMgr);
+                    if (lastRateTransition == null)
+                    {
+                        _logger.Error("No RT left for updating, something went wrong!");
+                        return;
+                    }
+                    var lastRTDate = DateTime.Parse(lastRateTransition.Attributes["SwitchDate"].Value);
+
+                    var lastChangeProductRequest = doc.SelectSingleNode("(//ClientCustomer.ChangeProductRequest)[last()]", nsMgr);
+                    if (lastChangeProductRequest == null)
+                    {
+                        _logger.Error("Could not find ChangeProduct request to simulate");
+                        return;
+                    }
+                    lastChangeProductRequest.Attributes["ContractId"].Value = "0";
+
+                    var requestedDate = DateTime.Today.AddDays(-7).ToString("yyyy-MM-ddT00:00:00");
+                    lastChangeProductRequest.Attributes["ProductEffectiveDate"].Value = requestedDate;
+                    lastChangeProductRequest.Attributes["RequestedContractStartDate"].Value = requestedDate;
+                    lastChangeProductRequest.Attributes["ActualContractStartDate"].Value = requestedDate;
+                    
+                    //set bufferDate today so it can be run today
+                    lastChangeProductRequest.Attributes["BufferDate"].Value = DateTime.Today.ToString("yyyy-MM-ddT00:00:00");
+
+
+                    var lastCustomerTransactionRequest = doc.SelectSingleNode("(//CustomerTransactionRequest)[last()]", nsMgr);
+                    while (lastCustomerTransactionRequest.Attributes["TransactionType"].Value=="814" &&
+                    lastCustomerTransactionRequest.Attributes["ActionCode"].Value =="C" &&
+                    DateTime.Parse(lastCustomerTransactionRequest.Attributes["TransactionDate"].Value) > lastRTDate)
+                    {
+                        rootNode.RemoveChild(lastCustomerTransactionRequest);
+                        lastCustomerTransactionRequest = doc.SelectSingleNode("(//CustomerTransactionRequest)[last()]", nsMgr);
+                    }
+
+                    //lastRateTransition.Attributes["EndDate"].Value = lastRTDate
+                    //    .AddMonths(int.Parse(lastChangeProductRequest.Attributes["ContractTermsInMonths"].Value))
+                    //    .ToString("yyyy-MM-ddT00:00:00");
+
+                    
+                    lastRateTransition.Attributes["EndDate"].Value = DateTime.Today.AddDays(-1).ToString("yyyy-MM-ddT00:00:00");
+
+                    var customer = doc.SelectSingleNode("(//Customer)[last()]", nsMgr);
+                    var lastcprId = lastChangeProductRequest.Attributes["ChangeProductRequestID"].Value;
+                    var activeChangeProductRequest = doc.SelectSingleNode($"(//ClientCustomer.ChangeProductRequest)[@ChangeProductRequestID < '{lastcprId}'][last()]", nsMgr);
+                    var activeContractId = activeChangeProductRequest.Attributes["ContractId"].Value;
+                    customer.Attributes["ContractID"].Value = activeContractId;
+                    var activeContract = doc.SelectSingleNode($"(//Contract)[@ContractID = '{activeContractId}']", nsMgr);
+                    customer.Attributes["ContractEndDate"].Value = activeContract.Attributes["EndDate"].Value;
+
+                    doc.Save(xmlFileName);
+                },
+                connectionString =>
+                {
+                    DB.ExecuteQuery("ENABLE TRIGGER ALL ON ChangeRequest;", _appConfig.ConnectionCsr);
+                }
+            );
+
+
+            var sql = $"DELETE FROM CustomerTransactionRequest WHERE CustId = {custId}  AND TransactionType='814' AND ActionCode = 'C' AND Direction = 1 AND TransactionDate>'{maxTransactionDate}'";
             DB.ExecuteQuery(sql, _appConfig.ConnectionCsr);
-            
-            
+
+            //start productRollover first
+            SimulateProductRollOver(new List<int> {custId});
+
+            SimulateCustomerContractEvaluation(new List<int> { custId });
+
+            /*
             // execute import task
             ExecuteImportChangeRequests();
             GenerateEvents(new List<int>() {27});
@@ -158,6 +279,7 @@ namespace Aurea.Maintenance.Debugger.Spark
 
             GenerateEvents(new List<int>() { 16 });
             ProcessEvents();
+            */
         }
 
         private static void ExecuteImportChangeRequests()
@@ -175,7 +297,7 @@ namespace Aurea.Maintenance.Debugger.Spark
 
         private static void Simulate_AESCIS18511()
         {
-            string dirToProcess = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "MockData");
+            string dirToProcess = mockDataDir;
             DB.ImportFiles(dirToProcess, "AESCIS-18511", _appConfig.ConnectionCsr);
 
             ExecuteEnrollCustomerPromotionTask();
@@ -954,6 +1076,42 @@ SET IDENTITY_INSERT daes_Spark..ChangeRequestDetailTransaction OFF
             }
         }
 
+        private static void SimulateProductRollOver()
+        {
+            var dataGateway = new DataGateway
+            {
+                ClientId = 48,
+                ConnectionBillingAdmin = _clientConfig.ConnectionBillingAdmin,
+                ConnectionCsr = _appConfig.ConnectionCsr,
+                UserId = 0
+            };
+            var context = new ProductRolloverContext(_logger, dataGateway);
+            var rollover = new ProductRollover(context);
+            var dataset = SqlHelper.ExecuteDataset(_appConfig.ConnectionCsr, CommandType.StoredProcedure, "cspProductRolloverList");
+            if (dataset == null || dataset.Tables.Count == 0 || dataset.Tables[0].Rows.Count == 0)
+                return;
+
+            var lstcustomersForRollover = (from DataRow dr in dataset.Tables[0].Rows
+                                           select new CustomerProductRolloverModel()
+                                           {
+                                               CustId = CIS.Framework.Data.Utility.GetInt32(dr, "CustId", 0),
+                                               SoldDate = CIS.Framework.Data.Utility.GetDateTime(dr, "SoldDate", DateTime.MinValue),
+                                               EndDate = CIS.Framework.Data.Utility.GetDateTime(dr, "EndDate", DateTime.MinValue),
+                                               IsRollover = CIS.Framework.Data.Utility.GetBool(dr, "RolloverFlag", false),
+                                               RolloverProductId = CIS.Framework.Data.Utility.GetInt32(dr, "RolloverProductId", 0),
+                                               SwitchDate = CIS.Framework.Data.Utility.GetDateTime(dr, "StartDate", DateTime.MinValue),
+                                               CurrentRateTransitionId = CIS.Framework.Data.Utility.GetInt32(dr, "CurrentRateTransitionId", 0),
+                                           }).ToList();
+
+            foreach (var customerProductRolloverModel in lstcustomersForRollover)
+            {
+                var customer = context.CustomerDataGateway.LoadCustomerInfo(customerProductRolloverModel.CustId);
+                CIS.Element.Core.PremiseInfoList listPremises = CIS.Element.Core.PremiseInfoList.Search(customerProductRolloverModel.CustId, "", "", "", true, "");
+                if (customer.BillingTypeId == 3 && listPremises.Count == 1)
+                    rollover.Process(customerProductRolloverModel);
+            }
+        }
+
         private static void SimulateProductRollOver(List<int> desiredCusList)
         {
             var dataGateway = new DataGateway
@@ -1049,7 +1207,7 @@ SET IDENTITY_INSERT daes_Spark..ChangeRequestDetailTransaction OFF
                 var contractEvalution = new ChangeProductEvaluation(context);
 
                 List<ChangeProductModel> list = contractEvalution.GetCustomersEligibleForContractCreation();
-                foreach (var model in list.Where(x=>x.MarketerCode == "ICC"))
+                foreach (var model in list)
                 {
                     if (!desiredCustList.Contains(model.CustId)) 
                         continue;

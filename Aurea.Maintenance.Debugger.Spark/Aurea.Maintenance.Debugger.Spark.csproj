@@ -132,6 +132,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MockData\MockSqlQueries.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MockSqlQueries.resx</DependentUpon>
+    </Compile>
     <Compile Include="Models\AccountsReceivable.cs" />
     <Compile Include="Models\Address.cs" />
     <Compile Include="Models\ClientCustomerContract.cs" />
@@ -176,7 +181,14 @@
     <Content Include="MockData\AESCIS-20017\AESCIS-20017-C1.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="MockData\SqlScripts\CustomerExportScript.sql" />
     <Content Include="Models\ConvertTableToEntity.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="MockData\MockSqlQueries.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>MockSqlQueries.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
