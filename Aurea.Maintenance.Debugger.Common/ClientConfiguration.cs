@@ -46,7 +46,8 @@
                 {"Connection.Csr", applicationConfiguration.ConnectionCsr },
                 {"ClientId", applicationConfiguration.ClientID.ToString() },
                 {"ApplicationID", Assembly.GetEntryAssembly().FullName },
-                {"CslaAutoCloneOnUpdate", "false" }
+                {"CslaAutoCloneOnUpdate", "false" },
+                { "CrystalPhysicalPath","Invoice"}
             };
 
             RewriteAppSettings(Assembly.GetExecutingAssembly(), settings);

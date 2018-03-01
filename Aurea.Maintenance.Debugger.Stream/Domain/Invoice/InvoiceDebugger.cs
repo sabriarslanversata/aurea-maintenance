@@ -63,7 +63,7 @@
                 Debugger.Break();
             }
 #endif
-
+            //don't forget to place CIS.Clients.Stream.Invoices.dll into Aurea.Maintenance.Debugger.Stream\bin\Debug\Invoice\SGE\Invoice\Standard_V01 path!
             var executingAssembly = Assembly.GetExecutingAssembly();
             var appPath = Path.GetDirectoryName(executingAssembly.Location);
             var generatedPdfFilePath = Path.Combine(appPath, invoiceId + ".pdf");
