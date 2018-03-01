@@ -53,8 +53,19 @@ SELECT CAST((SELECT InvoiceXMLID, InvoiceID, '<hint>NoNeedForThisTestCase</hint>
 SELECT CAST((SELECT * FROM InvoiceLog WHERE InvLogId IN (SELECT InvLogId from Invoice Where CustId = @CustID)  ORDER BY 1 FOR XML AUTO ) as varchar(MAX))
 SELECT CAST((SELECT * FROM AccountsReceivableHistory WHERE CustId = @CustID  ORDER BY 1 FOR XML AUTO ) as varchar(MAX))
 SELECT CAST((SELECT * FROM InvoiceDetail WHERE InvoiceID IN (SELECT InvoiceId from Invoice Where CustId = @CustID)  ORDER BY 1 FOR XML AUTO ) as varchar(MAX))
-SELECT CAST((SELECT * FROM ConsumptionDetail WHERE ConsDetId IN (SELECT ConsDetID FROM InvoiceDetail WHERE InvoiceID IN (SELECT InvoiceId from Invoice Where CustId = @CustID) )  ORDER BY 1 FOR XML AUTO ) as varchar(MAX))
-SELECT CAST((SELECT * FROM TdspInvoice WHERE InvoiceId IN (SELECT InvoiceId from Invoice Where CustId = @CustID) AND RequestID IN (SELECT RequestID FROM CustomerTransactionRequest WHERE CustID = @CustID)  ORDER BY 1 FOR XML AUTO ) as varchar(MAX))
+SELECT CAST((SELECT * FROM ConsumptionDetail WHERE
+	ConsDetId IN (SELECT ConsDetID FROM InvoiceDetail WHERE InvoiceID IN (SELECT InvoiceId from Invoice Where CustId = @CustID)) 
+	OR ConsId IN (SELECT ConsId FROM Consumption WHERE MeterId IN (SELECT MeterId FROM Meter WHERE PremId IN (SELECT PremId FROM @PremIds)) )  ORDER BY 1 FOR XML AUTO ) as varchar(MAX))
+
+SELECT CAST((SELECT * FROM TdspInvoice WHERE InvoiceId IN (SELECT InvoiceId from Invoice Where CustId = @CustID) AND RequestID IN (SELECT RequestID FROM CustomerTransactionRequest WHERE CustID = @CustID) ORDER BY 1 FOR XML AUTO ) as varchar(MAX))
+
+SELECT CAST((SELECT * FROM TDSPCharges WHERE InvoiceId IN (SELECT InvoiceId from Invoice Where CustId = @CustID) OR ESIID IN (SELECT PremNo FROM Premise WHERE PremID IN (SELECT PremId FROM @PremIds)) ORDER BY 1 FOR XML AUTO ) as varchar(MAX))
+SELECT CAST((SELECT * FROM CustomerDddcFactor WHERE Premid IN (SELECT PremId FROM @PremIds) ORDER BY 1 FOR XML AUTO ) as varchar(MAX))
+SELECT CAST((SELECT * FROM ARAdjustment WHERE CustId = @CustId ORDER BY 1 FOR XML AUTO ) as varchar(MAX))
+SELECT CAST((SELECT * FROM AccountsReceivableHistory WHERE CustId = @CustId ORDER BY 1 FOR XML AUTO ) as varchar(MAX))
+SELECT CAST((SELECT * FROM InvoiceSpecialCharges WHERE CustId = @CustId ORDER BY 1 FOR XML AUTO ) as varchar(MAX))
+SELECT CAST((SELECT * FROM PaymentDetail WHERE CustId = @CustId ORDER BY 1 FOR XML AUTO ) as varchar(MAX))
+SELECT CAST((SELECT * FROM Payment WHERE EXISTS(SELECT 1 FROM PaymentDetail WHERE PaymentId = Payment.PaymentId AND CustId = @CustId) ORDER BY 1 FOR XML AUTO ) as varchar(MAX))
 
 DECLARE @Rates TABLE (RateId INT);
 DECLARE @Products2BeCopied TABLE (productId INT);

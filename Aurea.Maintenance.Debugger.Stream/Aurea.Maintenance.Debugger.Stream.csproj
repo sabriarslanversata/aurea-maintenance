@@ -32,6 +32,22 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Aspose.Cells, Version=17.8.0.0, Culture=neutral, PublicKeyToken=716fcc553a201e56, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Windows\Microsoft.NET\assembly\GAC_MSIL\Aspose.Cells\v4.0_17.8.0.0__716fcc553a201e56\Aspose.Cells.dll</HintPath>
+    </Reference>
+    <Reference Include="Aspose.Email, Version=17.9.0.0, Culture=neutral, PublicKeyToken=716fcc553a201e56, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Windows\Microsoft.NET\assembly\GAC_MSIL\Aspose.Email\v4.0_17.9.0.0__716fcc553a201e56\Aspose.Email.dll</HintPath>
+    </Reference>
+    <Reference Include="Aspose.Pdf, Version=17.9.0.0, Culture=neutral, PublicKeyToken=716fcc553a201e56, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Windows\Microsoft.NET\assembly\GAC_MSIL\Aspose.Pdf\v4.0_17.9.0.0__716fcc553a201e56\Aspose.Pdf.dll</HintPath>
+    </Reference>
+    <Reference Include="Aspose.Words, Version=17.9.0.0, Culture=neutral, PublicKeyToken=716fcc553a201e56, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Windows\Microsoft.NET\assembly\GAC_MSIL\Aspose.Words\v4.0_17.9.0.0__716fcc553a201e56\Aspose.Words.dll</HintPath>
+    </Reference>
     <Reference Include="Aurea">
       <HintPath>..\..\aurea-aes-cis\Clients\Stream\Deployment\Debug\bin\Aurea.dll</HintPath>
     </Reference>
@@ -60,6 +76,18 @@
     <Reference Include="CIS.Components, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\aurea-aes-cis\Clients\Stream\Deployment\Debug\bin\CIS.Components.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Components.Invoice, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Components.Invoice.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Correspondence.Core, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Correspondence.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="CIS.Correspondence.Services.Client, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AureaCIS\Clients\Stream\Deployment\Debug\bin\CIS.Correspondence.Services.Client.dll</HintPath>
     </Reference>
     <Reference Include="CIS.Element, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -114,6 +142,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Domain\Invoice\InvoiceDebugger.cs" />
+    <Compile Include="Domain\Invoice\InvoiceGenerationInfo.cs" />
     <Compile Include="MockData\Scripts.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -124,6 +154,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Aspose.Words.Product.Family.lic">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Aurea.Maintenance.Debugger.Common\Aurea.Maintenance.Debugger.Common.csproj">
