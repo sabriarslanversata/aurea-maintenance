@@ -66,6 +66,8 @@ SELECT CAST((SELECT * FROM AccountsReceivableHistory WHERE CustId = @CustId ORDE
 SELECT CAST((SELECT * FROM InvoiceSpecialCharges WHERE CustId = @CustId ORDER BY 1 FOR XML AUTO ) as varchar(MAX))
 SELECT CAST((SELECT * FROM PaymentDetail WHERE CustId = @CustId ORDER BY 1 FOR XML AUTO ) as varchar(MAX))
 SELECT CAST((SELECT * FROM Payment WHERE EXISTS(SELECT 1 FROM PaymentDetail WHERE PaymentId = Payment.PaymentId AND CustId = @CustId) ORDER BY 1 FOR XML AUTO ) as varchar(MAX))
+SELECT CAST((SELECT * FROM InvoiceTax WHERE InvoiceID IN (SELECT InvoiceId FROM Invoice WHERE CustId = @CustId) ORDER BY 1 FOR XML AUTO ) as varchar(MAX))
+SELECT CAST((SELECT * FROM InvoiceTaxDetail WHERE InvoiceTaxID IN (SELECT InvoiceTaxID FROM InvoiceTax WHERE InvoiceID IN (SELECT InvoiceId FROM Invoice WHERE CustId = @CustId)) ORDER BY 1 FOR XML AUTO ) as varchar(MAX))
 
 DECLARE @Rates TABLE (RateId INT);
 DECLARE @Products2BeCopied TABLE (productId INT);
