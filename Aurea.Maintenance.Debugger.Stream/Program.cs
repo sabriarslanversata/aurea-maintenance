@@ -113,7 +113,8 @@ namespace Aurea.Maintenance.Debugger.Stream
                 Debugger.Break();
             }
 #endif
-            CopyCustomerFromProd(new List<int> {custId});
+            // TODO: uncomment when you need to copy customer
+            //CopyCustomerFromProd(new List<int> {custId});
 
             DB.ExecuteQuery($"DELETE FROM InvoiceXML WHERE InvoiceId = {invoiceId}", _appConfig.ConnectionCsr);
 
