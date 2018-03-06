@@ -24,6 +24,7 @@ namespace Aurea.Maintenance.Debugger.Texpo
     using System.Collections.Generic;
     using CIS.Framework.Data;
     using Util = CIS.Framework.Data.Utility;
+    using System.Xml;
 
     public class Program
     {
@@ -215,7 +216,7 @@ b1x3zeE1G4Q4
 
         public static void Main(string[] args)
         {      
-            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.Texpo, Stages.Development, TransactionMode.Enlist);
+            _clientConfig = ClientConfiguration.GetClientConfiguration(Clients.Texpo, Stages.UserAcceptance, TransactionMode.Enlist);
             _appConfig = ClientConfiguration.SetConfigurationContext(_clientConfig);
 
             #region old Cases
@@ -269,15 +270,146 @@ b1x3zeE1G4Q4
             notification.SendEmailJob(37, emailParams);
 
             Simulate_AESCIS_8679();
-
+            
+            Simulate_AESCIS_11082();
 			*/
             #endregion
 
+            var resp = "Y";
+            while ("Y".Equals(resp, StringComparison.InvariantCultureIgnoreCase))
+            {
+                Simulate_AESCIS_20385(372012);
 
-            Simulate_AESCIS_11082();
-
+                Console.WriteLine("do you want to Repeat call");
+                resp = Console.ReadLine().Trim();
+            }
             _logger.Info("Debug session has ended");
             Console.ReadLine();
+        }
+
+        private static void Simulate_AESCIS_20385(string custId)
+        {
+            var prodConnectionString = _appConfig.ConnectionCsr
+                .Replace("daes_", "paes_")
+                .Replace("SGISUSEUAV01.aesua.local", "SGISUSEPRV01.aesprod.local");
+            
+            var maxTransactionDate = DB.ReadSingleValue<DateTime>($"SELECT MAX(TransactionDate) FROM CustomerTransactionRequest WHERE CustId = {custId} AND TransactionType='867'", prodConnectionString).ToString("yyyy-MM-ddT00:00:00");
+
+
+
+            DB.ImportQueryResultsFromProduction(
+                string.Format(MockData.SqlScripts.CustomerExportScript, custId, 10),
+                _appConfig.ConnectionCsr,
+                _appDir,
+                (xmlFileName, connectionString) =>
+                {
+                    DB.ExecuteQuery("DISABLE TRIGGER ALL ON PaymentDetail;", connectionString);
+
+                    var doc = new XmlDocument();
+                    doc.Load(xmlFileName);
+
+                    XmlNamespaceManager nsMgr = new XmlNamespaceManager(doc.NameTable);
+                    var rootNode = doc.SelectSingleNode("root", nsMgr);
+                    if (rootNode == null)
+                    {
+                        _logger.Error("Root element not found, can't process the xml");
+                        return;
+                    }
+
+                    // do necessary changes here
+
+                    ////delete latest RateTransitions first Rollover then ChangeProductRequest
+                    //var lastRateTransition = doc.SelectSingleNode("(//RateTransition)[last()]", nsMgr);
+                    //while (lastRateTransition?.Attributes?["RolloverFlag"]?.Value == "1")
+                    //{
+                    //    rootNode.RemoveChild(lastRateTransition);
+                    //    var rtId = lastRateTransition.Attributes["RateTransitionID"].Value;
+                    //    var ccRT = doc.SelectSingleNode($"(//ClientCustomer.RateTransition[@RateTransitionID='{rtId}'])", nsMgr);
+                    //    if (ccRT != null)
+                    //    {
+                    //        rootNode.RemoveChild(ccRT);
+                    //    }
+                    //    lastRateTransition = doc.SelectSingleNode("(//RateTransition)[last()]", nsMgr);
+                    //}
+
+                    ////delete the last RT
+                    //lastRateTransition = doc.SelectSingleNode("(//RateTransition)[last()]", nsMgr);
+                    //if (lastRateTransition == null)
+                    //{
+                    //    _logger.Error("No RT left for deleting, something went wrong!");
+                    //    return;
+                    //}
+                    //rootNode.RemoveChild(lastRateTransition);
+
+
+                    //lastRateTransition = doc.SelectSingleNode("(//RateTransition)[last()]", nsMgr);
+                    //if (lastRateTransition == null)
+                    //{
+                    //    _logger.Error("No RT left for updating, something went wrong!");
+                    //    return;
+                    //}
+                    //var lastRTDate = DateTime.Parse(lastRateTransition.Attributes["SwitchDate"].Value);
+
+                    //var lastChangeProductRequest = doc.SelectSingleNode("(//ClientCustomer.ChangeProductRequest)[last()]", nsMgr);
+                    //if (lastChangeProductRequest == null)
+                    //{
+                    //    _logger.Error("Could not find ChangeProduct request to simulate");
+                    //    return;
+                    //}
+                    //lastChangeProductRequest.Attributes["ContractId"].Value = "0";
+
+                    //var requestedDate = DateTime.Today.AddDays(-7).ToString("yyyy-MM-ddT00:00:00");
+                    //lastChangeProductRequest.Attributes["ProductEffectiveDate"].Value = requestedDate;
+                    //lastChangeProductRequest.Attributes["RequestedContractStartDate"].Value = requestedDate;
+                    //lastChangeProductRequest.Attributes["ActualContractStartDate"].Value = requestedDate;
+
+                    ////set bufferDate today so it can be run today
+                    //lastChangeProductRequest.Attributes["BufferDate"].Value = DateTime.Today.ToString("yyyy-MM-ddT00:00:00");
+
+
+                    //var lastCustomerTransactionRequest = doc.SelectSingleNode("(//CustomerTransactionRequest)[last()]", nsMgr);
+                    //while (lastCustomerTransactionRequest.Attributes["TransactionType"].Value == "814" &&
+                    //lastCustomerTransactionRequest.Attributes["ActionCode"].Value == "C" &&
+                    //DateTime.Parse(lastCustomerTransactionRequest.Attributes["TransactionDate"].Value) > lastRTDate)
+                    //{
+                    //    rootNode.RemoveChild(lastCustomerTransactionRequest);
+                    //    lastCustomerTransactionRequest = doc.SelectSingleNode("(//CustomerTransactionRequest)[last()]", nsMgr);
+                    //}
+
+                    ////lastRateTransition.Attributes["EndDate"].Value = lastRTDate
+                    ////    .AddMonths(int.Parse(lastChangeProductRequest.Attributes["ContractTermsInMonths"].Value))
+                    ////    .ToString("yyyy-MM-ddT00:00:00");
+
+
+                    //lastRateTransition.Attributes["EndDate"].Value = DateTime.Today.AddDays(-1).ToString("yyyy-MM-ddT00:00:00");
+
+                    //var customer = doc.SelectSingleNode("(//Customer)[last()]", nsMgr);
+                    //var lastcprId = lastChangeProductRequest.Attributes["ChangeProductRequestID"].Value;
+                    //var activeChangeProductRequest = doc.SelectSingleNode($"(//ClientCustomer.ChangeProductRequest)[@ChangeProductRequestID < '{lastcprId}'][last()]", nsMgr);
+                    //var activeContractId = activeChangeProductRequest.Attributes["ContractId"].Value;
+                    //customer.Attributes["ContractID"].Value = activeContractId;
+                    //var activeContract = doc.SelectSingleNode($"(//Contract)[@ContractID = '{activeContractId}']", nsMgr);
+                    //customer.Attributes["ContractEndDate"].Value = activeContract.Attributes["EndDate"].Value;
+
+                    doc.Save(xmlFileName);
+                },
+                connectionString =>
+                {
+                    DB.ExecuteQuery("ENABLE TRIGGER ALL ON ChangeRequest;", connectionString);
+
+                    // make new payment here to trigger EventEvalutionQueue Insert
+
+                    // delete latest CTR
+                    var sql = $"DELETE FROM CustomerTransactionRequest WHERE CustId = {custId}  AND TransactionType='650' AND TransactionDate>'{maxTransactionDate}'";
+                    DB.ExecuteQuery(sql, connectionString);
+
+                }
+            );
+
+
+            
+            //EventEvaluationQueue
+            GenerateEvents(new List<int> { 27 });
         }
 
         private static void Simulate_AESCIS_11082()
