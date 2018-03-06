@@ -47,7 +47,7 @@
                 {"ClientId", applicationConfiguration.ClientID.ToString() },
                 {"ApplicationID", Assembly.GetEntryAssembly().FullName },
                 {"CslaAutoCloneOnUpdate", "false" },
-                { "CrystalPhysicalPath","Invoice"}
+                {"CrystalPhysicalPath", "..\\..\\..\\..\\ClientLayoutDefinitions"}
             };
 
             RewriteAppSettings(Assembly.GetExecutingAssembly(), settings);
