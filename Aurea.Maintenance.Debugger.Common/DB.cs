@@ -1,6 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using Aurea.Logging;
-
+﻿
 namespace Aurea.Maintenance.Debugger.Common
 {
     using System;
@@ -14,6 +12,10 @@ namespace Aurea.Maintenance.Debugger.Common
     using System.Xml.Linq;
     using CIS.Framework.Data;
     using Aurea.Db;
+    using Extensions;
+    using System.Text.RegularExpressions;
+    using Aurea.Logging;
+
 
     public static class DB
     {
@@ -188,15 +190,27 @@ namespace Aurea.Maintenance.Debugger.Common
             string destConnectionString, string tempPath, BeforeImportDelegate beforeImport = null,
             AfterImportDelegate afterImport = null)
         {
-            var fileName = Path.ChangeExtension(Path.GetRandomFileName(), "xml");
+            var tempFileName = Path.ChangeExtension(Path.GetRandomFileName(), "xml");
+            var fileName = $"{commandText.GetStrongHash()}.xml";
+            
             try
             {
+                var workXmlPath = Path.Combine(tempPath, tempFileName);
                 var xmlPath = Path.Combine(tempPath, fileName);
-                ExportResultsToFile(commandText, sourceConnectionString, xmlPath, true);
+                if (!File.Exists(xmlPath))
+                {
+                    ExportResultsToFile(commandText, sourceConnectionString, xmlPath, true);
+                }
+                
+                if (File.Exists(workXmlPath))
+                {
+                    File.Delete(workXmlPath);
+                }
+                File.Copy(xmlPath, workXmlPath);
 
-                beforeImport?.Invoke(xmlPath, destConnectionString);
+                beforeImport?.Invoke(workXmlPath, destConnectionString);
 
-                ImportFiles(tempPath, Path.GetFileNameWithoutExtension(fileName), destConnectionString);
+                ImportFiles(tempPath, Path.GetFileNameWithoutExtension(tempFileName), destConnectionString);
 
                 afterImport?.Invoke(destConnectionString);
             }

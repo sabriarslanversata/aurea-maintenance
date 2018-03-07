@@ -66,6 +66,7 @@
     <Compile Include="Extensions\ClientExtensions.cs" />
     <Compile Include="Extensions\ICopyableExtension.cs" />
     <Compile Include="Extensions\StageExtensions.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Models\ClientEnvironmentConfiguration.cs" />
     <Compile Include="Models\Clients.cs" />
