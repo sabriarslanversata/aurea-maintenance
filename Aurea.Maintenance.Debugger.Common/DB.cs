@@ -216,9 +216,9 @@ namespace Aurea.Maintenance.Debugger.Common
             }
             finally
             {
-                if (File.Exists(fileName))
+                if (File.Exists(tempFileName))
                 {
-                    try{File.Delete(fileName);}catch{}
+                    try{File.Delete(tempFileName);}catch{}
                 }
             }
 
