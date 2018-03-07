@@ -128,14 +128,14 @@ namespace Aurea.Maintenance.Debugger.Spark
 
             Simulate_AESCIS18511();
             Simulate_AESCIS19714();
+            Simulate_AESCIS_20017("002505592");
             */
             #endregion
 
             var resp = "Y";
             while ("y".Equals(resp,StringComparison.InvariantCultureIgnoreCase))
             {
-
-                Simulate_AESCIS_20017("002505592");
+                Simulate_AESCIS_20591(91259, 32);
 
                 Console.WriteLine("Do you want to repeat simulation (y/n)");
                 resp = Console.ReadLine().Trim();
@@ -144,6 +144,68 @@ namespace Aurea.Maintenance.Debugger.Spark
 
             _logger.Info("Debug session end");
             Console.ReadLine();
+        }
+
+        private static void Simulate_AESCIS_20591(int custId, int rolloverProductId)
+        {
+            var uaConnectionString = _appConfig.ConnectionCsr
+                .Replace("daes_", "paes_");
+
+            var maxTransactionDate = DB.ReadSingleValue<DateTime>($"SELECT MAX(TransactionDate) FROM CustomerTransactionRequest WHERE CustId = {custId} AND TransactionType='867' AND ActionCode = '03'", uaConnectionString).ToString("yyyy-MM-ddT00:00:00");
+
+            var sql = $@"
+delete rd
+from ratedetail rd
+join ratetransition rt on rd.ratetransitionid = rt.ratetransitionid
+where rt.custid = {custId} and rt.RateTransitionID = (Select top 1 rtt.RateTransitionID from RateTransition rtt where rtt.CustID = rt.CustID order by rtt.EndDate desc)
+
+delete cc
+from ClientCustomer.RateTransition cc 
+join ratetransition rt on cc.ratetransitionid = rt.ratetransitionid
+where rt.custid = {custId} and rt.RateTransitionID = (Select top 1 rtt.RateTransitionID from RateTransition rtt where rtt.CustID = rt.CustID order by rtt.EndDate desc)
+
+delete rt
+from ratetransition rt 
+where rt.custid = {custId} and rt.RateTransitionID = (Select top 1 rtt.RateTransitionID from RateTransition rtt where rtt.CustID = rt.CustID order by rtt.EndDate desc)
+";
+            DB.ExecuteQuery(sql, _appConfig.ConnectionCsr);
+
+            DB.ImportQueryResultsFromUa(
+                string.Format(MockSqlQueries.CustomerExportScript, custId, 10),
+                _appConfig.ConnectionCsr,
+                appDir,
+                (xmlFileName, connectionString) =>
+                {
+                    DB.ExecuteQuery("DISABLE TRIGGER ALL ON ChangeRequest;", _appConfig.ConnectionCsr);
+
+                    var doc = new XmlDocument();
+                    doc.Load(xmlFileName);
+
+                    XmlNamespaceManager nsMgr = new XmlNamespaceManager(doc.NameTable);
+                    var rootNode = doc.SelectSingleNode("root", nsMgr);
+                    if (rootNode == null)
+                    {
+                        _logger.Error("Root element not found, can't process the xml");
+                        return;
+                    }
+                    
+
+                    //doc.Save(xmlFileName);
+                },
+                connectionString =>
+                {
+                    DB.ExecuteQuery("ENABLE TRIGGER ALL ON ChangeRequest;", connectionString);
+
+                    sql = $"DELETE FROM CustomerTransactionRequest WHERE CustId = {custId}  AND TransactionType='814' AND ActionCode = 'C' AND Direction = 1 AND TransactionDate>'{maxTransactionDate}'";
+                    DB.ExecuteQuery(sql, connectionString);
+                }
+            );
+
+            //start productRollover first
+            SimulateProductRollOver(new List<int> { custId });
+
+            GenerateEvents(new List<int>() { 27 });
+            ProcessEvents();
         }
 
         private static void Simulate_AESCIS_16949()
