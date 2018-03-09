@@ -135,7 +135,7 @@ namespace Aurea.Maintenance.Debugger.Spark
             var resp = "Y";
             while ("y".Equals(resp,StringComparison.InvariantCultureIgnoreCase))
             {
-                Simulate_AESCIS_20591(91259, 32);
+                Simulate_AESCIS_20591_Rollover(1653128, 16);
 
                 Console.WriteLine("Do you want to repeat simulation (y/n)");
                 resp = Console.ReadLine().Trim();
@@ -146,31 +146,13 @@ namespace Aurea.Maintenance.Debugger.Spark
             Console.ReadLine();
         }
 
-        private static void Simulate_AESCIS_20591(int custId, int rolloverProductId)
+        private static void Simulate_AESCIS_20591_Rollover(int custId, int rolloverProductId)
         {
-            var uaConnectionString = _appConfig.ConnectionCsr
-                .Replace("daes_", "paes_");
+            // we will use this to delete test data before starting new test
+            var maxTransactionDate = string.Empty;
+            var lastRateTransitionId = string.Empty;
 
-            var maxTransactionDate = DB.ReadSingleValue<DateTime>($"SELECT MAX(TransactionDate) FROM CustomerTransactionRequest WHERE CustId = {custId} AND TransactionType='867' AND ActionCode = '03'", uaConnectionString).ToString("yyyy-MM-ddT00:00:00");
-
-            var sql = $@"
-delete rd
-from ratedetail rd
-join ratetransition rt on rd.ratetransitionid = rt.ratetransitionid
-where rt.custid = {custId} and rt.RateTransitionID = (Select top 1 rtt.RateTransitionID from RateTransition rtt where rtt.CustID = rt.CustID order by rtt.EndDate desc)
-
-delete cc
-from ClientCustomer.RateTransition cc 
-join ratetransition rt on cc.ratetransitionid = rt.ratetransitionid
-where rt.custid = {custId} and rt.RateTransitionID = (Select top 1 rtt.RateTransitionID from RateTransition rtt where rtt.CustID = rt.CustID order by rtt.EndDate desc)
-
-delete rt
-from ratetransition rt 
-where rt.custid = {custId} and rt.RateTransitionID = (Select top 1 rtt.RateTransitionID from RateTransition rtt where rtt.CustID = rt.CustID order by rtt.EndDate desc)
-";
-            DB.ExecuteQuery(sql, _appConfig.ConnectionCsr);
-
-            DB.ImportQueryResultsFromUa(
+            DB.ImportQueryResultsFromProduction(
                 string.Format(MockSqlQueries.CustomerExportScript, custId, 10),
                 _appConfig.ConnectionCsr,
                 appDir,
@@ -189,20 +171,243 @@ where rt.custid = {custId} and rt.RateTransitionID = (Select top 1 rtt.RateTrans
                         return;
                     }
                     
+                    // delete last RateTransition, we will be triggering to rollover it, so also delete non-rollover last RateTransitions, along with their artifacts
+                    var lastRateTransition = doc.SelectSingleNode("(//RateTransition)[last()]", nsMgr);
+                    while (lastRateTransition?.Attributes?["RolloverFlag"]?.Value == "0")
+                    {
+                        rootNode.RemoveChild(lastRateTransition);
+                        lastRateTransitionId = lastRateTransition.Attributes["RateTransitionID"].Value;
+                        foreach (XmlNode ccRT in doc.SelectNodes($"(//ClientCustomer.RateTransition[@RateTransitionID='{lastRateTransitionId}'])", nsMgr))
+                        {
+                            rootNode.RemoveChild(ccRT);
+                        }
+                        foreach (XmlNode rateDetail in doc.SelectNodes($"(//RateDetail)[@RateTransitionID='{lastRateTransitionId}']", nsMgr))
+                        {
+                            rootNode.RemoveChild(rateDetail);
+                        }
+                        lastRateTransition = doc.SelectSingleNode("(//RateTransition)[last()]", nsMgr);
+                    }
+                    lastRateTransition = doc.SelectSingleNode("(//RateTransition)[last()]", nsMgr);
+                    lastRateTransitionId = lastRateTransition.Attributes["RateTransitionID"].Value;
+                    if (lastRateTransition == null)
+                    {
+                        _logger.Error("No RT left for deleting, something went wrong!");
+                        return;
+                    }
+                    rootNode.RemoveChild(lastRateTransition);
+                    foreach (XmlNode ccRT in doc.SelectNodes($"(//ClientCustomer.RateTransition[@RateTransitionID='{lastRateTransitionId}'])", nsMgr))
+                    {
+                        rootNode.RemoveChild(ccRT);
+                    }
+                    foreach (XmlNode rateDetail in doc.SelectNodes($"(//RateDetail)[@RateTransitionId='{lastRateTransitionId}']", nsMgr))
+                    {
+                        rootNode.RemoveChild(rateDetail);
+                    }
 
-                    //doc.Save(xmlFileName);
+                    // this the rateTransition before Rollover, we will delete RateTransitions become after this on AfterImport section
+                    lastRateTransition = doc.SelectSingleNode("(//RateTransition)[last()]", nsMgr);
+                    if (lastRateTransition == null)
+                    {
+                        _logger.Error("No RT left for updating, something went wrong!");
+                        return;
+                    }
+                    lastRateTransition.Attributes["EndDate"].Value = DateTime.Today.AddDays(-1).ToString("yyyy-MM-ddT00:00:00");
+                    lastRateTransitionId = lastRateTransition.Attributes["RateTransitionID"].Value;
+                    var lastRTDate = DateTime.Parse(lastRateTransition.Attributes["SwitchDate"].Value);
+
+                    // delete last 814_C CTRs we don't want them
+                    var lastCustomerTransactionRequest = doc.SelectSingleNode("(//CustomerTransactionRequest)[last()]", nsMgr);
+                    maxTransactionDate = lastCustomerTransactionRequest.Attributes["TransactionDate"].Value;
+
+                    while (lastCustomerTransactionRequest.Attributes["TransactionType"].Value == "814" &&
+                           lastCustomerTransactionRequest.Attributes["ActionCode"].Value == "C" &&
+                           DateTime.Parse(maxTransactionDate) > lastRTDate) 
+                    {
+                        rootNode.RemoveChild(lastCustomerTransactionRequest);
+                        lastCustomerTransactionRequest = doc.SelectSingleNode("(//CustomerTransactionRequest)[last()]", nsMgr);
+                        maxTransactionDate = lastCustomerTransactionRequest.Attributes["TransactionDate"].Value;
+                    }
+
+                    // make sure we are rollovering desired product
+                    var ccCustAdditionalInfo = doc.SelectSingleNode("(//ClientCustomer.CustomerAdditionalInfo)[last()]", nsMgr);
+                    ccCustAdditionalInfo.Attributes["RolloverProductId"].Value = rolloverProductId.ToString();
+                    
+                    doc.Save(xmlFileName);
                 },
                 connectionString =>
                 {
                     DB.ExecuteQuery("ENABLE TRIGGER ALL ON ChangeRequest;", connectionString);
 
-                    sql = $"DELETE FROM CustomerTransactionRequest WHERE CustId = {custId}  AND TransactionType='814' AND ActionCode = 'C' AND Direction = 1 AND TransactionDate>'{maxTransactionDate}'";
+                    // delete previous test artifacts
+                    var sql = $"DELETE FROM CustomerTransactionRequest WHERE CustId = {custId}  AND TransactionType='814' AND ActionCode = 'C' AND TransactionDate>'{maxTransactionDate}'";
+                    DB.ExecuteQuery(sql, connectionString);
+
+                    sql = $@"
+DECLARE @RateTranstion2Delete INT = (SELECT TOP 1 RateTransitionID FROM RateTransition WHERE CustId = {custId} AND RateTransitionID > {lastRateTransitionId} )
+
+IF ISNULL(@RateTranstion2Delete, 0) > 0
+BEGIN
+    DELETE FROM ClientCustomer.RateTransition WHERE RateTransitionID = @RateTranstion2Delete
+    DELETE FROM RateDetail WHERE RateTransitionID = @RateTranstion2Delete
+    DELETE FROM RateTransition WHERE RateTransitionID = @RateTranstion2Delete
+END
+                    ";
                     DB.ExecuteQuery(sql, connectionString);
                 }
             );
 
             //start productRollover first
             SimulateProductRollOver(new List<int> { custId });
+
+
+            GenerateEvents(new List<int>() { 27 });
+            ProcessEvents();
+        }
+
+        private static void Simulate_AESCIS_20591_ChangeProductRequest(int custId)
+        {
+            var prodConnectionString = _appConfig.ConnectionCsr
+                .Replace("daes_", "paes_")
+                .Replace("SGISUSEUAV01.aesua.local", "SGISUSEPRV01.aesprod.local");
+
+            var maxTransactionDate = DB.ReadSingleValue<DateTime>($"SELECT MAX(TransactionDate) FROM CustomerTransactionRequest WHERE CustId = {custId} AND TransactionType='814' AND ActionCode = 'C'", prodConnectionString).ToString("yyyy-MM-ddT00:00:00");
+
+            var lastcprId = string.Empty;
+            var activeContractId = string.Empty;
+            var lastRateTransitionId = string.Empty;
+
+            DB.ImportQueryResultsFromProduction(
+                string.Format(MockSqlQueries.CustomerExportScript, custId, 10),
+                _appConfig.ConnectionCsr,
+                appDir,
+                (xmlFileName, connectionString) =>
+                {
+                    DB.ExecuteQuery("DISABLE TRIGGER ALL ON ChangeRequest;", _appConfig.ConnectionCsr);
+
+                    var doc = new XmlDocument();
+                    doc.Load(xmlFileName);
+
+                    XmlNamespaceManager nsMgr = new XmlNamespaceManager(doc.NameTable);
+                    var rootNode = doc.SelectSingleNode("root", nsMgr);
+                    if (rootNode == null)
+                    {
+                        _logger.Error("Root element not found, can't process the xml");
+                        return;
+                    }
+
+                    //delete latest RateTransitions first Rollover then ChangeProductRequest
+                    var lastRateTransition = doc.SelectSingleNode("(//RateTransition)[last()]", nsMgr);
+                    while (lastRateTransition?.Attributes?["RolloverFlag"]?.Value == "1")
+                    {
+                        rootNode.RemoveChild(lastRateTransition);
+                        lastRateTransitionId = lastRateTransition.Attributes["RateTransitionID"].Value;
+                        foreach (XmlNode ccRT in doc.SelectNodes($"(//ClientCustomer.RateTransition[@RateTransitionID='{lastRateTransitionId}'])", nsMgr))
+                        {
+                            rootNode.RemoveChild(ccRT);
+                        }
+                        foreach (XmlNode rateDetail in doc.SelectNodes($"(//RateDetail)[@RateTransitionID='{lastRateTransitionId}']", nsMgr))
+                        {
+                            rootNode.RemoveChild(rateDetail);
+                        }
+                        lastRateTransition = doc.SelectSingleNode("(//RateTransition)[last()]", nsMgr);
+                    }
+
+                    //delete the last RT
+                    lastRateTransition = doc.SelectSingleNode("(//RateTransition)[last()]", nsMgr);
+                    if (lastRateTransition == null)
+                    {
+                        _logger.Error("No RT left for deleting, something went wrong!");
+                        return;
+                    }
+
+                    // delete last RateTransition along with ClientCustomer.RateTransition and RateDetails
+                    lastRateTransitionId = lastRateTransition.Attributes["RateTransitionID"].Value;
+                    rootNode.RemoveChild(lastRateTransition);
+                    foreach (XmlNode ccRT in doc.SelectNodes($"(//ClientCustomer.RateTransition[@RateTransitionID='{lastRateTransitionId}'])", nsMgr))
+                    {
+                        rootNode.RemoveChild(ccRT);
+                    }
+                    foreach (XmlNode rateDetail in doc.SelectNodes($"(//RateDetail)[@RateTransitionId='{lastRateTransitionId}']", nsMgr))
+                    {
+                        rootNode.RemoveChild(rateDetail);
+                    }
+
+                    lastRateTransition = doc.SelectSingleNode("(//RateTransition)[last()]", nsMgr);
+                    if (lastRateTransition == null)
+                    {
+                        _logger.Error("No RT left for updating, something went wrong!");
+                        return;
+                    }
+                    lastRateTransitionId = lastRateTransition.Attributes["RateTransitionID"].Value;
+                    var lastRTDate = DateTime.Parse(lastRateTransition.Attributes["SwitchDate"].Value);
+
+
+                    var lastChangeProductRequest = doc.SelectSingleNode("(//ClientCustomer.ChangeProductRequest)[last()]", nsMgr);
+                    if (lastChangeProductRequest == null)
+                    {
+                        _logger.Error("Could not find ChangeProduct request to simulate");
+                        return;
+                    }
+                    var contractID = lastChangeProductRequest.Attributes["ContractId"].Value;
+                    foreach (XmlNode contract in doc.SelectNodes($"(//Contract)[@ContractID='{contractID}']", nsMgr))
+                    {
+                        rootNode.RemoveChild(contract);
+                    }
+                    lastChangeProductRequest.Attributes["ContractId"].Value = "0";
+                    
+                    var lastCustomerTransactionRequest = doc.SelectSingleNode("(//CustomerTransactionRequest)[last()]", nsMgr);
+                    while (lastCustomerTransactionRequest.Attributes["TransactionType"].Value == "814" &&
+                    lastCustomerTransactionRequest.Attributes["ActionCode"].Value == "C" &&
+                    DateTime.Parse(lastCustomerTransactionRequest.Attributes["TransactionDate"].Value) > lastRTDate)
+                    {
+                        rootNode.RemoveChild(lastCustomerTransactionRequest);
+                        lastCustomerTransactionRequest = doc.SelectSingleNode("(//CustomerTransactionRequest)[last()]", nsMgr);
+                    }
+
+                    lastRateTransition.Attributes["EndDate"].Value = DateTime.Today.AddDays(-1).ToString("yyyy-MM-ddT00:00:00");
+
+                    var customer = doc.SelectSingleNode("(//Customer)[last()]", nsMgr);
+                    lastcprId = lastChangeProductRequest.Attributes["ChangeProductRequestID"].Value;
+                    var activeChangeProductRequest = doc.SelectSingleNode($"(//ClientCustomer.ChangeProductRequest)[@ChangeProductRequestID < '{lastcprId}'][last()]", nsMgr);
+                    activeContractId = activeChangeProductRequest.Attributes["ContractId"].Value;
+                    customer.Attributes["ContractID"].Value = activeContractId;
+                    var activeContract = doc.SelectSingleNode($"(//Contract)[@ContractID = '{activeContractId}']", nsMgr);
+                    customer.Attributes["ContractEndDate"].Value = activeContract.Attributes["EndDate"].Value;
+
+                    doc.Save(xmlFileName);
+                },
+                connectionString =>
+                {
+                    DB.ExecuteQuery("ENABLE TRIGGER ALL ON ChangeRequest;", connectionString);
+
+                    // delete previous test artifacts if any
+                    var sql = $"DELETE FROM CustomerTransactionRequest WHERE CustId = {custId}  AND TransactionType='814' AND ActionCode = 'C' AND TransactionDate>'{maxTransactionDate}'";
+                    DB.ExecuteQuery(sql, connectionString);
+
+                    sql = $@"
+DECLARE @ContractID2Delete INT = (SELECT TOP 1 ContractID FROM ClientCustomer.ChangeProductRequest WHERE CustId = {custId} AND ChangeProductRequestID > {lastcprId} )
+DECLARE @RateTranstion2Delete INT = (SELECT TOP 1 RateTransitionID FROM RateTransition WHERE CustId = {custId} AND RateTransitionID > {lastRateTransitionId} )
+
+IF ISNULL(@RateTranstion2Delete, 0) > 0
+BEGIN
+    DELETE FROM ClientCustomer.RateTransition WHERE RateTransitionID = @RateTranstion2Delete
+    DELETE FROM RateDetail WHERE RateTransitionID = @RateTranstion2Delete
+    DELETE FROM RateTransition WHERE RateTransitionID = @RateTranstion2Delete
+END
+
+IF ISNULL(@ContractID2Delete, 0) > 0
+BEGIN
+    UPDATE Customer SET ContractID = {activeContractId} WHERE CustId = {custId}
+    DELETE FROM ClientCustomer.Contract WHERE ContractID = @ContractID2Delete
+    DELETE FROM Contract WHERE ContractID = @ContractID2Delete
+END
+                    ";
+                    DB.ExecuteQuery(sql, connectionString);
+                }
+            );
+
+            // execute changeProductRequest process
+            SimulateCustomerContractEvaluation(new List<int> { custId });
 
             GenerateEvents(new List<int>() { 27 });
             ProcessEvents();
@@ -456,10 +661,6 @@ where rt.custid = {custId} and rt.RateTransitionID = (Select top 1 rtt.RateTrans
                 var _event = list.SingleOrDefault(x => x.EventTypeID == id);
                 new CIS.Engine.Event.EventGenerator().GenerateEvent(_clientConfig.ClientId, htParams, _clientConfig.Client, _appConfig.ConnectionCsr, _clientConfig.ConnectionBillingAdmin, _event.AssemblyName, _event.ClassName);
             });
-
-
-            //var maintenance = new MyMaintenance(_appConfig.ConnectionCsr, _appConfig.ConnectionMarket, _clientConfig.ConnectionBillingAdmin);
-            //maintenance.GenerateEvents();
         }
 
         private static void TestCopyCustomer()
