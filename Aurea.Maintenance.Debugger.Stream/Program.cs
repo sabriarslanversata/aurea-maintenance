@@ -23,6 +23,10 @@ namespace Aurea.Maintenance.Debugger.Stream
     using Common.Models;
 
     using CIS.BusinessEntity;
+    using CIS.Web.Billing.Administration.Correspondence;
+    using System.Threading.Tasks;
+    using System.Net.Http;
+    using System.Net;
 
     public class MyExport : CIS.Clients.Stream.Export.MainProcess
     {
@@ -63,6 +67,8 @@ namespace Aurea.Maintenance.Debugger.Stream
         private static readonly ILogger _logger = new Logger();
         private static readonly string _appDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
         private static readonly string _mockDataDir = Path.Combine(_appDir, "MockData");
+        private static int[] batchIds;
+        private static Dictionary<string, string> httpCallPayloads= new Dictionary<string, string>();
 
         static void Main(string[] args)
         {
@@ -86,6 +92,7 @@ namespace Aurea.Maintenance.Debugger.Stream
             CopyCustomerFromProd(paesCustIds);
 
             Simulate_AESCIS_20523();
+            Simulate_AESCIS_21100(514433, 20433953);
 
              */
 
@@ -95,14 +102,63 @@ namespace Aurea.Maintenance.Debugger.Stream
             var resp = "Y";
             while ("Y".Equals(resp, StringComparison.InvariantCultureIgnoreCase))
             {
-                Simulate_AESCIS_21100(514433, 20433953);
 
+                Simulate_AESCIS_29187(new int[] { -1709363658, -1709363507, -1630560651, -1188994690 });
                 Console.WriteLine("do you want to Repeat call");
                 resp = Console.ReadLine().Trim();
             }
 
             _logger.Info("Debug session has ended");
             Console.ReadLine();
+        }
+
+        private static void Simulate_AESCIS_29187(int [] batchIdsPassed)
+        {
+            httpCallPayloads.Add("POST", "http://ua.csr.streamenergybilling.com/Administration/Correspondence/InvoiceApprovalAdministrationService.asmx/BatchInvoiceLockSelected HTTP/1.1");
+            httpCallPayloads.Add("Host", "ua.csr.streamenergybilling.com");
+            httpCallPayloads.Add("Connection", "keep - alive");
+            httpCallPayloads.Add("Content-Length", "64");
+            httpCallPayloads.Add("Accept", "application / json, text / plain, */*");
+            httpCallPayloads.Add("Origin", "http://ua.csr.streamenergybilling.com");
+            httpCallPayloads.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36");
+            httpCallPayloads.Add("Content-Type", "application/json;charset=UTF-8");
+            httpCallPayloads.Add("Referer", "http://ua.csr.streamenergybilling.com/Administration/Correspondence/InvoiceAdminMP.aspx");
+            httpCallPayloads.Add("Accept-Encoding", "gzip, deflate");
+            httpCallPayloads.Add("Accept-Language", "en-US,en;q=0.9,tr;q=0.8");
+            httpCallPayloads.Add("Cookie", "ASP.NET_SessionId=yvh4v4p4l1pmkxbfmrg5amsr; trace=; _ga=GA1.2.1474150719.1531686590; _gid=GA1.2.1941689555.1531686590; sqlAuthCookie=30E17F42769A6A254F64DC69DDEC7FCFAAD452A4D97C150FAB206BCCC7101B3C9A67941A44756B85DD2AA2506D6ED23D72ECE28AFED5D4E1380E561AA2151A4A1B57DB4CA7F44A37779A5AEF6935F640EE862895005C1110A545A497D5D20FFAFC014F2B2A12566D61E52C37475005F8DADB296BDFF7247D18D9DAF6289F4BC7A5BD426AEF7195D23E0A2F18C921AEF5111BFDC31B703CACA3A332F8913022F6B11DF5FD103A48C0522377F7ED78C16A6C957C4C55C0201DAEACC34A8E788E9128D09259EA0AD9D22E332C4BB3A619791106A474C576468EB943D49794590C4EA703596292FBADAD91A59AA6590F7FE76BFC1B3C67D10B0195FAA7AB23E3BC8B");
+            httpCallPayloads.Add("Data", "{\"invoiceIds\":[" + string.Join(",", batchIds) + "]}");
+            batchIds = batchIdsPassed;
+            Parallel.Invoke(
+                AES_CIS_29187_Invoking, 
+                AES_CIS_29187_Invoking, 
+                AES_CIS_29187_Invoking, 
+                AES_CIS_29187_Invoking, 
+                AES_CIS_29187_Invoking, 
+                AES_CIS_29187_Invoking, 
+                AES_CIS_29187_Invoking, 
+                AES_CIS_29187_Invoking
+                );
+        }
+        private static void AES_CIS_29187_Invoking()
+        {
+            _logger.Info($"invoke started {System.Threading.Thread.CurrentThread.ManagedThreadId}");
+            httpCallPayloads.TryGetValue("Data", out var postData);
+            httpCallPayloads.TryGetValue("POST", out var postURL);
+            httpCallPayloads.TryGetValue("Cookie", out var cookie);
+            httpCallPayloads.TryGetValue("Referer", out var referer);
+            httpCallPayloads.TryGetValue("User-Agent", out var userAgent);
+
+
+
+            var client = new WebClient();
+            
+            client.Headers[HttpRequestHeader.ContentType] = "application/json;charset=UTF-8";
+            client.Headers[HttpRequestHeader.Cookie] = cookie;
+            client.Headers[HttpRequestHeader.Referer] = referer;
+            client.Headers[HttpRequestHeader.UserAgent] = userAgent;
+            string response = client.UploadString(new Uri(postURL), postData);
+
+            _logger.Info($"response returned of {response.Length} bytes from {System.Threading.Thread.CurrentThread.ManagedThreadId}");
         }
 
         private static void Simulate_AESCIS_21100(int custId, int invoiceId)
@@ -379,7 +435,7 @@ namespace Aurea.Maintenance.Debugger.Stream
                  @LDCID, 13, 'Consolidated Edison of New York', 'CONED', '006982359', NULL, NULL, 3, 'NY', NULL, 1, 'LDC Account No', 0, NULL, 0 
                 */
 
-                PRINT 'Create Premise'
+                    PRINT 'Create Premise'
                 INSERT INTO [Premise]
                  ([CustID], [CSPID], [AddrID], [TDSPTemplateID], [ServiceCycle], [TDSP], [TaxAssessment], [PremNo], [PremDesc], [PremStatus], [PremType], [LocationCode], [SpecialNeedsFlag], [SpecialNeedsStatus], [SpecialNeedsDate], [ReadingIncrement], [Metered], [Taxable], [BeginServiceDate], [EndServiceDate], [SourceLevel], [StatusID], [StatusDate], [CreateDate], [UnitID], [PropertyCommonID], [RateID], [DeleteFlag], [LBMPId], [PipelineId], [GasLossId], [LDCID], [GasPoolID], [DeliveryPoint], [ConsumptionBandIndex], [LastModifiedDate], [CreatedByID], [ModifiedByID], [BillingAccountNumber], [NameKey], [GasSupplyServiceOption], [IntervalUsageTypeId], [LDC_UnMeteredAcct], [AltPremNo], [OnSwitchHold], [SwitchHoldStartDate], [ConsumptionImportTypeId], [TDSPTemplateEffectiveDate], [ServiceDeliveryPoint], [UtilityContractID], [LidaDiscount], [GasCapacityAssignment], [CPAEnrollmentTypes], [IsTOU], [SupplierPricingStructureNr], [SupplierGroupNumber])
                 SELECT
